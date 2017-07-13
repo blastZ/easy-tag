@@ -1,0 +1,52 @@
+.flex-box {
+    display: flex;
+}
+
+.flex-column {
+    flex-direction: column;
+}
+
+.full-height {
+    height: 100%;
+    max-height: 100%;
+}
+
+.full-width {
+    width: 100%;
+    max-width: 100%;
+}
+
+#selectedImage {
+
+}
+
+#selectedImage:hover {
+    cursor: crosshair;
+}
+
+#select-bar {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 20px 10px 20px 3px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    list-style: none;
+    margin: 0;
+}
+
+#select-bar > li {
+    width: 40px;
+    height: 40px;
+    margin-left: 20px;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    opacity: 0.4;
+    cursor: pointer;
+}
+
+.select-bar-item-selected {
+    box-shadow: inset 0 0 0 2px rgba(250, 250, 250, 0.75), 0px 0px 0px 2px #F08F10;
+    opacity: 1 !important;
+}
