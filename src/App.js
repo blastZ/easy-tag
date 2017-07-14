@@ -10,11 +10,12 @@ import FileSaver, { saveAs } from 'file-saver'
 
 class App extends Component {
     state = {
-        imageList: [{url: require('./imgs/start.jpg')}],
+        imageList: [{url: require('./imgs/start.jpg'), name: 'start'}],
         tagList: [
-            // {x_start: 0, y_start: 0, x_end: 10, y_end: 20, tagString: 'car'}
+            // {x_start: 0, y_start: 0, x_end: 10, y_end: 20, tagString: 'car'} result format
         ],
-        currentTag: '1',
+        currentTagString: '1',
+        currentImageName:'',
         selectedImageNum: 0
     }
     componentDidMount() {
@@ -22,11 +23,13 @@ class App extends Component {
         $('#file').on('change', function() {
             const files = this.files
             for(const file of files) {
+                const name = file.name.split('.')[0]
+                console.log(name)
                 const reader = new FileReader()
                 reader.addEventListener('load', function() {
                     const url = this.result
                     that.setState((state) => {
-                        state.imageList = state.imageList.concat([{url: url}])
+                        state.imageList = state.imageList.concat([{url: url, name: name}])
                     })
                 })
                 reader.readAsDataURL(file)
@@ -38,6 +41,8 @@ class App extends Component {
         for(let i=0; i<this.state.imageList.length; i++) {
             if(this.state.imageList[i].url === url) {
                 this.setState({selectedImageNum: i})
+                this.setState({tagList: []}) //init tagList
+                $('#selectedImage').parent().find('div').remove() //remove select-box div
                 break
             }
         }
@@ -54,7 +59,7 @@ class App extends Component {
             result = result.concat(`${x_start} `).concat(`${y_start} `).concat(`${x_end} `).concat(`${y_end} `).concat(tagString).concat('\n')
         })
         var blob = new Blob([result], {type: "text/plain;charset=utf-8"});
-        saveAs(blob, "1.txt");
+        saveAs(blob, `${this.state.imageList[this.state.selectedImageNum].name}.txt`);
     }
 
     addTag = (tag) => {
@@ -63,19 +68,25 @@ class App extends Component {
         })
     }
 
-    changeTag = () => {
-        this.setState({currentTag: $('#mySelect').val()})
+    deleteTag = (index) => {
+        this.setState((state) => {
+            state.tagList.splice(index, 1)
+        })
+    }
+
+    changeTagString = () => {
+        this.setState({currentTagString: $('#mySelect').val()})
     }
 
     render() {
         return (
             <div className="App" className="flex-box full-height">
                 <div className="flex-box flex-column full-height" style={{flex: '1 1 auto'}}>
-                    <SelectedImage currentTag={this.state.currentTag} onAddTag={this.addTag} selectedImage={this.state.imageList[this.state.selectedImageNum].url}/>
+                    <SelectedImage currentTagString={this.state.currentTagString} onDeleteTag={this.deleteTag} onAddTag={this.addTag} selectedImage={this.state.imageList[this.state.selectedImageNum].url}/>
                     <SelectBar onClickItem={this.clickItem} selectedImageNum={this.state.selectedImageNum} imageList={this.state.imageList}/>
                 </div>
                 <div style={{width: '20%', backgroundColor: '#F0F0F0'}}>
-                    <TagView onChangeTag={this.changeTag} onSaveResult={this.saveResult}/>
+                    <TagView onChangeTagString={this.changeTagString} onSaveResult={this.saveResult}/>
                 </div>
             </div>
         )

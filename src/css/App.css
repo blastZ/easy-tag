@@ -16,6 +16,19 @@
     max-width: 100%;
 }
 
+.delete-button {
+    margin: 3px;
+}
+
+.delete-button:hover {
+    color: gray;
+    cursor: pointer;
+}
+
+.margin-top-5 {
+    margin-top: 5px;
+}
+
 #selectedImage {
 
 }
