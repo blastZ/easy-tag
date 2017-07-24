@@ -3,7 +3,9 @@ import $ from 'jquery'
 
 class SelectedImage extends Component {
     state = {
-        boxList: []
+        boxList: [
+            //{rect_width: 200px, rect_height: 300px, x_start: 122, y_start: 90, tag: 'car'}
+        ]
     }
     componentDidMount() {
         const that = this
@@ -60,12 +62,12 @@ class SelectedImage extends Component {
                     const y_start_int = parseInt(y_start.slice(0, y_start.length - 2))
                     const x_end = x_start_int + rect_width
                     const y_end = y_start_int + rect_height
-                    const relative_x_start = x_start_int / img_natural_width
-                    const relative_y_start = y_start_int / img_natural_height
-                    const relative_x_end = x_end / img_natural_width
-                    const relative_y_end = y_end / img_natural_height
+                    const relative_x_start = (x_start_int / img_natural_width).toFixed(3)
+                    const relative_y_start = (y_start_int / img_natural_height).toFixed(3)
+                    const relative_x_end = (x_end / img_natural_width).toFixed(3)
+                    const relative_y_end = (y_end / img_natural_height).toFixed(3)
                     that.setState((state) => {
-                        state.boxList = state.boxList.concat([{rect_width: rect_width, rect_height: rect_height, x_start: x_start, y_start: y_start}])
+                        state.boxList = state.boxList.concat([{rect_width: rect_width, rect_height: rect_height, x_start: x_start, y_start: y_start, tag: `${that.props.currentTagString}`}])
                     })
                     const tag = {x_start: relative_x_start, y_start: relative_y_start, x_end: relative_x_end, y_end: relative_y_end, tagString: that.props.currentTagString}
                     //console.log(tag)
@@ -79,6 +81,10 @@ class SelectedImage extends Component {
             rect_width = 0
             rect_height = 0
         })
+    }
+
+    clearBoxList = () => {
+        this.setState({boxList: []})
     }
 
     deleteBox = (e) => {
@@ -99,10 +105,10 @@ class SelectedImage extends Component {
                         this.state.boxList.map((box) => (
                             <div key={Math.random(10000)} style={{width: `${box.rect_width}px`, height: `${box.rect_height}px`, border: '2px dashed black',
                                          position: 'absolute', left: `${box.x_start}`, top: `${box.y_start}`}}>
+                                         <span style={{position: 'absolute', top: '0', left: '0'}}><b>{box.tag}</b></span>
                                          <i onClick={this.deleteBox} className="fa fa-times delete-button" aria-hidden="true" style={{position: 'absolute', top: '0', right: '0'}}></i>
                             </div>
-                        )) :
-                        ''
+                        )) : null
                     }
                 </div>
                 <form style={{position: 'absolute', bottom: '25px'}}>
