@@ -6,7 +6,7 @@ import './css/font-awesome.min.css'
 import SelectBar from './SelectBar.js'
 import SelectedImage from './SelectedImage.js'
 import TagView from './TagView.js'
-import { saveAs } from 'file-saver'
+//import { saveAs } from 'file-saver' when you want to save as txt on the localhost
 
 class App extends Component {
     state = {
@@ -16,24 +16,96 @@ class App extends Component {
         ],
         currentTagString: '1',
         currentImageName:'',
-        selectedImageNum: 0
+        selectedImageNum: 0,
+        start: 1,
+        num: 10,
+        complete: 0
     }
     componentDidMount() {
-        const that = this
+        const that = this;
+        this.getImageList();
+
+        ///let user can select directory
+        /*
+            $('#file').attr('webkitdirectory', 'webkitdirectory');
+            $('#file').attr('directory', 'directory');
+        */
+
+        //bind upload and show events
         $('#file').on('change', function() {
-            const files = this.files
+            const files = this.files;
+            //let loadCount = 0; --------maybe use loadCount to setState per 50 times
             for(const file of files) {
-                const name = file.name.split('.')[0]
-                const reader = new FileReader()
-                reader.addEventListener('load', function() {
-                    const url = this.result
-                    that.setState((state) => {
-                        state.imageList = state.imageList.concat([{url: url, name: name}])
-                    })
-                })
-                reader.readAsDataURL(file)
+                //decide the file is a image or not
+                if(file.type === 'image/jpeg' || file.type === 'image/png') {
+                    const name = file.name;
+                    const reader = new FileReader()
+                    reader.onload = function() {
+                        const url = this.result;
+                        that.setState(that.concatNewImage(url, name));
+                    }
+                    reader.readAsDataURL(file);
+                }
             }
+            that.uploadImageFiles(files);
         })
+    }
+
+    uploadImageFiles = (files) => {
+        for(const file of files) {
+            if(!file.type.match('image.*')) {
+                continue;
+            }
+            const formData = new FormData();
+            formData.append("file", file);
+            const fileRequest = new XMLHttpRequest();
+            fileRequest.open('POST', `http://192.168.0.103:8031/api/uploadfile?usrname=fj&taskname=task1&filename=${file.name}`);
+            fileRequest.send(formData);
+            fileRequest.onload = function() {
+                console.log('post success.');
+            }
+            fileRequest.onerror = function() {
+                console.log('post failed.');
+            }
+        }
+
+    }
+
+    getImageList = () => {
+        const that = this;
+        //load imageList from server
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', `http://192.168.0.103:8031/api/getdir?usrname=fj&taskname=task1&start=${this.state.start}&num=${this.state.num}`);
+        xhr.onload = function() {
+            const newImageList = [];
+            console.log(xhr.response)
+            if(xhr.response) {
+                const jsonResponse = JSON.parse(xhr.response);
+                jsonResponse.map((image) => {
+                    newImageList.push({url: image.url, name: image.name});
+                })
+            }
+            that.setState({imageList: newImageList});
+        }
+        xhr.onerror = function() {
+            console.log('get imageList failed');
+        }
+        xhr.send();
+    }
+
+    deleteImage = () => {
+        //delete image from server
+        const deleteRequest = new XMLHttpRequest();
+        deleteRequest.open('GET', `http://192.168.0.103:8031/api/delfile?usrname=fj&taskname=task1&filename=${this.state.imageList[this.state.selectedImageNum].name}`);
+        deleteRequest.send();
+    }
+
+    concatNewImage = (url, name) => {
+        return (preState) => {
+            return {
+                imageList: preState.imageList.concat([{url: url, name: name}])
+            };
+        };
     }
 
     clickItem = (url) => {
@@ -109,15 +181,55 @@ class App extends Component {
         this.setState({currentTagString: $('#mySelect').val()})
     }
 
+    handleNumChange = (e) => {
+        const value = e.target.value;
+        this.setState((state) => {
+            if(value.trim() === '') {
+                state.num = 1;
+            } else if(parseInt(value) > 999999) {
+                state.num = 999999;
+            } else {
+                state.num = parseInt(value);
+            }
+        });
+    }
+
+    handleStartChange = (e) => {
+        const value = e.target.value;
+        this.setState((state) => {
+            if(value.trim() === '') {
+                state.start = 1;
+            } else if(parseInt(value) > 999999) {
+                state.start = 999999
+            } else {
+                state.start = parseInt(value);
+            }
+        });
+    }
+
     render() {
         return (
             <div className="App flex-box full-height">
-                <div className="flex-box flex-column full-height" style={{flex: '1 1 auto'}}>
-                    <SelectedImage ref="selectedImage" currentTagString={this.state.currentTagString} onDeleteTag={this.deleteTag} onAddTag={this.addTag} selectedImage={this.state.imageList[this.state.selectedImageNum].url}/>
+                <div className="flex-box flex-column full-height" style={{flex: '1 1 auto', width: '80%'}}>
+                    <SelectedImage num={this.state.num}
+                                   ref="selectedImage"
+                                   currentTagString={this.state.currentTagString}
+                                   onDeleteTag={this.deleteTag}
+                                   onAddTag={this.addTag}
+                                   selectedImage={this.state.imageList[this.state.selectedImageNum].url}
+                                   complete={this.state.complete}
+                                   onDeleteImage={this.deleteImage}/>
                     <SelectBar onClickItem={this.clickItem} selectedImageNum={this.state.selectedImageNum} imageList={this.state.imageList}/>
                 </div>
                 <div style={{width: '20%', backgroundColor: '#F0F0F0'}}>
-                    <TagView onChangeTagString={this.changeTagString} onSaveResult={this.saveResult}/>
+                    <TagView onHandleNumChange={this.handleNumChange}
+                             onHandleStartChange={this.handleStartChange}
+                             start={this.state.start}
+                             num={this.state.num}
+                             currentTagString={this.state.currentTagString}
+                             onChangeTagString={this.changeTagString}
+                             onSaveResult={this.saveResult}
+                             onGetImageList={this.getImageList}/>
                 </div>
             </div>
         )

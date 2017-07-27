@@ -20,8 +20,19 @@
     margin: 3px;
 }
 
+.delete-button-white {
+    font-size: 2em !important;
+    color: white;
+    margin:3px;
+}
+
 .delete-button:hover {
-    color: gray;
+    color: white;
+    cursor: pointer;
+}
+
+.delete-button-white:hover {
+    color: rgb(196, 245, 142);
     cursor: pointer;
 }
 
@@ -49,8 +60,8 @@
 }
 
 #select-bar > li {
-    width: 40px;
-    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
     margin-left: 20px;
     background-size: cover;
     background-repeat: no-repeat;

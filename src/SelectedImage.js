@@ -57,7 +57,7 @@ class SelectedImage extends Component {
                 const img_natural_height = $('#selectedImage')[0].height
                 try {
                     const x_start = $('#move-rect').css('left')
-                    const x_start_int = parseInt(x_start.slice(0, x_start.length - 2))
+                    const x_start_int = parseInt(x_start.slice(0, x_start.length - 2)) //remove 'px'
                     const y_start = $('#move-rect').css('top')
                     const y_start_int = parseInt(y_start.slice(0, y_start.length - 2))
                     const x_end = x_start_int + rect_width
@@ -98,12 +98,16 @@ class SelectedImage extends Component {
     render() {
         return (
             <div className="w3-center w3-padding-24 flex-box full-width" style={{position: 'relative', justifyContent: 'center', alignItems: 'center', backgroundColor: '#303030', flex: '1'}}>
+                <div style={{position: 'absolute', top: '0', left: '10px'}}>
+                    <p className="w3-text-white">{`Progress: ${this.props.complete}/${this.props.num}`}</p>
+                </div>
+                <i onClick={this.props.onDeleteImage} className="fa fa-times delete-button-white" aria-hidden="true" style={{position: 'absolute', top: '10px', right: '20px'}}></i>
                 <div style={{position: 'relative'}}>
                     <img draggable="false" id="selectedImage" className="w3-image" src={this.props.selectedImage} alt={this.props.selectedImage} style={{maxHeight: '600px'}}/>
                     {
                         this.state.boxList.length > 0 ?
                         this.state.boxList.map((box) => (
-                            <div key={Math.random(10000)} style={{width: `${box.rect_width}px`, height: `${box.rect_height}px`, border: '2px dashed black',
+                            <div key={Math.random(10000) + Math.random(10000)} style={{width: `${box.rect_width}px`, height: `${box.rect_height}px`, border: '2px dashed black',
                                          position: 'absolute', left: `${box.x_start}`, top: `${box.y_start}`}}>
                                          <span style={{position: 'absolute', top: '0', left: '0'}}><b>{box.tag}</b></span>
                                          <i onClick={this.deleteBox} className="fa fa-times delete-button" aria-hidden="true" style={{position: 'absolute', top: '0', right: '0'}}></i>
@@ -116,7 +120,7 @@ class SelectedImage extends Component {
                         <i className="fa fa-picture-o" aria-hidden="true"></i>&nbsp;
                         OPEN IMAGES TO START
                     </label>
-                    <input multiple="multiple" id="file" type="file" accept="image/*" style={{display: 'none'}}/>
+                    <input multiple id="file" type="file" style={{display: 'none'}}/>
                 </form>
             </div>
         )
