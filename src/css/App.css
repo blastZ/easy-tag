@@ -18,6 +18,7 @@
 
 .delete-button {
     margin: 3px;
+    text-shadow: -1px 0 white, 1px 0 white, 0 -1px white, 0 1px white;
 }
 
 .delete-button-white {
@@ -85,4 +86,16 @@
 .color-panel-button:hover {
     background-color: grey !important;
     cursor: pointer;
+}
+
+.black-white-border {
+    border: 2px dashed black;
+    outline: 2px dashed white;
+}
+
+.tag-title {
+    position: absolute;
+    top: 0;
+    left: 0;
+    text-shadow: -1px 0 white, 1px 0 white, 0 -1px white, 0 1px white;
 }

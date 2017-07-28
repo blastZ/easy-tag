@@ -10,15 +10,16 @@ import TagView from './TagView.js'
 
 class App extends Component {
     state = {
-        imageList: [{url: 'http://192.168.0.103:8031/static/user/fj/task/task1/chepai3_61.jpg', name: 'chepai3_61.jpg'}],
+        imageList: [{url: 'http://192.168.0.103:8031/static/user/fj/task1/data/ding1_6.jpg', name: 'ding1_6.jpg'}],
         tagList: [
-            // {x_start: 0, y_start: 0, x_end: 10, y_end: 20, tag: 'car'} result format
+            // {x_start: 0, y_start: 0, x_end: 10, y_end: 20, tag: 'car', info: '浙F1234567'} result format
         ],
         currentTagString: '1',
         currentImageName:'',
         selectedImageNum: 0,
         start: 1,
-        num: 10,
+        num: 20,
+        info: '',
         complete: 0
     }
     componentDidMount() {
@@ -77,6 +78,7 @@ class App extends Component {
         const xhr = new XMLHttpRequest();
         xhr.open('GET', `http://192.168.0.103:8031/api/getdir?usrname=fj&taskname=task1&start=${this.state.start}&num=${this.state.num}`);
         xhr.onload = function() {
+            console.log('getImageList success');
             const newImageList = [];
             if(xhr.response) {
                 const jsonResponse = JSON.parse(xhr.response);
@@ -94,8 +96,67 @@ class App extends Component {
         xhr.send();
     }
 
+    nextImageList = () => {
+        const that = this;
+        //load imageList from server
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', `http://192.168.0.103:8031/api/getdir?usrname=fj&taskname=task1&start=${this.state.start + 20}&num=${this.state.num}`);
+        xhr.onload = function() {
+            console.log('getNextList success');
+            const newImageList = [];
+            if(xhr.response) {
+                const jsonResponse = JSON.parse(xhr.response);
+                jsonResponse.map((image) => {
+                    newImageList.push({url: image.url, name: image.name});
+                })
+            }
+            that.setState((state) => {
+                state.start = state.start + 20;
+                state.selectedImageNum = 0;
+                state.tagList = [];
+                state.imageList = newImageList;
+            })
+            that.getTagList(0)
+        }
+        xhr.onerror = function() {
+            console.log('getNextList failed');
+            that.getTagList(0);
+        }
+        xhr.send();
+
+    }
+
+    previousImageList = () => {
+        const that = this;
+        //load imageList from server
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', `http://192.168.0.103:8031/api/getdir?usrname=fj&taskname=task1&start=${(this.state.start - 20) > 0 ? (this.state.start - 20) : 1}&num=${this.state.num}`);
+        xhr.onload = function() {
+            console.log('getNextList success');
+            const newImageList = [];
+            if(xhr.response) {
+                const jsonResponse = JSON.parse(xhr.response);
+                jsonResponse.map((image) => {
+                    newImageList.push({url: image.url, name: image.name});
+                })
+            }
+            that.setState((state) => {
+                state.start = state.start - 20 > 0 ? state.start - 20 : 1;
+                state.selectedImageNum = 0;
+                state.tagList = [];
+                state.imageList = newImageList;
+            })
+            that.getTagList(0)
+        }
+        xhr.onerror = function() {
+            console.log('getNextList failed');
+            that.getTagList(0);
+        }
+        xhr.send();
+    }
+
     deleteImage = () => {
-        if(this.state.selectedImageNum !== -1) {
+        if(this.state.selectedImageNum !== 0) {
             //delete image from server
             const deleteRequest = new XMLHttpRequest();
             deleteRequest.open('GET', `http://192.168.0.103:8031/api/delfile?usrname=fj&taskname=task1&filename=${this.state.imageList[this.state.selectedImageNum].name}`);
@@ -105,7 +166,22 @@ class App extends Component {
                 state.imageList.splice(state.selectedImageNum, 1);
                 state.selectedImageNum = state.selectedImageNum - 1;
             })
+        } else {
+            //select the first one
+            if(this.state.imageList.length > 0) {
+                //delete image from server
+                const deleteRequest = new XMLHttpRequest();
+                deleteRequest.open('GET', `http://192.168.0.103:8031/api/delfile?usrname=fj&taskname=task1&filename=${this.state.imageList[this.state.selectedImageNum].name}`);
+                deleteRequest.send();
+                //delete image from imageList
+                this.setState((state) => {
+                    state.imageList.splice(state.selectedImageNum, 1);
+                    state.selectedImageNum = 0;
+                })
+            }
         }
+        this.refs.selectedImage.getFileCount();
+        this.refs.selectedImage.getTagedFileCount();
     }
 
     concatNewImage = (url, name) => {
@@ -134,7 +210,6 @@ class App extends Component {
     }
 
     getTagList = (index) => {
-        console.log('hey')
         const that = this;
         const tagListRequest = new XMLHttpRequest();
         tagListRequest.open('GET', `http://192.168.0.103:8031/api/loadlabel?usrname=fj&taskname=task1&filename=${this.state.imageList[index].name}`);
@@ -155,6 +230,7 @@ class App extends Component {
     }
 
     saveTagList = (index) => {
+        const that = this;
         const saveTagListRequest = new XMLHttpRequest();
         saveTagListRequest.open('POST', `http://192.168.0.103:8031/api/savelabel?usrname=fj&taskname=task1&filename=${this.state.imageList[index].name}`);
         const result = `{
@@ -166,7 +242,8 @@ class App extends Component {
                         "y_start": ${tag.y_start},
                         "x_end": ${tag.x_end},
                         "y_end": ${tag.y_end},
-                        "tag": "${tag.tag}"
+                        "tag": "${tag.tag}",
+                        "info": "${tag.info}"
                     }`
                 ))}
             ]
@@ -174,6 +251,7 @@ class App extends Component {
         saveTagListRequest.send(result);
         saveTagListRequest.onload = function() {
             console.log('post taglist success.');
+            that.refs.selectedImage.getTagedFileCount();
         }
         saveTagListRequest.onerror = function() {
             console.log('post taglist error.');
@@ -266,12 +344,24 @@ class App extends Component {
         });
     }
 
+    handleInfoChange = (e) => {
+        const value = e.target.value;
+        this.setState((state) => {
+            if(value.length > 8) {
+                state.info = value.slice(0, 8);
+            } else {
+                state.info = value;
+            }
+        })
+    }
+
     render() {
         return (
             <div className="App flex-box full-height">
                 <div className="flex-box flex-column full-height" style={{flex: '1 1 auto', width: '80%'}}>
-                    <SelectedImage num={this.state.num}
-                                   ref="selectedImage"
+                    <SelectedImage ref="selectedImage"
+                                   num={this.state.num}
+                                   info={this.state.info}
                                    currentTagString={this.state.currentTagString}
                                    onDeleteTag={this.deleteTag}
                                    onAddTag={this.addTag}
@@ -284,12 +374,15 @@ class App extends Component {
                 <div style={{width: '20%', backgroundColor: '#F0F0F0'}}>
                     <TagView onHandleNumChange={this.handleNumChange}
                              onHandleStartChange={this.handleStartChange}
+                             onHandleInfoChange={this.handleInfoChange}
                              start={this.state.start}
                              num={this.state.num}
+                             info={this.state.info}
                              currentTagString={this.state.currentTagString}
                              onChangeTagString={this.changeTagString}
-                             onSaveResult={this.saveResult}
-                             onGetImageList={this.getImageList}/>
+                             onGetImageList={this.getImageList}
+                             onNextImageList={this.nextImageList}
+                             onPreviousImageList={this.previousImageList}/>
                 </div>
             </div>
         )

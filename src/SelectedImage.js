@@ -3,6 +3,16 @@ import ColorPanel from './ColorPanel.js';
 import $ from 'jquery';
 
 class SelectedImage extends Component {
+    state = {
+        fileCount: 0,
+        tagedFileCount: 0
+    }
+
+    componentWillMount() {
+        this.getFileCount();
+        this.getTagedFileCount();
+    }
+
     componentDidMount() {
         const that = this
         let drawing = false
@@ -16,7 +26,7 @@ class SelectedImage extends Component {
                 x1 = e.clientX - offset.left
                 y1 = e.clientY - offset.top
                 $(this).parent().append(
-                    `<div id="move-rect" style="border: 2px dashed black; position: absolute; left: ${x1}px; top: ${y1}px;"></div>`
+                    `<div id="move-rect" class="black-white-border" style="position: absolute; left: ${x1}px; top: ${y1}px;"></div>`
                 )
             } catch(e) {
                 alert(e)
@@ -62,7 +72,7 @@ class SelectedImage extends Component {
                     const relative_y_start = (y_start_int / img_natural_height).toFixed(3)
                     const relative_x_end = (x_end / img_natural_width).toFixed(3)
                     const relative_y_end = (y_end / img_natural_height).toFixed(3)
-                    const tag = {x_start: relative_x_start, y_start: relative_y_start, x_end: relative_x_end, y_end: relative_y_end, tag: that.props.currentTagString}
+                    const tag = {x_start: relative_x_start, y_start: relative_y_start, x_end: relative_x_end, y_end: relative_y_end, tag: that.props.currentTagString, info: that.props.info}
                     //console.log(tag)
                     that.props.onAddTag(tag)
                     $('#move-rect').remove()
@@ -105,12 +115,36 @@ class SelectedImage extends Component {
         return (y_end - y_start);
     }
 
+    getFileCount = () => {
+        const that = this;
+        const getFileCount = new XMLHttpRequest();
+        getFileCount.open('GET', 'http://192.168.0.103:8031/api/filecount?usrname=fj&taskname=task1');
+        getFileCount.send();
+        getFileCount.onload = function() {
+            console.log('getFileCount success.');
+            const theFileCount = getFileCount.response;
+            that.setState({fileCount: theFileCount});
+        }
+    }
+
+    getTagedFileCount = () => {
+        const that = this;
+        const getTagedFileCount = new XMLHttpRequest();
+        getTagedFileCount.open('GET', 'http://192.168.0.103:8031/api/labeledfilecount?usrname=fj&taskname=task1');
+        getTagedFileCount.send();
+        getTagedFileCount.onload = function() {
+            console.log('getTagedFileCount success.');
+            const theTagedFileCount = getTagedFileCount.response;
+            that.setState({tagedFileCount: theTagedFileCount});
+        }
+    }
+
     render() {
         return (
             <div className="w3-center w3-padding-24 flex-box full-width" style={{position: 'relative', justifyContent: 'center', alignItems: 'center', backgroundColor: '#303030', flex: '1'}}>
                 <ColorPanel/>
                 <div style={{position: 'absolute', top: '0', left: '10px'}}>
-                    <p className="w3-text-white">{`Progress: ${this.props.complete}/${this.props.num}`}</p>
+                    <p className="w3-text-white">{`Progress: ${this.state.tagedFileCount}/${this.state.fileCount}`}</p>
                 </div>
                 <i onClick={this.props.onDeleteImage} className="fa fa-times delete-button-white" aria-hidden="true" style={{position: 'absolute', top: '10px', right: '20px'}}></i>
                 <div style={{position: 'relative'}}>
@@ -118,9 +152,9 @@ class SelectedImage extends Component {
                     {
                         this.props.boxList.length > 0 ?
                         this.props.boxList.map((box) => (
-                            <div key={Math.random(10000) + Math.random(10000)} style={{width: `${this.getBoxWidth(box.x_start, box.x_end)}px`, height: `${this.getBoxHeight(box.y_start, box.y_end)}px`, border: '2px dashed black',
+                            <div className="black-white-border" key={Math.random(10000) + Math.random(10000)} style={{width: `${this.getBoxWidth(box.x_start, box.x_end)}px`, height: `${this.getBoxHeight(box.y_start, box.y_end)}px`,
                                          position: 'absolute', left: `${this.getBoxX(box.x_start)}px`, top: `${this.getBoxY(box.y_start)}px`}}>
-                                         <span style={{position: 'absolute', top: '0', left: '0'}}><b>{box.tag}</b></span>
+                                         <span className="tag-title"><b>{box.tag}</b></span>
                                          <i onClick={this.deleteBox} className="fa fa-times delete-button" aria-hidden="true" style={{position: 'absolute', top: '0', right: '0'}}></i>
                             </div>
                         )) : null
@@ -129,7 +163,7 @@ class SelectedImage extends Component {
                 <form style={{position: 'absolute', bottom: '25px'}}>
                     <label htmlFor="file" className="w3-green w3-button w3-text-white">
                         <i className="fa fa-picture-o" aria-hidden="true"></i>&nbsp;
-                        OPEN IMAGES TO START
+                        OPEN LOCAL IMAGES
                     </label>
                     <input multiple id="file" type="file" style={{display: 'none'}}/>
                 </form>
