@@ -10,9 +10,9 @@ import TagView from './TagView.js'
 
 class App extends Component {
     state = {
-        imageList: [{url: require('./imgs/start.jpg'), name: 'start'}],
+        imageList: [{url: 'http://192.168.0.103:8031/static/user/fj/task/task1/chepai3_61.jpg', name: 'chepai3_61.jpg'}],
         tagList: [
-            // {x_start: 0, y_start: 0, x_end: 10, y_end: 20, tagString: 'car'} result format
+            // {x_start: 0, y_start: 0, x_end: 10, y_end: 20, tag: 'car'} result format
         ],
         currentTagString: '1',
         currentImageName:'',
@@ -24,7 +24,6 @@ class App extends Component {
     componentDidMount() {
         const that = this;
         this.getImageList();
-
         ///let user can select directory
         /*
             $('#file').attr('webkitdirectory', 'webkitdirectory');
@@ -72,13 +71,13 @@ class App extends Component {
     }
 
     getImageList = () => {
+        this.setState({selectedImageNum: 0, tagList: []});
         const that = this;
         //load imageList from server
         const xhr = new XMLHttpRequest();
         xhr.open('GET', `http://192.168.0.103:8031/api/getdir?usrname=fj&taskname=task1&start=${this.state.start}&num=${this.state.num}`);
         xhr.onload = function() {
             const newImageList = [];
-            console.log(xhr.response)
             if(xhr.response) {
                 const jsonResponse = JSON.parse(xhr.response);
                 jsonResponse.map((image) => {
@@ -86,18 +85,27 @@ class App extends Component {
                 })
             }
             that.setState({imageList: newImageList});
+            that.getTagList(0)
         }
         xhr.onerror = function() {
             console.log('get imageList failed');
+            that.getTagList(0);
         }
         xhr.send();
     }
 
     deleteImage = () => {
-        //delete image from server
-        const deleteRequest = new XMLHttpRequest();
-        deleteRequest.open('GET', `http://192.168.0.103:8031/api/delfile?usrname=fj&taskname=task1&filename=${this.state.imageList[this.state.selectedImageNum].name}`);
-        deleteRequest.send();
+        if(this.state.selectedImageNum !== -1) {
+            //delete image from server
+            const deleteRequest = new XMLHttpRequest();
+            deleteRequest.open('GET', `http://192.168.0.103:8031/api/delfile?usrname=fj&taskname=task1&filename=${this.state.imageList[this.state.selectedImageNum].name}`);
+            deleteRequest.send();
+            //delete image from imageList
+            this.setState((state) => {
+                state.imageList.splice(state.selectedImageNum, 1);
+                state.selectedImageNum = state.selectedImageNum - 1;
+            })
+        }
     }
 
     concatNewImage = (url, name) => {
@@ -109,28 +117,46 @@ class App extends Component {
     }
 
     clickItem = (url) => {
+        const preIndex = this.state.selectedImageNum;
+        const that = this;
         for(let i=0; i<this.state.imageList.length; i++) {
             if(this.state.imageList[i].url === url) {
                 this.setState((state) => {
                     state.selectedImageNum = i
-                    state.tagList = []
+                    if(preIndex !== i) {
+                        that.saveTagList(preIndex);
+                        that.getTagList(i);
+                    }
                 })
-                this.refs.selectedImage.clearBoxList()
                 break
             }
         }
     }
 
-    saveResult = () => {
-        // let result = `{length: ${this.state.tagList.length} }`
-        // this.state.tagList.map((tag) => {
-        //     const x_start = tag.x_start
-        //     const y_start = tag.y_start
-        //     const x_end = tag.x_end
-        //     const y_end = tag.y_end
-        //     const tagString = tag.tagString
-        //     result = result.concat(`${x_start} `).concat(`${y_start} `).concat(`${x_end} `).concat(`${y_end} `).concat(tagString).concat('\n')
-        // })
+    getTagList = (index) => {
+        console.log('hey')
+        const that = this;
+        const tagListRequest = new XMLHttpRequest();
+        tagListRequest.open('GET', `http://192.168.0.103:8031/api/loadlabel?usrname=fj&taskname=task1&filename=${this.state.imageList[index].name}`);
+        tagListRequest.send();
+        tagListRequest.onload = function() {
+            console.log('get taglist success.');
+            const jsonResponse = JSON.parse(tagListRequest.response);
+            if(jsonResponse.length > 0) {
+                that.setState({tagList: jsonResponse.objects});
+            } else {
+                that.setState({tagList: []});
+            }
+        }
+        tagListRequest.onerror = function() {
+            console.log('get taglist error.');
+            that.setState({tagList: []});
+        }
+    }
+
+    saveTagList = (index) => {
+        const saveTagListRequest = new XMLHttpRequest();
+        saveTagListRequest.open('POST', `http://192.168.0.103:8031/api/savelabel?usrname=fj&taskname=task1&filename=${this.state.imageList[index].name}`);
         const result = `{
             "length": ${this.state.tagList.length},
             "objects": [
@@ -140,30 +166,63 @@ class App extends Component {
                         "y_start": ${tag.y_start},
                         "x_end": ${tag.x_end},
                         "y_end": ${tag.y_end},
-                        "tag": "${tag.tagString}"
+                        "tag": "${tag.tag}"
                     }`
                 ))}
             ]
         }`
-
-        //var blob = new Blob([result], {type: "text/plain;charset=utf-8"});
-        //saveAs(blob, `${this.state.imageList[this.state.selectedImageNum].name}.txt`);
-        $.ajax({
-            url: 'http://192.168.0.118:8888/api/v1.0',
-            type: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            data: result,
-            dataType: 'text/plain',
-            success: function(data) {
-                console.log(data)
-            },
-            error: function(data) {
-                console.log(data)
-            }
-        })
+        saveTagListRequest.send(result);
+        saveTagListRequest.onload = function() {
+            console.log('post taglist success.');
+        }
+        saveTagListRequest.onerror = function() {
+            console.log('post taglist error.');
+        }
     }
+
+    // saveResult = () => {
+    //     // let result = `{length: ${this.state.tagList.length} }`
+    //     // this.state.tagList.map((tag) => {
+    //     //     const x_start = tag.x_start
+    //     //     const y_start = tag.y_start
+    //     //     const x_end = tag.x_end
+    //     //     const y_end = tag.y_end
+    //     //     const tag = tag.tag
+    //     //     result = result.concat(`${x_start} `).concat(`${y_start} `).concat(`${x_end} `).concat(`${y_end} `).concat(tag).concat('\n')
+    //     // })
+    //     const result = `{
+    //         "length": ${this.state.tagList.length},
+    //         "objects": [
+    //             ${this.state.tagList.map((tag) => (
+    //                 `{
+    //                     "x_start": ${tag.x_start},
+    //                     "y_start": ${tag.y_start},
+    //                     "x_end": ${tag.x_end},
+    //                     "y_end": ${tag.y_end},
+    //                     "tag": "${tag.tag}"
+    //                 }`
+    //             ))}
+    //         ]
+    //     }`
+    //
+    //     //var blob = new Blob([result], {type: "text/plain;charset=utf-8"});
+    //     //saveAs(blob, `${this.state.imageList[this.state.selectedImageNum].name}.txt`);
+    //     $.ajax({
+    //         url: 'http://192.168.0.118:8888/api/v1.0',
+    //         type: 'POST',
+    //         headers: {
+    //             'Content-Type': 'application/json'
+    //         },
+    //         data: result,
+    //         dataType: 'text/plain',
+    //         success: function(data) {
+    //             console.log(data)
+    //         },
+    //         error: function(data) {
+    //             console.log(data)
+    //         }
+    //     })
+    // }
 
     addTag = (tag) => {
         this.setState((state) => {
@@ -184,12 +243,12 @@ class App extends Component {
     handleNumChange = (e) => {
         const value = e.target.value;
         this.setState((state) => {
-            if(value.trim() === '') {
+            if(value.trim() === '' || parseInt(value, 10) <= 0) {
                 state.num = 1;
-            } else if(parseInt(value) > 999999) {
+            } else if(parseInt(value, 10) > 999999) {
                 state.num = 999999;
             } else {
-                state.num = parseInt(value);
+                state.num = parseInt(value, 10);
             }
         });
     }
@@ -197,12 +256,12 @@ class App extends Component {
     handleStartChange = (e) => {
         const value = e.target.value;
         this.setState((state) => {
-            if(value.trim() === '') {
+            if(value.trim() === '' || parseInt(value, 10) <= 0) {
                 state.start = 1;
-            } else if(parseInt(value) > 999999) {
+            } else if(parseInt(value, 10) > 999999) {
                 state.start = 999999
             } else {
-                state.start = parseInt(value);
+                state.start = parseInt(value, 10);
             }
         });
     }
@@ -218,7 +277,8 @@ class App extends Component {
                                    onAddTag={this.addTag}
                                    selectedImage={this.state.imageList[this.state.selectedImageNum].url}
                                    complete={this.state.complete}
-                                   onDeleteImage={this.deleteImage}/>
+                                   onDeleteImage={this.deleteImage}
+                                   boxList={this.state.tagList}/>
                     <SelectBar onClickItem={this.clickItem} selectedImageNum={this.state.selectedImageNum} imageList={this.state.imageList}/>
                 </div>
                 <div style={{width: '20%', backgroundColor: '#F0F0F0'}}>

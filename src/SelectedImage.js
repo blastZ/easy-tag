@@ -1,12 +1,8 @@
-import React, {Component} from 'react'
-import $ from 'jquery'
+import React, {Component} from 'react';
+import ColorPanel from './ColorPanel.js';
+import $ from 'jquery';
 
 class SelectedImage extends Component {
-    state = {
-        boxList: [
-            //{rect_width: 200px, rect_height: 300px, x_start: 122, y_start: 90, tag: 'car'}
-        ]
-    }
     componentDidMount() {
         const that = this
         let drawing = false
@@ -57,19 +53,16 @@ class SelectedImage extends Component {
                 const img_natural_height = $('#selectedImage')[0].height
                 try {
                     const x_start = $('#move-rect').css('left')
-                    const x_start_int = parseInt(x_start.slice(0, x_start.length - 2)) //remove 'px'
+                    const x_start_int = parseInt(x_start.slice(0, x_start.length - 2), 10) //remove 'px'
                     const y_start = $('#move-rect').css('top')
-                    const y_start_int = parseInt(y_start.slice(0, y_start.length - 2))
+                    const y_start_int = parseInt(y_start.slice(0, y_start.length - 2), 10)
                     const x_end = x_start_int + rect_width
                     const y_end = y_start_int + rect_height
                     const relative_x_start = (x_start_int / img_natural_width).toFixed(3)
                     const relative_y_start = (y_start_int / img_natural_height).toFixed(3)
                     const relative_x_end = (x_end / img_natural_width).toFixed(3)
                     const relative_y_end = (y_end / img_natural_height).toFixed(3)
-                    that.setState((state) => {
-                        state.boxList = state.boxList.concat([{rect_width: rect_width, rect_height: rect_height, x_start: x_start, y_start: y_start, tag: `${that.props.currentTagString}`}])
-                    })
-                    const tag = {x_start: relative_x_start, y_start: relative_y_start, x_end: relative_x_end, y_end: relative_y_end, tagString: that.props.currentTagString}
+                    const tag = {x_start: relative_x_start, y_start: relative_y_start, x_end: relative_x_end, y_end: relative_y_end, tag: that.props.currentTagString}
                     //console.log(tag)
                     that.props.onAddTag(tag)
                     $('#move-rect').remove()
@@ -83,21 +76,39 @@ class SelectedImage extends Component {
         })
     }
 
-    clearBoxList = () => {
-        this.setState({boxList: []})
-    }
-
     deleteBox = (e) => {
         const index = $(e.currentTarget).parent().index() - 1
-        this.setState((state) => {
-            state.boxList.splice(index, 1)
-        })
         this.props.onDeleteTag(index)
+    }
+
+    getBoxX = (r_x_start) => {
+        const img_natural_width = $('#selectedImage')[0].width;
+        return (img_natural_width * r_x_start);
+    }
+
+    getBoxY = (r_y_start) => {
+        const img_natural_height = $('#selectedImage')[0].height;
+        return (img_natural_height * r_y_start);
+    }
+
+    getBoxWidth = (r_x_start, r_x_end) => {
+        const img_natural_width = $('#selectedImage')[0].width;
+        const x_start = img_natural_width * r_x_start;
+        const x_end = img_natural_width * r_x_end;
+        return (x_end - x_start);
+    }
+
+    getBoxHeight = (r_y_start, r_y_end) => {
+        const img_natural_height = $('#selectedImage')[0].height;
+        const y_start = img_natural_height * r_y_start;
+        const y_end = img_natural_height * r_y_end;
+        return (y_end - y_start);
     }
 
     render() {
         return (
             <div className="w3-center w3-padding-24 flex-box full-width" style={{position: 'relative', justifyContent: 'center', alignItems: 'center', backgroundColor: '#303030', flex: '1'}}>
+                <ColorPanel/>
                 <div style={{position: 'absolute', top: '0', left: '10px'}}>
                     <p className="w3-text-white">{`Progress: ${this.props.complete}/${this.props.num}`}</p>
                 </div>
@@ -105,10 +116,10 @@ class SelectedImage extends Component {
                 <div style={{position: 'relative'}}>
                     <img draggable="false" id="selectedImage" className="w3-image" src={this.props.selectedImage} alt={this.props.selectedImage} style={{maxHeight: '600px'}}/>
                     {
-                        this.state.boxList.length > 0 ?
-                        this.state.boxList.map((box) => (
-                            <div key={Math.random(10000) + Math.random(10000)} style={{width: `${box.rect_width}px`, height: `${box.rect_height}px`, border: '2px dashed black',
-                                         position: 'absolute', left: `${box.x_start}`, top: `${box.y_start}`}}>
+                        this.props.boxList.length > 0 ?
+                        this.props.boxList.map((box) => (
+                            <div key={Math.random(10000) + Math.random(10000)} style={{width: `${this.getBoxWidth(box.x_start, box.x_end)}px`, height: `${this.getBoxHeight(box.y_start, box.y_end)}px`, border: '2px dashed black',
+                                         position: 'absolute', left: `${this.getBoxX(box.x_start)}px`, top: `${this.getBoxY(box.y_start)}px`}}>
                                          <span style={{position: 'absolute', top: '0', left: '0'}}><b>{box.tag}</b></span>
                                          <i onClick={this.deleteBox} className="fa fa-times delete-button" aria-hidden="true" style={{position: 'absolute', top: '0', right: '0'}}></i>
                             </div>
