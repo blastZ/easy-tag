@@ -19,13 +19,13 @@ class SelectedImage extends Component {
         let x1 = 0, y1 = 0, x_move = 0, y_move = 0
         let rect_width = 0, rect_height = 0
         let offset = {}
-        $('#selectedImage').mousedown(function(e) {
+        $('#selectedImagePanel').mousedown(function(e) {
             drawing = true
             try {
                 offset = $(this).offset()
                 x1 = e.clientX - offset.left
                 y1 = e.clientY - offset.top
-                $(this).parent().append(
+                $(this).append(
                     `<div id="move-rect" class="black-white-border" style="position: absolute; left: ${x1}px; top: ${y1}px;"></div>`
                 )
             } catch(e) {
@@ -33,7 +33,7 @@ class SelectedImage extends Component {
             }
         })
 
-        $('#selectedImage').mousemove(function(e) {
+        $('#selectedImagePanel').mousemove(function(e) {
             if(drawing) {
                 x_move = e.clientX - offset.left
                 y_move = e.clientY - offset.top
@@ -150,7 +150,7 @@ class SelectedImage extends Component {
                     <p className="w3-text-white">{`${this.props.selectedImageNumInAll} ${this.props.selectedImageName}`}</p>
                 </div>
                 <i onClick={this.props.onDeleteImage} className="fa fa-times delete-button-white" aria-hidden="true" style={{position: 'absolute', top: '10px', right: '20px'}}></i>
-                <div style={{position: 'relative'}}>
+                <div id="selectedImagePanel" style={{position: 'relative'}}>
                     <img draggable="false" id="selectedImage" className="w3-image" src={this.props.selectedImage} alt={this.props.selectedImage} style={{maxHeight: '600px'}}/>
                     {
                         this.props.boxList.length > 0 ?
