@@ -146,6 +146,9 @@ class SelectedImage extends Component {
                 <div style={{position: 'absolute', top: '0', left: '10px'}}>
                     <p className="w3-text-white">{`Progress: ${this.state.tagedFileCount}/${this.state.fileCount}`}</p>
                 </div>
+                <div style={{position: 'absolute', top: '0', left: '45%'}}>
+                    <p className="w3-text-white">{`${this.props.selectedImageNumInAll} ${this.props.selectedImageName}`}</p>
+                </div>
                 <i onClick={this.props.onDeleteImage} className="fa fa-times delete-button-white" aria-hidden="true" style={{position: 'absolute', top: '10px', right: '20px'}}></i>
                 <div style={{position: 'relative'}}>
                     <img draggable="false" id="selectedImage" className="w3-image" src={this.props.selectedImage} alt={this.props.selectedImage} style={{maxHeight: '600px'}}/>

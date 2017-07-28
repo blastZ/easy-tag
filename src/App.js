@@ -366,6 +366,8 @@ class App extends Component {
                                    onDeleteTag={this.deleteTag}
                                    onAddTag={this.addTag}
                                    selectedImage={this.state.imageList[this.state.selectedImageNum].url}
+                                   selectedImageName={this.state.imageList[this.state.selectedImageNum].name}
+                                   selectedImageNumInAll={this.state.start + this.state.selectedImageNum}
                                    complete={this.state.complete}
                                    onDeleteImage={this.deleteImage}
                                    boxList={this.state.tagList}/>
