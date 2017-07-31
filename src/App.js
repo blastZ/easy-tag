@@ -10,12 +10,12 @@ import TagView from './TagView.js'
 
 class App extends Component {
     state = {
-        imageList: [{url: 'http://192.168.0.103:8031/static/user/fj/task1/data/zhong1_12.jpg', name: 'ding1_6.jpg'}],
+        defaultURL: 'http://demo.codvision.com:16831/api/',
+        imageList: [{url: 'http://192.168.0.103:8031/static/user/fj/task1/data/zhong1_12.jpg', name: 'ding1_6.jpg', labeled: 0}],
         tagList: [
             // {x_start: 0, y_start: 0, x_end: 10, y_end: 20, tag: 'car', info: '浙F1234567'} result format
         ],
         currentTagString: '1',
-        currentImageName:'',
         selectedImageNum: 0,
         start: 1,
         num: 20,
@@ -59,7 +59,7 @@ class App extends Component {
             const formData = new FormData();
             formData.append("file", file);
             const fileRequest = new XMLHttpRequest();
-            fileRequest.open('POST', `http://192.168.0.103:8031/api/uploadfile?usrname=fj&taskname=task1&filename=${file.name}`);
+            fileRequest.open('POST', `${that.state.defaultURL}uploadfile?usrname=fj&taskname=task1&filename=${file.name}`);
             fileRequest.send(formData);
             fileRequest.onload = function() {
                 console.log('post image success.');
@@ -78,12 +78,11 @@ class App extends Component {
         const that = this;
         //load imageList from server
         const xhr = new XMLHttpRequest();
-        xhr.open('GET', `http://192.168.0.103:8031/api/getdir?usrname=fj&taskname=task1&start=${this.state.start}&num=${this.state.num}`);
+        xhr.open('GET', `${that.state.defaultURL}getdir?usrname=fj&taskname=task1&start=${this.state.start}&num=${this.state.num}`);
         xhr.onload = function() {
             console.log('getImageList success');
             const newImageList = [];
             if(xhr.response) {
-                console.log(xhr.response);
                 const jsonResponse = JSON.parse(xhr.response);
                 jsonResponse.map((image) => {
                     newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
@@ -103,7 +102,7 @@ class App extends Component {
         const that = this;
         //load imageList from server
         const xhr = new XMLHttpRequest();
-        xhr.open('GET', `http://192.168.0.103:8031/api/getdir?usrname=fj&taskname=task1&start=${this.state.start + this.state.num}&num=${this.state.num}`);
+        xhr.open('GET', `${that.state.defaultURL}getdir?usrname=fj&taskname=task1&start=${this.state.start + this.state.num}&num=${this.state.num}`);
         xhr.onload = function() {
             console.log('getNextList success');
             const newImageList = [];
@@ -133,7 +132,7 @@ class App extends Component {
         const that = this;
         //load imageList from server
         const xhr = new XMLHttpRequest();
-        xhr.open('GET', `http://192.168.0.103:8031/api/getdir?usrname=fj&taskname=task1&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
+        xhr.open('GET', `${that.state.defaultURL}getdir?usrname=fj&taskname=task1&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
         xhr.onload = function() {
             console.log('getNextList success');
             const newImageList = [];
@@ -159,12 +158,13 @@ class App extends Component {
     }
 
     deleteImage = () => {
+        const that = this;
         const result = window.confirm("确定删除这张图片吗?");
         if(result) {
             if(this.state.selectedImageNum !== 0) {
                 //delete image from server
                 const deleteRequest = new XMLHttpRequest();
-                deleteRequest.open('GET', `http://192.168.0.103:8031/api/delfile?usrname=fj&taskname=task1&filename=${this.state.imageList[this.state.selectedImageNum].name}`);
+                deleteRequest.open('GET', `${that.state.defaultURL}/delfile?usrname=fj&taskname=task1&filename=${this.state.imageList[this.state.selectedImageNum].name}`);
                 deleteRequest.send();
                 //delete image from imageList
                 this.setState((state) => {
@@ -176,7 +176,7 @@ class App extends Component {
                 if(this.state.imageList.length > 0) {
                     //delete image from server
                     const deleteRequest = new XMLHttpRequest();
-                    deleteRequest.open('GET', `http://192.168.0.103:8031/api/delfile?usrname=fj&taskname=task1&filename=${this.state.imageList[this.state.selectedImageNum].name}`);
+                    deleteRequest.open('GET', `${that.state.defaultURL}delfile?usrname=fj&taskname=task1&filename=${this.state.imageList[this.state.selectedImageNum].name}`);
                     deleteRequest.send();
                     //delete image from imageList
                     this.setState((state) => {
@@ -218,7 +218,7 @@ class App extends Component {
     getTagList = (index) => {
         const that = this;
         const tagListRequest = new XMLHttpRequest();
-        tagListRequest.open('GET', `http://192.168.0.103:8031/api/loadlabel?usrname=fj&taskname=task1&filename=${this.state.imageList[index].name}`);
+        tagListRequest.open('GET', `${that.state.defaultURL}loadlabel?usrname=fj&taskname=task1&filename=${this.state.imageList[index].name}`);
         tagListRequest.send();
         tagListRequest.onload = function() {
             console.log('getBoxList success.');
@@ -242,7 +242,7 @@ class App extends Component {
             })
             const that = this;
             const saveTagListRequest = new XMLHttpRequest();
-            saveTagListRequest.open('POST', `http://192.168.0.103:8031/api/savelabel?usrname=fj&taskname=task1&filename=${this.state.imageList[index].name}`);
+            saveTagListRequest.open('POST', `${that.state.defaultURL}savelabel?usrname=fj&taskname=task1&filename=${this.state.imageList[index].name}`);
             const result = `{
                 "length": ${this.state.tagList.length},
                 "objects": [
@@ -320,8 +320,23 @@ class App extends Component {
     }
 
     deleteBox = (index) => {
+        const that = this;
         this.setState((state) => {
             state.tagList.splice(index, 1);
+        }, function() {
+            //if delete the last box, tagList will be empty, and don't post the save request.
+            if(that.state.tagList.length === 0) {
+                const deleteLabel = new XMLHttpRequest();
+                deleteLabel.open('GET', `${that.state.defaultURL}dellabel?usrname=fj&taskname=task1&filename=${that.state.imageList[that.state.selectedImageNum].name}`);
+                deleteLabel.send();
+                deleteLabel.onload = function() {
+                    console.log('delete last box success');
+                }
+                //delete last box, change the imageList's labeled state.
+                that.setState((state) => {
+                    state.imageList[that.state.selectedImageNum].labeled = 0;
+                })
+            }
         })
     }
 
