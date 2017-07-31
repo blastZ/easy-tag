@@ -21,10 +21,13 @@ class TagView extends Component {
     }
 
     deleteCurrentTag = () => {
-        const index = this.state.tagStringList.indexOf(this.props.currentTagString);
-        this.setState((state) => {
-            state.tagStringList.splice(index, 1);
-        }, () => this.props.onChangeTagString())
+        const result = window.confirm('确定删除当前标签吗?');
+        if(result) {
+            const index = this.state.tagStringList.indexOf(this.props.currentTagString);
+            this.setState((state) => {
+                state.tagStringList.splice(index, 1);
+            }, () => this.props.onChangeTagString())
+        }
     }
 
     saveTagList = () => {
@@ -75,7 +78,7 @@ class TagView extends Component {
 
     render() {
         return (
-            <div className="flex-box flex-column" style={{justifyContent: 'center'}}>
+            <div className="flex-box flex-column" style={{justifyContent: 'center', height: '100%'}}>
                 <select onChange={this.props.onChangeTagString} id="mySelect" className="w3-select">
                 {
                     this.state.tagStringList.map((tagString, index) => (
@@ -89,11 +92,20 @@ class TagView extends Component {
                     <button className="w3-button w3-green" onClick={this.addTagString}>添加标签</button>
                 </div>
                 <button onClick={this.saveTagList} className="w3-button w3-green w3-card margin-top-5">保存标签列表</button>
+                <ul className="w3-ul w3-hoverable margin-top-5"  style={{overflowY: 'auto', flex: '1'}}>{
+                    this.props.boxList.map((box, index) => (
+                        <li className="w3-hover-green" key={box.x_start + box.y_end}>
+                            <span>序号:{index + 1}  标签:{box.tag}</span>
+                            <i onClick={this.onDeleteBox.bind(this, index)} className="fa fa-times delete-button w3-right" aria-hidden="true"></i>
+                            <div>额外信息:<input type="text" onChange={this.onChangeBoxInfo.bind(this, index)} value={this.props.boxList[index].info}/></div>
+                        </li>
+                    ))
+                }</ul>
                 <div>
                     <div className="flex-box margin-top-5 w3-card">
-                        <span style={{paddingLeft: '8px'}}>序号</span>
+                        <span style={{padding: '0px 8px', display: 'flex', whiteSpace:'nowrap', alignItems: 'center'}}>起始<br/>序号</span>
                         <input onChange={this.props.onHandleStartChange} className="w3-input" type="number" value={this.props.start} style={{width: '30%'}}/>
-                        <span style={{paddingLeft: '8px'}}>数量</span>
+                        <span style={{padding: '0px 8px', display: 'flex', whiteSpace:'nowrap', alignItems: 'center'}}>每页<br/>数量</span>
                         <input onChange={this.props.onHandleNumChange} className="w3-input" type="number" value={this.props.num} style={{width: '30%'}}/>
                         <button onClick={this.props.onGetImageList} className="w3-button w3-green" style={{width: '30%'}}>确定</button>
                     </div>
@@ -103,16 +115,6 @@ class TagView extends Component {
                         <button style={{width: '50%'}} onClick={this.props.onNextImageList} className="w3-button w3-green">下一页</button>
                     </div>
                 </div>
-                <ul className="w3-ul w3-hoverable margin-top-5"  style={{overflowY: 'auto'}}>{
-                    this.props.boxList.map((box, index) => (
-                        <li className="w3-hover-green" key={box.x_start + box.y_end}>
-                            <span>序号:{index + 1}  标签:{box.tag}</span>
-                            <i onClick={this.onDeleteBox.bind(this, index)} className="fa fa-times delete-button w3-right" aria-hidden="true"></i>
-                            <div>额外信息:<input type="text" onChange={this.onChangeBoxInfo.bind(this, index)} value={this.props.boxList[index].info}/></div>
-                        </li>
-                    ))
-                }</ul>
-
             </div>
         )
     }

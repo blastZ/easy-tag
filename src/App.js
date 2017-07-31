@@ -253,7 +253,7 @@ class App extends Component {
                             "x_end": ${tag.x_end},
                             "y_end": ${tag.y_end},
                             "tag": "${tag.tag}",
-                            "info": "${tag.info}"
+                            "info": "${tag.info ? tag.info : ''}"
                         }`
                     ))}
                 ]

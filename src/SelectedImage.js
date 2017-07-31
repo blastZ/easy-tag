@@ -1,5 +1,4 @@
 import React, {Component} from 'react';
-import ColorPanel from './ColorPanel.js';
 import $ from 'jquery';
 
 class SelectedImage extends Component {
@@ -137,7 +136,6 @@ class SelectedImage extends Component {
     render() {
         return (
             <div className="w3-center w3-padding-24 flex-box full-width" style={{position: 'relative', justifyContent: 'center', alignItems: 'center', backgroundColor: '#303030', flex: '1'}}>
-                <ColorPanel/>
                 <div style={{position: 'absolute', top: '0', left: '10px'}}>
                     <p className="w3-text-white">{`进度: ${this.state.tagedFileCount}/${this.state.fileCount}`}</p>
                 </div>
