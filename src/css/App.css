@@ -38,7 +38,7 @@
 }
 
 .margin-top-5 {
-    margin-top: 5px;
+    margin-top: 5px !important;
 }
 
 #selectedImage {
@@ -98,4 +98,15 @@
     top: 0;
     left: 0;
     text-shadow: -1px 0 white, 1px 0 white, 0 -1px white, 0 1px white;
+}
+
+.taged-image {
+    position: absolute;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    bottom: -9px;
+    right: -9px;
+    color: #ff7800;
+    font-size: 1.3em !important;
 }

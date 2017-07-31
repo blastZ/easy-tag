@@ -86,11 +86,6 @@ class SelectedImage extends Component {
         })
     }
 
-    deleteBox = (e) => {
-        const index = $(e.currentTarget).parent().index() - 1
-        this.props.onDeleteTag(index)
-    }
-
     getBoxX = (r_x_start) => {
         const img_natural_width = $('#selectedImage')[0].width;
         return (img_natural_width * r_x_start);
@@ -144,7 +139,7 @@ class SelectedImage extends Component {
             <div className="w3-center w3-padding-24 flex-box full-width" style={{position: 'relative', justifyContent: 'center', alignItems: 'center', backgroundColor: '#303030', flex: '1'}}>
                 <ColorPanel/>
                 <div style={{position: 'absolute', top: '0', left: '10px'}}>
-                    <p className="w3-text-white">{`Progress: ${this.state.tagedFileCount}/${this.state.fileCount}`}</p>
+                    <p className="w3-text-white">{`进度: ${this.state.tagedFileCount}/${this.state.fileCount}`}</p>
                 </div>
                 <div style={{position: 'absolute', top: '0', left: '45%'}}>
                     <p className="w3-text-white">{`${this.props.selectedImageNumInAll} ${this.props.selectedImageName}`}</p>
@@ -154,11 +149,10 @@ class SelectedImage extends Component {
                     <img draggable="false" id="selectedImage" className="w3-image" src={this.props.selectedImage} alt={this.props.selectedImage} style={{maxHeight: '600px'}}/>
                     {
                         this.props.boxList.length > 0 ?
-                        this.props.boxList.map((box) => (
+                        this.props.boxList.map((box, index) => (
                             <div className="black-white-border" key={Math.random(10000) + Math.random(10000)} style={{width: `${this.getBoxWidth(box.x_start, box.x_end)}px`, height: `${this.getBoxHeight(box.y_start, box.y_end)}px`,
                                          position: 'absolute', left: `${this.getBoxX(box.x_start)}px`, top: `${this.getBoxY(box.y_start)}px`}}>
-                                         <span className="tag-title"><b>{box.tag}</b></span>
-                                         <i onClick={this.deleteBox} className="fa fa-times delete-button" aria-hidden="true" style={{position: 'absolute', top: '0', right: '0'}}></i>
+                                         <span className="tag-title"><b>No.{index + 1}<br/>{box.tag}</b></span>
                             </div>
                         )) : null
                     }
@@ -166,7 +160,7 @@ class SelectedImage extends Component {
                 <form style={{position: 'absolute', bottom: '25px'}}>
                     <label htmlFor="file" className="w3-green w3-button w3-text-white">
                         <i className="fa fa-picture-o" aria-hidden="true"></i>&nbsp;
-                        OPEN LOCAL IMAGES
+                        上 传 本 地 图 片
                     </label>
                     <input multiple id="file" type="file" style={{display: 'none'}}/>
                 </form>
