@@ -100,8 +100,10 @@ class App extends Component {
 
     nextImageList = () => {
         const that = this;
+        const maxValue = that.refs.selectedImage.state.fileCount;
         //load imageList from server
         const xhr = new XMLHttpRequest();
+        //it is doesn't matter send a number larger than the maxValue, server side will detect it
         xhr.open('GET', `${that.state.defaultURL}getdir?usrname=fj&taskname=task1&start=${this.state.start + this.state.num}&num=${this.state.num}`);
         xhr.onload = function() {
             console.log('getNextList success');
@@ -113,7 +115,7 @@ class App extends Component {
                 })
             }
             that.setState((state) => {
-                state.start = state.start + state.num;
+                state.start = state.start + state.num > maxValue ? maxValue : state.start + state.num;
                 state.selectedImageNum = 0;
                 state.tagList = [];
                 state.imageList = newImageList;
@@ -365,11 +367,13 @@ class App extends Component {
 
     handleStartChange = (e) => {
         const value = e.target.value;
+        const that = this;
+        const maxValue = that.refs.selectedImage.state.fileCount;
         this.setState((state) => {
             if(value.trim() === '' || parseInt(value, 10) <= 0) {
                 state.start = 1;
-            } else if(parseInt(value, 10) > 999999) {
-                state.start = 999999
+            } else if(parseInt(value, 10) > maxValue) {
+                state.start = maxValue;
             } else {
                 state.start = parseInt(value, 10);
             }
