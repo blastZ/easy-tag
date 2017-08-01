@@ -32,7 +32,7 @@ class TagView extends Component {
 
     saveTagList = () => {
         $.ajax({
-            url: 'http://192.168.0.103:8031/api/savetag?usrname=fj&taskname=task1',
+            url: `${this.props.defaultURL}savetag?usrname=${this.props.userName}&taskname=${this.props.taskName}`,
             type: 'POST',
             headers: {
                 'Content-Type': 'text/plain'
@@ -49,7 +49,7 @@ class TagView extends Component {
     loadTagList = () => {
         const that = this
         $.ajax({
-            url: 'http://192.168.0.103:8031/api/loadtag?usrname=fj&taskname=task1',
+            url: `${this.props.defaultURL}loadtag?usrname=${this.props.userName}&taskname=${this.props.taskName}`,
             type: 'GET',
             dataType: 'json',
             success: function(data) {

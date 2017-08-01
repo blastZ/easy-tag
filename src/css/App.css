@@ -125,3 +125,12 @@
     cursor: pointer;
     color: orange !important;
 }
+
+.popup {
+    animation: fadeIn 1s;
+}
+
+@keyframes fadeIn {
+    from {opacity: 0;}
+    to {opacity: 1;}
+}

@@ -6,12 +6,18 @@ import './css/font-awesome.min.css'
 import SelectBar from './SelectBar.js'
 import SelectedImage from './SelectedImage.js'
 import TagView from './TagView.js'
+import TaskPage from './TaskPage'
+import { Route } from 'react-router-dom'
 //import { saveAs } from 'file-saver' when you want to save as txt on the localhost
 
 class App extends Component {
     state = {
+        userName: '',
+        taskName: '',
         defaultURL: 'http://demo.codvision.com:16831/api/',
-        imageList: [{url: 'http://192.168.0.103:8031/static/user/fj/task1/data/zhong1_12.jpg', name: 'ding1_6.jpg', labeled: 0}],
+        imageList: [
+            //{url: 'http://demo.codvision.com:16831/static/user/fj/task1/data/zhong1_12.jpg', name: 'ding1_6.jpg', labeled: 0}
+        ],
         tagList: [
             // {x_start: 0, y_start: 0, x_end: 10, y_end: 20, tag: 'car', info: '浙F1234567'} result format
         ],
@@ -20,34 +26,6 @@ class App extends Component {
         start: 1,
         num: 20,
         complete: 0
-    }
-    componentDidMount() {
-        const that = this;
-        this.getImageList();
-        ///let user can select directory
-        /*
-            $('#file').attr('webkitdirectory', 'webkitdirectory');
-            $('#file').attr('directory', 'directory');
-        */
-
-        //bind upload and show events
-        $('#file').on('change', function() {
-            const files = this.files;
-            //let loadCount = 0; --------maybe use loadCount to setState per 50 times
-            for(const file of files) {
-                //decide the file is a image or not
-                if(file.type === 'image/jpeg' || file.type === 'image/png') {
-                    const name = file.name;
-                    const reader = new FileReader()
-                    reader.onload = function() {
-                        const url = this.result;
-                        that.setState(that.concatNewImage(url, name));
-                    }
-                    reader.readAsDataURL(file);
-                }
-            }
-            that.uploadImageFiles(files);
-        })
     }
 
     uploadImageFiles = (files) => {
@@ -59,12 +37,12 @@ class App extends Component {
             const formData = new FormData();
             formData.append("file", file);
             const fileRequest = new XMLHttpRequest();
-            fileRequest.open('POST', `${that.state.defaultURL}uploadfile?usrname=fj&taskname=task1&filename=${file.name}`);
+            fileRequest.open('POST', `${that.state.defaultURL}uploadfile?usrname=${this.state.userName}&taskname=${this.state.taskName}&filename=${file.name}`);
             fileRequest.send(formData);
             fileRequest.onload = function() {
                 console.log('post image success.');
-                that.refs.selectedImage.getFileCount();
-                that.refs.selectedImage.getTagedFileCount();
+                that.refs.tagRoute.refs.selectedImage.getFileCount();
+                that.refs.tagRoute.refs.selectedImage.getTagedFileCount();
             }
             fileRequest.onerror = function() {
                 console.log('post image failed.');
@@ -78,11 +56,12 @@ class App extends Component {
         const that = this;
         //load imageList from server
         const xhr = new XMLHttpRequest();
-        xhr.open('GET', `${that.state.defaultURL}getdir?usrname=fj&taskname=task1&start=${this.state.start}&num=${this.state.num}`);
+        xhr.open('GET', `${that.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start}&num=${this.state.num}`);
         xhr.onload = function() {
             console.log('getImageList success');
             const newImageList = [];
             if(xhr.response) {
+                console.log(xhr.response);
                 const jsonResponse = JSON.parse(xhr.response);
                 jsonResponse.map((image) => {
                     newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
@@ -100,11 +79,11 @@ class App extends Component {
 
     nextImageList = () => {
         const that = this;
-        const maxValue = that.refs.selectedImage.state.fileCount;
+        const maxValue = that.refs.tagRoute.refs.selectedImage.state.fileCount;
         //load imageList from server
         const xhr = new XMLHttpRequest();
         //it is doesn't matter send a number larger than the maxValue, server side will detect it
-        xhr.open('GET', `${that.state.defaultURL}getdir?usrname=fj&taskname=task1&start=${this.state.start + this.state.num}&num=${this.state.num}`);
+        xhr.open('GET', `${that.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start + this.state.num}&num=${this.state.num}`);
         xhr.onload = function() {
             console.log('getNextList success');
             const newImageList = [];
@@ -120,7 +99,7 @@ class App extends Component {
                 state.tagList = [];
                 state.imageList = newImageList;
             })
-            that.getTagList(0)
+            that.getTagList(0);
         }
         xhr.onerror = function() {
             console.log('getNextList failed');
@@ -134,7 +113,7 @@ class App extends Component {
         const that = this;
         //load imageList from server
         const xhr = new XMLHttpRequest();
-        xhr.open('GET', `${that.state.defaultURL}getdir?usrname=fj&taskname=task1&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
+        xhr.open('GET', `${that.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
         xhr.onload = function() {
             console.log('getNextList success');
             const newImageList = [];
@@ -166,7 +145,7 @@ class App extends Component {
             if(this.state.selectedImageNum !== 0) {
                 //delete image from server
                 const deleteRequest = new XMLHttpRequest();
-                deleteRequest.open('GET', `${that.state.defaultURL}/delfile?usrname=fj&taskname=task1&filename=${this.state.imageList[this.state.selectedImageNum].name}`);
+                deleteRequest.open('GET', `${that.state.defaultURL}delfile?usrname=${this.state.userName}&taskname=${this.state.taskName}&filename=${this.state.imageList[this.state.selectedImageNum].name}`);
                 deleteRequest.send();
                 //delete image from imageList
                 this.setState((state) => {
@@ -178,7 +157,7 @@ class App extends Component {
                 if(this.state.imageList.length > 0) {
                     //delete image from server
                     const deleteRequest = new XMLHttpRequest();
-                    deleteRequest.open('GET', `${that.state.defaultURL}delfile?usrname=fj&taskname=task1&filename=${this.state.imageList[this.state.selectedImageNum].name}`);
+                    deleteRequest.open('GET', `${that.state.defaultURL}delfile?usrname=${this.state.userName}&taskname=${this.state.taskName}&filename=${this.state.imageList[this.state.selectedImageNum].name}`);
                     deleteRequest.send();
                     //delete image from imageList
                     this.setState((state) => {
@@ -187,8 +166,8 @@ class App extends Component {
                     })
                 }
             }
-            this.refs.selectedImage.getFileCount();
-            this.refs.selectedImage.getTagedFileCount();
+            that.refs.tagRoute.refs.selectedImage.getFileCount();
+            that.refs.tagRoute.refs.selectedImage.getTagedFileCount();
         }
     }
 
@@ -219,21 +198,25 @@ class App extends Component {
 
     getTagList = (index) => {
         const that = this;
-        const tagListRequest = new XMLHttpRequest();
-        tagListRequest.open('GET', `${that.state.defaultURL}loadlabel?usrname=fj&taskname=task1&filename=${this.state.imageList[index].name}`);
-        tagListRequest.send();
-        tagListRequest.onload = function() {
-            console.log('getBoxList success.');
-            const jsonResponse = JSON.parse(tagListRequest.response);
-            if(jsonResponse.length > 0) {
-                that.setState({tagList: jsonResponse.objects});
-            } else {
+        try {
+            const tagListRequest = new XMLHttpRequest();
+            tagListRequest.open('GET', `${that.state.defaultURL}loadlabel?usrname=${this.state.userName}&taskname=${this.state.taskName}&filename=${this.state.imageList[index].name}`);
+            tagListRequest.send();
+            tagListRequest.onload = function() {
+                console.log('getBoxList success.');
+                const jsonResponse = JSON.parse(tagListRequest.response);
+                if(jsonResponse.length > 0) {
+                    that.setState({tagList: jsonResponse.objects});
+                } else {
+                    that.setState({tagList: []});
+                }
+            }
+            tagListRequest.onerror = function() {
+                console.log('get boxList error.');
                 that.setState({tagList: []});
             }
-        }
-        tagListRequest.onerror = function() {
-            console.log('get boxList error.');
-            that.setState({tagList: []});
+        } catch(error) {
+            console.log(error);
         }
     }
 
@@ -244,7 +227,7 @@ class App extends Component {
             })
             const that = this;
             const saveTagListRequest = new XMLHttpRequest();
-            saveTagListRequest.open('POST', `${that.state.defaultURL}savelabel?usrname=fj&taskname=task1&filename=${this.state.imageList[index].name}`);
+            saveTagListRequest.open('POST', `${that.state.defaultURL}savelabel?usrname=${this.state.userName}&taskname=${this.state.taskName}&filename=${this.state.imageList[index].name}`);
             const result = `{
                 "length": ${this.state.tagList.length},
                 "objects": [
@@ -263,7 +246,7 @@ class App extends Component {
             saveTagListRequest.send(result);
             saveTagListRequest.onload = function() {
                 console.log('post taglist success.');
-                that.refs.selectedImage.getTagedFileCount();
+                that.refs.tagRoute.refs.selectedImage.getTagedFileCount();
             }
             saveTagListRequest.onerror = function() {
                 console.log('post taglist error.');
@@ -329,7 +312,7 @@ class App extends Component {
             //if delete the last box, tagList will be empty, and don't post the save request.
             if(that.state.tagList.length === 0) {
                 const deleteLabel = new XMLHttpRequest();
-                deleteLabel.open('GET', `${that.state.defaultURL}dellabel?usrname=fj&taskname=task1&filename=${that.state.imageList[that.state.selectedImageNum].name}`);
+                deleteLabel.open('GET', `${that.state.defaultURL}dellabel?usrname=${this.state.userName}&taskname=${this.state.taskName}&filename=${that.state.imageList[that.state.selectedImageNum].name}`);
                 deleteLabel.send();
                 deleteLabel.onload = function() {
                     console.log('delete last box success');
@@ -368,7 +351,7 @@ class App extends Component {
     handleStartChange = (e) => {
         const value = e.target.value;
         const that = this;
-        const maxValue = that.refs.selectedImage.state.fileCount;
+        const maxValue = that.refs.tagRoute.refs.selectedImage.state.fileCount;
         this.setState((state) => {
             if(value.trim() === '' || parseInt(value, 10) <= 0) {
                 state.start = 1;
@@ -380,38 +363,64 @@ class App extends Component {
         });
     }
 
+    changeUserAndTask = (userName, taskName) => {
+        const that = this;
+        this.setState({userName: userName, taskName: taskName}, function() {
+            that.getImageList();
+        });
+    }
+
+    showNewImage = (url, name) => {
+        this.setState(this.concatNewImage(url, name));
+    }
+
     render() {
         return (
-            <div className="App flex-box full-height">
-                <div className="flex-box flex-column full-height" style={{flex: '1 1 auto', width: '80%'}}>
-                    <SelectedImage ref="selectedImage"
-                                   num={this.state.num}
-                                   info={this.state.info}
-                                   currentTagString={this.state.currentTagString}
-                                   onAddTag={this.addTag}
-                                   selectedImage={this.state.imageList[this.state.selectedImageNum].url}
-                                   selectedImageName={this.state.imageList[this.state.selectedImageNum].name}
-                                   selectedImageNumInAll={this.state.start + this.state.selectedImageNum}
-                                   complete={this.state.complete}
-                                   onDeleteImage={this.deleteImage}
-                                   boxList={this.state.tagList}/>
-                    <SelectBar onClickItem={this.clickItem} selectedImageNum={this.state.selectedImageNum} imageList={this.state.imageList}/>
-                </div>
-                <div className="flex-box flex-column" style={{width: '20%', backgroundColor: '#F0F0F0'}}>
-                    <TagView onHandleNumChange={this.handleNumChange}
-                             onHandleStartChange={this.handleStartChange}
-                             start={this.state.start}
-                             num={this.state.num}
-                             info={this.state.info}
-                             currentTagString={this.state.currentTagString}
-                             onChangeTagString={this.changeTagString}
-                             onGetImageList={this.getImageList}
-                             onNextImageList={this.nextImageList}
-                             onPreviousImageList={this.previousImageList}
-                             boxList={this.state.tagList}
-                             onDeleteBox={this.deleteBox}
-                             onChangeBoxInfo={this.changeBoxInfo}/>
-                </div>
+            <div className="App full-height">
+                <Route exact path="/" render={() => (
+                    <TaskPage onChangeUserAndTask={this.changeUserAndTask}/>
+                )}/>
+                <Route ref="tagRoute" exact path="/tag" render={() => (
+                    <div className="flex-box full-height">
+                        <div className="flex-box flex-column full-height" style={{flex: '1 1 auto', width: '80%'}}>
+                            <SelectedImage ref="selectedImage"
+                                           num={this.state.num}
+                                           info={this.state.info}
+                                           currentTagString={this.state.currentTagString}
+                                           onAddTag={this.addTag}
+                                           selectedImage={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].url : ''}
+                                           selectedImageName={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].name : 'No Image'}
+                                           selectedImageNumInAll={this.state.start + this.state.selectedImageNum}
+                                           complete={this.state.complete}
+                                           onDeleteImage={this.deleteImage}
+                                           onUploadImgeFiles={this.uploadImageFiles}
+                                           onShowNewImage={this.showNewImage}
+                                           boxList={this.state.tagList}
+                                           defaultURL={this.state.defaultURL}
+                                           userName={this.state.userName}
+                                           taskName={this.state.taskName}/>
+                            <SelectBar onClickItem={this.clickItem} selectedImageNum={this.state.selectedImageNum} imageList={this.state.imageList}/>
+                        </div>
+                        <div className="flex-box flex-column" style={{width: '20%', backgroundColor: '#F0F0F0'}}>
+                            <TagView onHandleNumChange={this.handleNumChange}
+                                     onHandleStartChange={this.handleStartChange}
+                                     start={this.state.start}
+                                     num={this.state.num}
+                                     info={this.state.info}
+                                     currentTagString={this.state.currentTagString}
+                                     onChangeTagString={this.changeTagString}
+                                     onGetImageList={this.getImageList}
+                                     onNextImageList={this.nextImageList}
+                                     onPreviousImageList={this.previousImageList}
+                                     boxList={this.state.tagList}
+                                     onDeleteBox={this.deleteBox}
+                                     onChangeBoxInfo={this.changeBoxInfo}
+                                     defaultURL={this.state.defaultURL}
+                                     userName={this.state.userName}
+                                     taskName={this.state.taskName}/>
+                        </div>
+                    </div>
+                )}/>
             </div>
         )
   }

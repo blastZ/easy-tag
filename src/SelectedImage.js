@@ -13,7 +13,26 @@ class SelectedImage extends Component {
     }
 
     componentDidMount() {
-        const that = this
+        const that = this;
+        //bind upload and show events
+        $('#file').on('change', function() {
+            console.log('hey');
+            const files = this.files;
+            //let loadCount = 0; --------maybe use loadCount to setState per 50 times
+            for(const file of files) {
+                //decide the file is a image or not
+                if(file.type === 'image/jpeg' || file.type === 'image/png') {
+                    const name = file.name;
+                    const reader = new FileReader()
+                    reader.onload = function() {
+                        const url = this.result;
+                        that.props.onShowNewImage(url, name);
+                    }
+                    reader.readAsDataURL(file);
+                }
+            }
+            that.props.onUploadImgeFiles(files);
+        })
         let drawing = false
         let x1 = 0, y1 = 0, x_move = 0, y_move = 0
         let rect_width = 0, rect_height = 0
@@ -86,24 +105,24 @@ class SelectedImage extends Component {
     }
 
     getBoxX = (r_x_start) => {
-        const img_natural_width = $('#selectedImage')[0].width;
+        const img_natural_width = $('#selectedImage')[0] ? $('#selectedImage')[0].width : '0';
         return (img_natural_width * r_x_start);
     }
 
     getBoxY = (r_y_start) => {
-        const img_natural_height = $('#selectedImage')[0].height;
+        const img_natural_height = $('#selectedImage')[0] ? $('#selectedImage')[0].height : '0';
         return (img_natural_height * r_y_start);
     }
 
     getBoxWidth = (r_x_start, r_x_end) => {
-        const img_natural_width = $('#selectedImage')[0].width;
+        const img_natural_width = $('#selectedImage')[0] ? $('#selectedImage')[0].width : '0';
         const x_start = img_natural_width * r_x_start;
         const x_end = img_natural_width * r_x_end;
         return (x_end - x_start);
     }
 
     getBoxHeight = (r_y_start, r_y_end) => {
-        const img_natural_height = $('#selectedImage')[0].height;
+        const img_natural_height = $('#selectedImage')[0] ? $('#selectedImage')[0].height : '0';
         const y_start = img_natural_height * r_y_start;
         const y_end = img_natural_height * r_y_end;
         return (y_end - y_start);
@@ -112,7 +131,7 @@ class SelectedImage extends Component {
     getFileCount = () => {
         const that = this;
         const getFileCount = new XMLHttpRequest();
-        getFileCount.open('GET', 'http://192.168.0.103:8031/api/filecount?usrname=fj&taskname=task1');
+        getFileCount.open('GET', `${this.props.defaultURL}filecount?usrname=${this.props.userName}&taskname=${this.props.taskName}`);
         getFileCount.send();
         getFileCount.onload = function() {
             console.log('getFileCount success.');
@@ -124,7 +143,7 @@ class SelectedImage extends Component {
     getTagedFileCount = () => {
         const that = this;
         const getTagedFileCount = new XMLHttpRequest();
-        getTagedFileCount.open('GET', 'http://192.168.0.103:8031/api/labeledfilecount?usrname=fj&taskname=task1');
+        getTagedFileCount.open('GET', `${this.props.defaultURL}labeledfilecount?usrname=${this.props.userName}&taskname=${this.props.taskName}`);
         getTagedFileCount.send();
         getTagedFileCount.onload = function() {
             console.log('getTagedFileCount success.');
