@@ -8,6 +8,7 @@ import SelectedImage from './SelectedImage.js'
 import TagView from './TagView.js'
 import TaskPage from './TaskPage'
 import { Route } from 'react-router-dom'
+import Demo from './test_page/Demo'
 //import { saveAs } from 'file-saver' when you want to save as txt on the localhost
 
 class App extends Component {
@@ -61,7 +62,6 @@ class App extends Component {
             console.log('getImageList success');
             const newImageList = [];
             if(xhr.response) {
-                console.log(xhr.response);
                 const jsonResponse = JSON.parse(xhr.response);
                 jsonResponse.map((image) => {
                     newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
@@ -421,6 +421,7 @@ class App extends Component {
                         </div>
                     </div>
                 )}/>
+                <Route exact path="/test" component={Demo}/>
             </div>
         )
   }
