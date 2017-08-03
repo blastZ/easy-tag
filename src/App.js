@@ -8,7 +8,8 @@ import SelectedImage from './SelectedImage.js'
 import TagView from './TagView.js'
 import TaskPage from './TaskPage'
 import { Route } from 'react-router-dom'
-import Demo from './test_page/Demo'
+import Demo from './test_page/Demo';
+import Login from './login_page/Login';
 //import { saveAs } from 'file-saver' when you want to save as txt on the localhost
 
 class App extends Component {
@@ -26,7 +27,8 @@ class App extends Component {
         selectedImageNum: 0,
         start: 1,
         num: 20,
-        complete: 0
+        complete: 0,
+        login: false
     }
 
     uploadImageFiles = (files) => {
@@ -374,13 +376,22 @@ class App extends Component {
         this.setState(this.concatNewImage(url, name));
     }
 
+    login = (username) => {
+        this.setState({login: true, userName: username});
+    }
+
+    logout = (username) => {
+        this.setState({login: false, userName: ''});
+    }
+
     render() {
         return (
             <div className="App full-height">
                 <Route exact path="/" render={() => (
-                    <TaskPage onChangeUserAndTask={this.changeUserAndTask}/>
+                    this.state.login ? <TaskPage onLogout={this.logout} defaultURL={this.state.defaultURL} username={this.state.userName} onChangeUserAndTask={this.changeUserAndTask}/> : <Login onLogin={this.login} defaultURL={this.state.defaultURL}/>
                 )}/>
                 <Route ref="tagRoute" exact path="/tag" render={() => (
+                    this.state.login ?
                     <div className="flex-box full-height">
                         <div className="flex-box flex-column full-height" style={{flex: '1 1 auto', width: '80%'}}>
                             <SelectedImage ref="selectedImage"
@@ -419,9 +430,9 @@ class App extends Component {
                                      userName={this.state.userName}
                                      taskName={this.state.taskName}/>
                         </div>
-                    </div>
+                    </div> : null
                 )}/>
-                <Route exact path="/test" component={Demo}/>
+                <Route exact path="/test" component={this.state.login ? Demo : null}/>
             </div>
         )
   }

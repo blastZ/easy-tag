@@ -134,3 +134,25 @@
     from {opacity: 0;}
     to {opacity: 1;}
 }
+
+.et-margin-top-64 {
+    margin-top: 64px;
+}
+
+.et-hoverable:hover {
+    cursor: pointer;
+    color: #4CAF50!important;
+}
+
+.et-background-white {
+    background: #f9f9f9;
+}
+
+.et-register-button {
+    color: #108ee9;
+}
+
+.et-register-button:hover {
+    color: black;
+    cursor: pointer;
+}

@@ -3,26 +3,35 @@ import { Link } from 'react-router-dom'
 
 class TaskPage extends Component {
     state = {
-        defaultURL: 'http://demo.codvision.com:16831/api/',
-        taskList: [], //taskName: taskName, time: time, progress: progress, taskState: taskState, taskType: taskType
-        userName: 'fj',
-        newTaskName: 'Input the new task name.',
+        taskList: [], //taskName: 'a', time: '2017-07-28 14:42:19', progress: '0.0', taskState: '1', taskType: '1'
+        workerList: [], //workerName: 'a', workerState: '0', taskName: 'a', GPU: '2048/8192', updateTime: '2017-07-02 09:43:12'
+        newTaskName: '',
         showInputView: false,
-        showImageView: false
+        showImageView: false,
+        showPersonPanel: false
     }
 
     componentDidMount() {
-        // let theUserName = window.location.pathname;
-        // theUserName = theUserName.split('/');
-        // this.setState({userName: theUserName[theUserName.length - 1]});
         const that = this;
         const getTaskList = new XMLHttpRequest();
+        const getWorkerList = new XMLHttpRequest();
         try {
-            getTaskList.open('GET', `${this.state.defaultURL}gettasklist?usrname=${this.state.userName}`);
+            getTaskList.open('GET', `${this.props.defaultURL}gettasklist?usrname=${this.props.username}`);
             getTaskList.send();
             getTaskList.onload = function() {
                 const arrayData = that.getArrayData(getTaskList.response);
                 that.addTask(arrayData);
+            }
+        } catch(error) {
+            console.log(error);
+        }
+
+        try {
+            getWorkerList.open('GET', `${this.props.defaultURL}getworkerlist?usrname=${this.props.username}`);
+            getWorkerList.send();
+            getWorkerList.onload = function() {
+                const arrayData = that.getArrayData(getWorkerList.response);
+                that.addWorker(arrayData);
             }
         } catch(error) {
             console.log(error);
@@ -45,7 +54,7 @@ class TaskPage extends Component {
         const that = this;
         const getNewTask = new XMLHttpRequest();
         try {
-            getNewTask.open('GET', `${this.state.defaultURL}addtask?usrname=${this.state.userName}&taskname=${this.state.newTaskName}`);
+            getNewTask.open('GET', `${this.props.defaultURL}addtask?usrname=${this.props.username}&taskname=${this.state.newTaskName}`);
             getNewTask.send();
             getNewTask.onload = function() {
                 const arrayData = that.getArrayData(getNewTask.response);
@@ -57,17 +66,34 @@ class TaskPage extends Component {
     }
 
     addTask = (arrayData) => {
-        this.setState({showInputView: false});
-        const newTaskList = [];
-        for(let i=0; i<arrayData.length; i=i+5) {
-            const  taskName = arrayData[i].slice(4, arrayData[i].length - 1);
-            const time = arrayData[i + 1].slice(3, 22);
-            const progress = arrayData[i + 2].slice(1,4);
-            const taskState = arrayData[i + 3].slice(1, 2);
-            const taskType = arrayData[i + 4].slice(1, 2);
-            newTaskList.push({taskName: taskName, time: time, progress: progress, taskState: taskState, taskType: taskType});
+        if(arrayData.length > 4) {
+            this.setState({showInputView: false});
+            const newTaskList = [];
+            for(let i=0; i<arrayData.length; i=i+5) {
+                const  taskName = arrayData[i].slice(4, arrayData[i].length - 1);
+                const time = arrayData[i + 1].slice(3, 22);
+                const progress = arrayData[i + 2].slice(1,4);
+                const taskState = arrayData[i + 3].slice(1, 2);
+                const taskType = arrayData[i + 4].slice(1, 2);
+                newTaskList.push({taskName: taskName, time: time, progress: progress, taskState: taskState, taskType: taskType});
+            }
+            this.setState({taskList: newTaskList});
         }
-        this.setState({taskList: newTaskList});
+    }
+
+    addWorker = (arrayData) => {
+        if(arrayData.length > 4) {
+            const newWorkerList = [];
+            for(let i=0; i<arrayData.length; i=i+5) {
+                const workerName = arrayData[i].slice(4, arrayData[i].length - 1);
+                const workerState = arrayData[i + 1].slice(1, 2);
+                const taskName = arrayData[i + 2].slice(3, arrayData[i + 2].length - 1);
+                const GPU = arrayData[i + 3].slice(3, arrayData[i + 3].length - 1);
+                const updateTime = arrayData[i + 4].slice(3, 22);
+                newWorkerList.push({workerName: workerName, workerState: workerState, GPU: GPU, taskName: taskName, updateTime: updateTime});
+            }
+            this.setState({workerList: newWorkerList});
+        }
     }
 
     getArrayData = (data) => {
@@ -83,7 +109,7 @@ class TaskPage extends Component {
         const that = this;
         try {
             const lookTrainState = new XMLHttpRequest();
-            lookTrainState.open('GET', `${this.state.defaultURL}taskinfo?usrname=${this.state.userName}&taskname=${this.state.taskList[index].taskName}`);
+            lookTrainState.open('GET', `${this.props.defaultURL}taskinfo?usrname=${this.props.username}&taskname=${this.state.taskList[index].taskName}`);
             lookTrainState.send();
             lookTrainState.onload = function() {
                 that.setState({showImageView: true}, function() {
@@ -99,7 +125,7 @@ class TaskPage extends Component {
         const that = this;
         try {
             const startTask = new XMLHttpRequest();
-            startTask.open('GET', `${this.state.defaultURL}starttask?usrname=${this.state.userName}&taskname=${this.state.taskList[index].taskName}`);
+            startTask.open('GET', `${this.props.defaultURL}starttask?usrname=${this.props.username}&taskname=${this.state.taskList[index].taskName}`);
             startTask.send();
             startTask.onload = function() {
                 const arrayData = that.getArrayData(startTask.response);
@@ -116,7 +142,7 @@ class TaskPage extends Component {
             const that = this;
             try {
                 const deleteTask = new XMLHttpRequest();
-                deleteTask.open('GET', `${this.state.defaultURL}deltask?usrname=${this.state.userName}&taskname=${this.state.taskList[index].taskName}`);
+                deleteTask.open('GET', `${this.props.defaultURL}deltask?usrname=${this.props.username}&taskname=${this.state.taskList[index].taskName}`);
                 deleteTask.send();
                 deleteTask.onload = function() {
                     const arrayData = that.getArrayData(deleteTask.response);
@@ -129,7 +155,7 @@ class TaskPage extends Component {
     }
 
     onLinkToTag = (index) => {
-        this.props.onChangeUserAndTask(this.state.userName, this.state.taskList[index].taskName);
+        this.props.onChangeUserAndTask(this.props.username, this.state.taskList[index].taskName);
     }
 
     getTaskStateName = (taskStateID) => {
@@ -160,21 +186,54 @@ class TaskPage extends Component {
         }
     }
 
+    getWorkerStateName = (workerStateID) => {
+        workerStateID = parseInt(workerStateID);
+        switch (workerStateID) {
+            case 0:
+                return ('空闲');
+            case 1:
+                return ('忙碌');
+            case 2:
+                return ('掉线');
+        }
+    }
+
+    showPersonPanel = () => {
+        this.setState({showPersonPanel: true});
+    }
+
+    closePersonPanel = () => {
+        this.setState({showPersonPanel: false});
+    }
+
     render() {
         return (
             <div className="w3-light-grey full-height">
                 {
                     this.state.showInputView === true ? (
                         <div className="popup" style={{background: 'rgba(0, 0, 0, 0.4)', position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', zIndex: '100'}}>
+                            <i onClick={this.closeInputView} className="fa fa-times w3-text-white w3-xxlarge et-hoverable" aria-hidden="true" style={{position: 'absolute', top: '10px', right: '10px'}}></i>
                             <div className="flex-box" style={{width: '40%', margin: '0 auto', position: 'absolute', top: '30%', left: '30%'}}>
-                                <input onChange={this.handleInputChange} value={this.state.newTaskName} className="w3-input" type="text"/>
-                                <button onClick={this.onAddTask} className="w3-button w3-orange">Add</button>
+                                <input placeholder="输入新的任务名称" onChange={this.handleInputChange} value={this.state.newTaskName} className="w3-input" type="text"/>
+                                <button onClick={this.onAddTask} className="w3-button w3-orange">添加</button>
                             </div>
                         </div>
                     ) : null
                 }
                 <div className="w3-orange flex-box" style={{height: '80px', alignItems: 'center', position: 'relative'}}>
-                    <div style={{position: 'absolute', left: '15px'}}><h3 className="w3-text-white">{this.state.userName}</h3></div>
+                    <div style={{position: 'absolute', left: '15px'}}>
+                        <div className="flex-box" style={{justifyContent: 'center', alignItems: 'center'}}>
+                            <i onMouseOver={this.showPersonPanel} className="fa fa-user-circle-o w3-text-white w3-xxlarge" aria-hidden="true"></i>
+                            <h3 className="w3-text-white">&nbsp;{this.props.username}</h3>
+                        </div>
+                        {
+                            this.state.showPersonPanel ?
+                            <div className="popup" style={{position: 'absolute', left: '-2px', top: '56px'}}>
+                                <button onClick={this.props.onLogout} onMouseOut={this.closePersonPanel} className="w3-button w3-black" style={{borderRadius: '20px'}}>登出</button>
+                            </div>
+                            : null
+                        }
+                    </div>
                     <div onClick={this.popupInputView} style={{position: 'absolute', right: '32px'}}><i className="fa fa-plus-circle add-task-button" aria-hidden="true"></i></div>
                 </div>
                 {
@@ -213,6 +272,31 @@ class TaskPage extends Component {
                                         <Link to="/test"><i className="fa fa-cog table-item-button w3-margin-left" aria-hidden="true"> 测试</i></Link>
                                         <i onClick={this.onDeleteTask.bind(this, index)} className="fa fa-trash table-item-button w3-margin-left" aria-hidden="true"> 删除</i>
                                     </td>
+                                </tr>
+                            ))
+                        }</tbody>
+                        <tfoot></tfoot>
+                    </table>
+                    <table className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered et-margin-top-64">
+                        <thead className="w3-green">
+                            <tr>
+                                <th>编号</th>
+                                <th>工作名称</th>
+                                <th>工作状态</th>
+                                <th>显卡使用情况</th>
+                                <th>正在服务的任务名称</th>
+                                <th>更新时间</th>
+                            </tr>
+                        </thead>
+                        <tbody>{
+                            this.state.workerList.map((worker, index) => (
+                                <tr key={worker.workerName + index}>
+                                    <td>{index + 1}</td>
+                                    <td>{worker.workerName}</td>
+                                    <td>{this.getWorkerStateName(worker.workerState)}</td>
+                                    <td>{worker.GPU}</td>
+                                    <td>{worker.taskName}</td>
+                                    <td>{worker.updateTime}</td>
                                 </tr>
                             ))
                         }</tbody>
