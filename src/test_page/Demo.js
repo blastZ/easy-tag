@@ -42,12 +42,13 @@ class Demo extends Component {
         const that = this
         const c = document.getElementById('canvas')
         const objects = this.state.resultData.objects
+        console.log(objects);
         if(objects) {
             objects.map(function(object, index) {
-                const leftWidth = Math.round(object.left * c.width)
-                const rightWidth = Math.round(object.right * c.width)
-                const topWidth = Math.round(object.top * c.height)
-                const bottomWidth = Math.round(object.bottom * c.height)
+                const leftWidth = Math.round(object.x_start * c.width)
+                const rightWidth = Math.round(object.x_end * c.width)
+                const topWidth = Math.round(object.y_start * c.height)
+                const bottomWidth = Math.round(object.y_end * c.height)
                 const x = leftWidth
                 const y = topWidth
                 const width = rightWidth - leftWidth

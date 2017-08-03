@@ -20,7 +20,7 @@ class ImageView extends Component {
         for(let i=0; i<imageList.length; i++) {
             if(imageList[i].url.toString() === strURL) {
                 this.setState({selectedImage: i});
-                this.sendRequestInMode(this.props.mode, i, strURL, 'no-new');
+                this.sendRequestInMode(this.props.mode, null, i, strURL, 'no-new');
                 break;
             }
         }
