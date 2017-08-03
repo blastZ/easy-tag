@@ -6,6 +6,9 @@ class Demo extends Component {
     state = {
         resultData: {},
         mode: "GENERAL",
+        modeName: {
+            GENERAL: '普通模式'
+        },
         loading: 'true'
     }
 
@@ -91,7 +94,7 @@ class Demo extends Component {
         return (
             <div id="demo-view" className="flex-box full-height">
                 <ImageView mode={this.state.mode} onLoadingImage={this.loadImage} onClickItem={this.clickItem} onChangeMode={this.changeMode} onShowResult={this.showResult}/>
-                <ResultView loading={this.state.loading} mode={this.state.mode} resultData={this.state.resultData}/>
+                <ResultView loading={this.state.loading} mode={this.state.mode} modeName={this.state.modeName[this.state.mode]} resultData={this.state.resultData}/>
             </div>
         )
     }

@@ -42,8 +42,8 @@ class ResultView extends Component {
         if(mode === 'GENERAL') {
             return(
                 <div>
-                    <span className="w3-text-grey">TAG NAME</span>
-                    <span className="w3-right w3-text-grey">INFORMATION</span>
+                    <span className="w3-text-grey">&nbsp;&nbsp;标签名称</span>
+                    <span className="w3-right w3-text-grey">额外信息&nbsp;&nbsp;</span>
                 </div>
             )
 
@@ -60,14 +60,14 @@ class ResultView extends Component {
         return (
             <div id="result-view" className="flex-box flex-column w3-text-black full-height" style={{width: '34%', flex: '1 1 auto'}}>
                 <div style={{width: '100%', padding: '8px 10px', borderBottom: '1px solid rgba(27, 38, 52, 0.08)'}}>
-                    <p className="w3-left"><b>{this.props.mode}</b></p>
-                    <p className="w3-text-blue w3-right"><b>VIEW DOCS</b></p>
+                    <p className="w3-left"><b>{this.props.modeName}</b></p>
+                    <p className="w3-text-blue w3-right"><b>查看文档</b></p>
                 </div>
                 <div className="flex-box flex-column w3-container" style={{width: '100%', overflowY: 'auto'}}>
                     <div style={{width: '100%'}}>
-                        <p className="w3-text-grey">LANGUAGE</p>
+                        <p className="w3-text-grey">语言选择</p>
                         <select className="w3-select w3-border">
-                            <option>Chinese (zh)</option>
+                            <option>中文 (zh)</option>
                         </select>
                     </div>
                     <div className="w3-padding-16 full-height full-width">

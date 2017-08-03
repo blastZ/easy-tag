@@ -42,7 +42,7 @@ class SelectedImage extends Component {
                 <form id="url-form" style={{position: 'absolute', bottom: '25px'}}>
                     <label htmlFor="file" className="w3-button w3-text-white" style={{backgroundColor: '#009cff'}}>
                         <i className="fa fa-picture-o" aria-hidden="true"></i>&nbsp;
-                        TRY YOUR OWN IMAGE OR VIDEO
+                        上传测试图片
                     </label>
                     <input id="file" type="file" accept="image/*" style={{display: 'none'}}/>
                 </form>

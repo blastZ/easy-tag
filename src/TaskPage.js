@@ -36,6 +36,10 @@ class TaskPage extends Component {
         } catch(error) {
             console.log(error);
         }
+
+        window.setInterval(function(){
+          that.refreshTaskPage();
+        }, 3000);
     }
 
     popupInputView = () => {
@@ -206,9 +210,37 @@ class TaskPage extends Component {
         this.setState({showPersonPanel: false});
     }
 
+    refreshTaskPage = () => {
+        const that = this;
+        const getTaskList = new XMLHttpRequest();
+        const getWorkerList = new XMLHttpRequest();
+        try {
+            getTaskList.open('GET', `${this.props.defaultURL}gettasklist?usrname=${this.props.username}`);
+            getTaskList.send();
+            getTaskList.onload = function() {
+                const arrayData = that.getArrayData(getTaskList.response);
+                that.addTask(arrayData);
+            }
+        } catch(error) {
+            console.log(error);
+        }
+
+        try {
+            getWorkerList.open('GET', `${this.props.defaultURL}getworkerlist?usrname=${this.props.username}`);
+            getWorkerList.send();
+            getWorkerList.onload = function() {
+                const arrayData = that.getArrayData(getWorkerList.response);
+                that.addWorker(arrayData);
+            }
+        } catch(error) {
+            console.log(error);
+        }
+    }
+
     render() {
         return (
             <div className="w3-light-grey full-height">
+                <i onClick={this.refreshTaskPage} className="fa fa-refresh et-refresh-button" aria-hidden="true"></i>
                 {
                     this.state.showInputView === true ? (
                         <div className="popup" style={{background: 'rgba(0, 0, 0, 0.4)', position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', zIndex: '100'}}>
@@ -234,7 +266,9 @@ class TaskPage extends Component {
                             : null
                         }
                     </div>
-                    <div onClick={this.popupInputView} style={{position: 'absolute', right: '32px'}}><i className="fa fa-plus-circle add-task-button" aria-hidden="true"></i></div>
+                    <div onClick={this.popupInputView} style={{position: 'absolute', right: '32px'}}>
+                        <i className="fa fa-plus-circle add-task-button" aria-hidden="true"></i>
+                    </div>
                 </div>
                 {
                     this.state.showImageView === true ? (
