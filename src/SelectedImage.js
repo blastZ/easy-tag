@@ -156,10 +156,10 @@ class SelectedImage extends Component {
         return (
             <div className="w3-center w3-padding-24 flex-box full-width" style={{position: 'relative', justifyContent: 'center', alignItems: 'center', backgroundColor: '#303030', flex: '1'}}>
                 <div style={{position: 'absolute', top: '0', left: '10px'}}>
-                    <p className="w3-text-white">{`进度: ${this.state.tagedFileCount}/${this.state.fileCount}`}</p>
+                    <p className="w3-text-white">{`标注进度: ${this.state.tagedFileCount}/${this.state.fileCount}`}</p>
                 </div>
                 <div style={{position: 'absolute', top: '0', left: '45%'}}>
-                    <p className="w3-text-white">{`${this.props.selectedImageNumInAll} ${this.props.selectedImageName}`}</p>
+                    <p className="w3-text-white">{`第 ${this.props.selectedImageNumInAll} 张 图片名称: ${this.props.selectedImageName}`}</p>
                 </div>
                 <i onClick={this.props.onDeleteImage} className="fa fa-times delete-button-white" aria-hidden="true" style={{position: 'absolute', top: '10px', right: '20px'}}></i>
                 <div id="selectedImagePanel" style={{position: 'relative'}}>

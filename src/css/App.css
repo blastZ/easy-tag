@@ -95,7 +95,7 @@
 
 .tag-title {
     position: absolute;
-    top: 0;
+    top: -50px;
     left: 0;
     text-shadow: -1px 0 white, 1px 0 white, 0 -1px white, 0 1px white;
 }
@@ -112,13 +112,12 @@
 }
 
 .add-task-button {
-    color: white;
     font-size: 2.3em !important;
 }
 
 .add-task-button:hover {
     cursor: pointer;
-    color: #f1f1f1 !important;
+    color: orange !important;
 }
 
 .table-item-button:hover {
@@ -168,4 +167,13 @@
 .et-refresh-button:hover {
     cursor: pointer;
     color: #f8ba5a !important;
+}
+
+.et-table-title:hover {
+    cursor: context-menu;
+}
+
+.et-content {
+    max-width: 1280px;
+    margin: 0 auto;
 }

@@ -26,9 +26,10 @@ class App extends Component {
         currentTagString: '1',
         selectedImageNum: 0,
         start: 1,
-        num: 20,
+        num: 10,
         complete: 0,
-        login: false
+        login: false,
+        shouldPostTagList: false
     }
 
     uploadImageFiles = (files) => {
@@ -223,35 +224,38 @@ class App extends Component {
     }
 
     saveTagList = (index) => {
-        if(this.state.tagList.length > 0) {
-            this.setState((state) => {
-                state.imageList[index].labeled = 1;
-            })
-            const that = this;
-            const saveTagListRequest = new XMLHttpRequest();
-            saveTagListRequest.open('POST', `${that.state.defaultURL}savelabel?usrname=${this.state.userName}&taskname=${this.state.taskName}&filename=${this.state.imageList[index].name}`);
-            const result = `{
-                "length": ${this.state.tagList.length},
-                "objects": [
-                    ${this.state.tagList.map((tag) => (
-                        `{
-                            "x_start": ${tag.x_start},
-                            "y_start": ${tag.y_start},
-                            "x_end": ${tag.x_end},
-                            "y_end": ${tag.y_end},
-                            "tag": "${tag.tag}",
-                            "info": "${tag.info ? tag.info : ''}"
-                        }`
-                    ))}
-                ]
-            }`
-            saveTagListRequest.send(result);
-            saveTagListRequest.onload = function() {
-                console.log('post taglist success.');
-                that.refs.tagRoute.refs.selectedImage.getTagedFileCount();
-            }
-            saveTagListRequest.onerror = function() {
-                console.log('post taglist error.');
+        if(this.state.shouldPostTagList) {
+            if(this.state.tagList.length > 0) {
+                this.setState((state) => {
+                    state.shouldPostTagList = false;
+                    state.imageList[index].labeled = 1;
+                })
+                const that = this;
+                const saveTagListRequest = new XMLHttpRequest();
+                saveTagListRequest.open('POST', `${that.state.defaultURL}savelabel?usrname=${this.state.userName}&taskname=${this.state.taskName}&filename=${this.state.imageList[index].name}`);
+                const result = `{
+                    "length": ${this.state.tagList.length},
+                    "objects": [
+                        ${this.state.tagList.map((tag) => (
+                            `{
+                                "x_start": ${tag.x_start},
+                                "y_start": ${tag.y_start},
+                                "x_end": ${tag.x_end},
+                                "y_end": ${tag.y_end},
+                                "tag": "${tag.tag}",
+                                "info": "${tag.info ? tag.info : ''}"
+                            }`
+                        ))}
+                    ]
+                }`
+                saveTagListRequest.send(result);
+                saveTagListRequest.onload = function() {
+                    console.log('post taglist success.');
+                    that.refs.tagRoute.refs.selectedImage.getTagedFileCount();
+                }
+                saveTagListRequest.onerror = function() {
+                    console.log('post taglist error.');
+                }
             }
         }
     }
@@ -302,13 +306,15 @@ class App extends Component {
 
     addTag = (tag) => {
         this.setState((state) => {
-            state.tagList = state.tagList.concat([tag])
+            state.shouldPostTagList = true;
+            state.tagList = state.tagList.concat([tag]);
         })
     }
 
     deleteBox = (index) => {
         const that = this;
         this.setState((state) => {
+            state.shouldPostTagList = true;
             state.tagList.splice(index, 1);
         }, function() {
             //if delete the last box, tagList will be empty, and don't post the save request.
@@ -329,6 +335,7 @@ class App extends Component {
 
     changeBoxInfo = (index, value) => {
         this.setState((state) => {
+            state.shouldPostTagList = true;
             state.tagList[index].info = value;
         })
     }
@@ -342,8 +349,8 @@ class App extends Component {
         this.setState((state) => {
             if(value.trim() === '' || parseInt(value, 10) <= 0) {
                 state.num = 1;
-            } else if(parseInt(value, 10) > 999999) {
-                state.num = 999999;
+            } else if(parseInt(value, 10) > 20) {
+                state.num = 20;
             } else {
                 state.num = parseInt(value, 10);
             }
@@ -384,11 +391,15 @@ class App extends Component {
         this.setState({login: false, userName: ''});
     }
 
+    initStartAndNum = () => {
+        this.setState({start: 1, num: 10})
+    }
+
     render() {
         return (
             <div className="App full-height">
                 <Route exact path="/" render={() => (
-                    this.state.login ? <TaskPage onLogout={this.logout} defaultURL={this.state.defaultURL} username={this.state.userName} onChangeUserAndTask={this.changeUserAndTask}/> : <Login onLogin={this.login} defaultURL={this.state.defaultURL}/>
+                    this.state.login ? <TaskPage onInitStartAndNum={this.initStartAndNum} onLogout={this.logout} defaultURL={this.state.defaultURL} username={this.state.userName} onChangeUserAndTask={this.changeUserAndTask}/> : <Login onLogin={this.login} defaultURL={this.state.defaultURL}/>
                 )}/>
                 <Route ref="tagRoute" exact path="/tag" render={() => (
                     this.state.login ?

@@ -40,6 +40,12 @@ class Login extends Component {
         }
     }
 
+    handleKeyPress = (e) => {
+        if(e.key === 'Enter') {
+            this.loginVerify();
+        }
+    }
+
     render() {
         return (
             <div className="full-height et-background-white">
@@ -51,7 +57,7 @@ class Login extends Component {
                     <h2>&nbsp;&nbsp;图像标注系统</h2>
                 </div>
                 <div className="flex-box full-height" style={{justifyContent: 'center', alignItems: 'center'}}>
-                    <div className="flex-box flex-column" style={{width: '20%'}}>
+                    <div onKeyPress={this.handleKeyPress} className="flex-box flex-column" style={{width: '20%'}}>
                         <h3 className="w3-center w3-text-black"><b>登录</b></h3>
                         <input onChange={this.handleUsername} value={this.state.username} className="w3-input w3-border" type="text" placeholder="用户名"/>
                         <input onChange={this.handlePassword} value={this.state.password} className="w3-input w3-border w3-margin-top" type="password" placeholder="密码"/>

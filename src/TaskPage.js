@@ -31,15 +31,17 @@ class TaskPage extends Component {
             getWorkerList.send();
             getWorkerList.onload = function() {
                 const arrayData = that.getArrayData(getWorkerList.response);
-                that.addWorker(arrayData);
+                if(that.refs.theWorkerTable) {
+                    that.addWorker(arrayData);
+                }
             }
         } catch(error) {
             console.log(error);
         }
 
-        window.setInterval(function(){
+        window.setInterval(function() {
           that.refreshTaskPage();
-        }, 3000);
+        }, 60000);
     }
 
     popupInputView = () => {
@@ -56,16 +58,21 @@ class TaskPage extends Component {
 
     onAddTask = () => {
         const that = this;
-        const getNewTask = new XMLHttpRequest();
-        try {
-            getNewTask.open('GET', `${this.props.defaultURL}addtask?usrname=${this.props.username}&taskname=${this.state.newTaskName}`);
-            getNewTask.send();
-            getNewTask.onload = function() {
-                const arrayData = that.getArrayData(getNewTask.response);
-                that.addTask(arrayData);
+        const result = /^[a-zA-Z0-9]+$/.test(this.state.newTaskName);
+        if(result === false) {
+            window.alert('请输入正确的任务名');
+        } else {
+            const getNewTask = new XMLHttpRequest();
+            try {
+                getNewTask.open('GET', `${this.props.defaultURL}addtask?usrname=${this.props.username}&taskname=${this.state.newTaskName}`);
+                getNewTask.send();
+                getNewTask.onload = function() {
+                    const arrayData = that.getArrayData(getNewTask.response);
+                    that.addTask(arrayData);
+                }
+            } catch(error) {
+                console.log(error);
             }
-        } catch(error) {
-            console.log(error);
         }
     }
 
@@ -79,9 +86,40 @@ class TaskPage extends Component {
                 const progress = arrayData[i + 2].slice(1,4);
                 const taskState = arrayData[i + 3].slice(1, 2);
                 const taskType = arrayData[i + 4].slice(1, 2);
-                newTaskList.push({taskName: taskName, time: time, progress: progress, taskState: taskState, taskType: taskType});
+                this.getTagProgress(taskName);
+                newTaskList.push({taskName: taskName, time: time,tagProgress: '0/0', progress: progress, taskState: taskState, taskType: taskType});
             }
-            this.setState({taskList: newTaskList});
+            if(this.refs.theTaskTable) {
+                this.setState({taskList: newTaskList});
+            }
+        }
+    }
+
+    getTagProgress = (taskName) => {
+        const that = this;
+        const getFileCount = new XMLHttpRequest();
+        getFileCount.open('GET', `${this.props.defaultURL}filecount?usrname=${this.props.username}&taskname=${taskName}`);
+        getFileCount.send();
+        getFileCount.onload = function() {
+            console.log('getFileCount success.');
+            const theFileCount = getFileCount.response;
+            const getTagedFileCount = new XMLHttpRequest();
+            getTagedFileCount.open('GET', `${that.props.defaultURL}labeledfilecount?usrname=${that.props.username}&taskname=${taskName}`);
+            getTagedFileCount.send();
+            getTagedFileCount.onload = function() {
+                console.log('getTagedFileCount success.');
+                const theTagedFileCount = getTagedFileCount.response;
+                const tagProgress = `${theTagedFileCount}/${theFileCount}`;
+                if(that.refs.theTaskTable) {
+                    that.setState((state) => {
+                        state.taskList.map((task) => {
+                            if(task.taskName === taskName) {
+                                task.tagProgress = tagProgress;
+                            }
+                        })
+                    })
+                }
+            }
         }
     }
 
@@ -96,7 +134,9 @@ class TaskPage extends Component {
                 const updateTime = arrayData[i + 4].slice(3, 22);
                 newWorkerList.push({workerName: workerName, workerState: workerState, GPU: GPU, taskName: taskName, updateTime: updateTime});
             }
-            this.setState({workerList: newWorkerList});
+            if(this.refs.theWorkerTable) {
+                this.setState({workerList: newWorkerList});
+            }    
         }
     }
 
@@ -140,6 +180,21 @@ class TaskPage extends Component {
         }
     }
 
+    onStopTask = (index) => {
+        const that = this;
+        try {
+            const startTask = new XMLHttpRequest();
+            startTask.open('GET', `${this.props.defaultURL}stoptask?usrname=${this.props.username}&taskname=${this.state.taskList[index].taskName}`);
+            startTask.send();
+            startTask.onload = function() {
+                const arrayData = that.getArrayData(startTask.response);
+                that.addTask(arrayData);
+            }
+        } catch(error) {
+            console.log(error);
+        }
+    }
+
     onDeleteTask = (index) => {
         const result = window.confirm('确定删除该任务吗?');
         if(result) {
@@ -160,6 +215,7 @@ class TaskPage extends Component {
 
     onLinkToTag = (index) => {
         this.props.onChangeUserAndTask(this.props.username, this.state.taskList[index].taskName);
+        this.props.onInitStartAndNum();
     }
 
     getTaskStateName = (taskStateID) => {
@@ -246,6 +302,9 @@ class TaskPage extends Component {
                         <div className="popup" style={{background: 'rgba(0, 0, 0, 0.4)', position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', zIndex: '100'}}>
                             <i onClick={this.closeInputView} className="fa fa-times w3-text-white w3-xxlarge et-hoverable" aria-hidden="true" style={{position: 'absolute', top: '10px', right: '10px'}}></i>
                             <div className="flex-box" style={{width: '40%', margin: '0 auto', position: 'absolute', top: '30%', left: '30%'}}>
+                                <select>
+                                    <option>图片检测</option>
+                                </select>
                                 <input placeholder="输入新的任务名称" onChange={this.handleInputChange} value={this.state.newTaskName} className="w3-input" type="text"/>
                                 <button onClick={this.onAddTask} className="w3-button w3-orange">添加</button>
                             </div>
@@ -266,9 +325,6 @@ class TaskPage extends Component {
                             : null
                         }
                     </div>
-                    <div onClick={this.popupInputView} style={{position: 'absolute', right: '32px'}}>
-                        <i className="fa fa-plus-circle add-task-button" aria-hidden="true"></i>
-                    </div>
                 </div>
                 {
                     this.state.showImageView === true ? (
@@ -277,14 +333,21 @@ class TaskPage extends Component {
                         </div>
                     ) : null
                 }
-                <div className="w3-content w3-padding-64">
-                    <table className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered">
+                <div className="et-content w3-padding-64">
+                    <div style={{position: 'relative'}}>
+                        <h3 className="et-margin-top-64 et-table-title">任务表</h3>
+                        <div onClick={this.popupInputView} style={{position: 'absolute', right: '5px', top: '0px'}}>
+                            <i className="fa fa-plus-circle add-task-button w3-text-black" aria-hidden="true"></i>
+                        </div>
+                    </div>
+                    <table ref="theTaskTable" className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered">
                         <thead className="w3-green">
                             <tr>
                                 <th>编号</th>
                                 <th>任务名称</th>
                                 <th>创建时间</th>
-                                <th>进度</th>
+                                <th>标注进度</th>
+                                <th>训练进度</th>
                                 <th>任务状态</th>
                                 <th>任务类型</th>
                                 <th>操作</th>
@@ -296,12 +359,14 @@ class TaskPage extends Component {
                                     <td>{index + 1}</td>
                                     <td>{task.taskName}</td>
                                     <td>{task.time}</td>
+                                    <td>{task.tagProgress}</td>
                                     <td>{task.progress}</td>
                                     <td>{this.getTaskStateName(task.taskState)}</td>
                                     <td>{this.getTaskTypeName(task.taskType)}</td>
                                     <td>
                                         <Link onClick={this.onLinkToTag.bind(this, index)} to="/tag"><i className="fa fa-tags table-item-button" aria-hidden="true"> 标注</i></Link>
                                         <i onClick={this.onStartTask.bind(this, index)} className="fa fa-play-circle table-item-button w3-margin-left" aria-hidden="true"> 开启训练</i>
+                                        <i onClick={this.onStopTask.bind(this, index)} className="fa fa-stop-circle table-item-button w3-margin-left" aria-hidden="true"> 停止训练</i>
                                         <i onClick={this.onLookTrainState.bind(this, index)} className="fa fa-search table-item-button w3-margin-left" aria-hidden="true"> 查看训练状态</i>
                                         <Link to="/test"><i className="fa fa-cog table-item-button w3-margin-left" aria-hidden="true"> 测试</i></Link>
                                         <i onClick={this.onDeleteTask.bind(this, index)} className="fa fa-trash table-item-button w3-margin-left" aria-hidden="true"> 删除</i>
@@ -311,12 +376,13 @@ class TaskPage extends Component {
                         }</tbody>
                         <tfoot></tfoot>
                     </table>
-                    <table className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered et-margin-top-64">
+                    <h3 className="et-margin-top-64 et-table-title">Worker表</h3>
+                    <table ref="theWorkerTable" className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered">
                         <thead className="w3-green">
                             <tr>
                                 <th>编号</th>
-                                <th>工作名称</th>
-                                <th>工作状态</th>
+                                <th>worker名称</th>
+                                <th>worker状态</th>
                                 <th>显卡使用情况</th>
                                 <th>正在服务的任务名称</th>
                                 <th>更新时间</th>
