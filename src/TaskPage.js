@@ -77,13 +77,14 @@ class TaskPage extends Component {
     }
 
     addTask = (arrayData) => {
+        console.log(arrayData);
         if(arrayData.length > 4) {
             this.setState({showInputView: false});
             const newTaskList = [];
             for(let i=0; i<arrayData.length; i=i+5) {
                 const  taskName = arrayData[i].slice(4, arrayData[i].length - 1);
                 const time = arrayData[i + 1].slice(3, 22);
-                const progress = arrayData[i + 2].slice(1,4);
+                const progress = arrayData[i + 2].slice(1,arrayData[i + 2].length);
                 const taskState = arrayData[i + 3].slice(1, 2);
                 const taskType = arrayData[i + 4].slice(1, 2);
                 this.getTagProgress(taskName);
@@ -136,7 +137,9 @@ class TaskPage extends Component {
             }
             if(this.refs.theWorkerTable) {
                 this.setState({workerList: newWorkerList});
-            }    
+            }
+        } else {
+            this.setState({workerList: []});
         }
     }
 
@@ -360,7 +363,7 @@ class TaskPage extends Component {
                                     <td>{task.taskName}</td>
                                     <td>{task.time}</td>
                                     <td>{task.tagProgress}</td>
-                                    <td>{task.progress}</td>
+                                    <td>{`${task.progress}%`}</td>
                                     <td>{this.getTaskStateName(task.taskState)}</td>
                                     <td>{this.getTaskTypeName(task.taskType)}</td>
                                     <td>

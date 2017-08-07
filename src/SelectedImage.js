@@ -4,7 +4,8 @@ import $ from 'jquery';
 class SelectedImage extends Component {
     state = {
         fileCount: 0,
-        tagedFileCount: 0
+        tagedFileCount: 0,
+        imgLoaded: false
     }
 
     componentWillMount() {
@@ -13,6 +14,7 @@ class SelectedImage extends Component {
     }
 
     componentDidMount() {
+        this.setState({imgLoaded: true});
         const that = this;
         //bind upload and show events
         $('#file').on('change', function() {
@@ -105,24 +107,24 @@ class SelectedImage extends Component {
     }
 
     getBoxX = (r_x_start) => {
-        const img_natural_width = $('#selectedImage')[0] ? $('#selectedImage')[0].width : '0';
+        const img_natural_width = $('#selectedImage')[0].width;
         return (img_natural_width * r_x_start);
     }
 
     getBoxY = (r_y_start) => {
-        const img_natural_height = $('#selectedImage')[0] ? $('#selectedImage')[0].height : '0';
+        const img_natural_height = $('#selectedImage')[0].height;
         return (img_natural_height * r_y_start);
     }
 
     getBoxWidth = (r_x_start, r_x_end) => {
-        const img_natural_width = $('#selectedImage')[0] ? $('#selectedImage')[0].width : '0';
+        const img_natural_width = $('#selectedImage')[0].width;
         const x_start = img_natural_width * r_x_start;
         const x_end = img_natural_width * r_x_end;
         return (x_end - x_start);
     }
 
     getBoxHeight = (r_y_start, r_y_end) => {
-        const img_natural_height = $('#selectedImage')[0] ? $('#selectedImage')[0].height : '0';
+        const img_natural_height = $('#selectedImage')[0].height;
         const y_start = img_natural_height * r_y_start;
         const y_end = img_natural_height * r_y_end;
         return (y_end - y_start);
@@ -152,6 +154,18 @@ class SelectedImage extends Component {
         }
     }
 
+    drawBoxList = () => {
+        return (
+            this.props.boxList.length > 0 ?
+            this.props.boxList.map((box, index) => (
+                <div className="black-white-border" key={box.x_start + box.y_end} style={{width: `${this.getBoxWidth(box.x_start, box.x_end)}px`, height: `${this.getBoxHeight(box.y_start, box.y_end)}px`,
+                             position: 'absolute', left: `${this.getBoxX(box.x_start)}px`, top: `${this.getBoxY(box.y_start)}px`}}>
+                             <span className="tag-title"><b>No.{index + 1}<br/>{box.tag}</b></span>
+                </div>
+            )) : null
+        );
+    }
+
     render() {
         return (
             <div className="w3-center w3-padding-24 flex-box full-width" style={{position: 'relative', justifyContent: 'center', alignItems: 'center', backgroundColor: '#303030', flex: '1'}}>
@@ -165,13 +179,7 @@ class SelectedImage extends Component {
                 <div id="selectedImagePanel" style={{position: 'relative'}}>
                     <img draggable="false" id="selectedImage" className="w3-image" src={this.props.selectedImage} alt={this.props.selectedImage} style={{maxHeight: '600px'}}/>
                     {
-                        this.props.boxList.length > 0 ?
-                        this.props.boxList.map((box, index) => (
-                            <div className="black-white-border" key={Math.random(10000) + Math.random(10000)} style={{width: `${this.getBoxWidth(box.x_start, box.x_end)}px`, height: `${this.getBoxHeight(box.y_start, box.y_end)}px`,
-                                         position: 'absolute', left: `${this.getBoxX(box.x_start)}px`, top: `${this.getBoxY(box.y_start)}px`}}>
-                                         <span className="tag-title"><b>No.{index + 1}<br/>{box.tag}</b></span>
-                            </div>
-                        )) : null
+                        this.state.imgLoaded ? this.drawBoxList() : null
                     }
                 </div>
                 <form style={{position: 'absolute', bottom: '25px'}}>
