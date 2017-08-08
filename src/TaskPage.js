@@ -168,18 +168,36 @@ class TaskPage extends Component {
         }
     }
 
+    verifyTagProgress = (index) => {
+        const str = this.state.taskList[index].tagProgress;
+        const numStr = str.split('/');
+        const tagedImageNum = parseInt(numStr[0]);
+        const AllImageNum = parseInt(numStr[1]);
+        if(tagedImageNum < 500) {
+            return false;
+        }
+        if((tagedImageNum / AllImageNum) < 0.5) {
+            return false;
+        }
+        return true;
+    }
+
     onStartTask = (index) => {
-        const that = this;
-        try {
-            const startTask = new XMLHttpRequest();
-            startTask.open('GET', `${this.props.defaultURL}starttask?usrname=${this.props.username}&taskname=${this.state.taskList[index].taskName}`);
-            startTask.send();
-            startTask.onload = function() {
-                const arrayData = that.getArrayData(startTask.response);
-                that.addTask(arrayData);
+        if(this.verifyTagProgress(index) === false) {
+            window.alert('标注图片数量不足');
+        } else {
+            const that = this;
+            try {
+                const startTask = new XMLHttpRequest();
+                startTask.open('GET', `${this.props.defaultURL}starttask?usrname=${this.props.username}&taskname=${this.state.taskList[index].taskName}`);
+                startTask.send();
+                startTask.onload = function() {
+                    const arrayData = that.getArrayData(startTask.response);
+                    that.addTask(arrayData);
+                }
+            } catch(error) {
+                console.log(error);
             }
-        } catch(error) {
-            console.log(error);
         }
     }
 
@@ -219,6 +237,10 @@ class TaskPage extends Component {
     onLinkToTag = (index) => {
         this.props.onChangeUserAndTask(this.props.username, this.state.taskList[index].taskName);
         this.props.onInitStartAndNum();
+    }
+
+    onLinkToTest = (index) => {
+        this.props.onChangeUserAndTask(this.props.username, this.state.taskList[index].taskName);
     }
 
     getTaskStateName = (taskStateID) => {
@@ -371,7 +393,7 @@ class TaskPage extends Component {
                                         <i onClick={this.onStartTask.bind(this, index)} className="fa fa-play-circle table-item-button w3-margin-left" aria-hidden="true"> 开启训练</i>
                                         <i onClick={this.onStopTask.bind(this, index)} className="fa fa-stop-circle table-item-button w3-margin-left" aria-hidden="true"> 停止训练</i>
                                         <i onClick={this.onLookTrainState.bind(this, index)} className="fa fa-search table-item-button w3-margin-left" aria-hidden="true"> 查看训练状态</i>
-                                        <Link to="/test"><i className="fa fa-cog table-item-button w3-margin-left" aria-hidden="true"> 测试</i></Link>
+                                        <Link onClick={this.onLinkToTest.bind(this, index)} to="/test"><i className="fa fa-cog table-item-button w3-margin-left" aria-hidden="true"> 测试</i></Link>
                                         <i onClick={this.onDeleteTask.bind(this, index)} className="fa fa-trash table-item-button w3-margin-left" aria-hidden="true"> 删除</i>
                                     </td>
                                 </tr>

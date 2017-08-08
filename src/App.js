@@ -193,6 +193,9 @@ class App extends Component {
                         that.saveTagList(preIndex);
                         that.getTagList(i);
                     }
+                    if(state.imageList.length === 1) {
+                        that.saveTagList(preIndex);
+                    }
                 })
                 break
             }
@@ -443,7 +446,9 @@ class App extends Component {
                         </div>
                     </div> : null
                 )}/>
-                <Route exact path="/test" component={this.state.login ? Demo : null}/>
+                <Route exact path="/test" render={() => (
+                    this.state.login ? <Demo userName={this.state.userName} taskName={this.state.taskName}/> : null
+                )}/>
             </div>
         )
   }

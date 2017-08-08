@@ -124,7 +124,7 @@ class ImageView extends Component {
     sendFileRequest = (file, url, index, isNew) => {
         const that = this;
         var xhr = new XMLHttpRequest();
-        xhr.open("POST", `http://demo.codvision.com:16831/api/detectimage?usrname=fj&taskname=task1&filename=${file.name}`);
+        xhr.open("POST", `http://demo.codvision.com:16831/api/detectimage?usrname=${this.props.userName}&taskname=${this.props.taskName}&filename=${file.name}`);
         var data = new FormData();
         data.append('file', file);
         xhr.send(data);

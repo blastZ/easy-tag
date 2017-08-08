@@ -23,10 +23,14 @@ class TagView extends Component {
     deleteCurrentTag = () => {
         const result = window.confirm('确定删除当前标签吗?');
         if(result) {
-            const index = this.state.tagStringList.indexOf(this.props.currentTagString);
-            this.setState((state) => {
-                state.tagStringList.splice(index, 1);
-            }, () => this.props.onChangeTagString())
+            if(this.state.tagStringList.length === 1) {
+                window.alert('不能删除最后一个标签');
+            }else {
+                const index = this.state.tagStringList.indexOf(this.props.currentTagString);
+                this.setState((state) => {
+                    state.tagStringList.splice(index, 1);
+                }, () => this.props.onChangeTagString())
+            }
         }
     }
 

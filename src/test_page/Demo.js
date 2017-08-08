@@ -93,7 +93,7 @@ class Demo extends Component {
     render() {
         return (
             <div id="demo-view" className="flex-box full-height">
-                <ImageView mode={this.state.mode} onLoadingImage={this.loadImage} onClickItem={this.clickItem} onChangeMode={this.changeMode} onShowResult={this.showResult}/>
+                <ImageView userName={this.props.userName} taskName={this.props.taskName} mode={this.state.mode} onLoadingImage={this.loadImage} onClickItem={this.clickItem} onChangeMode={this.changeMode} onShowResult={this.showResult}/>
                 <ResultView loading={this.state.loading} mode={this.state.mode} modeName={this.state.modeName[this.state.mode]} resultData={this.state.resultData}/>
             </div>
         )
