@@ -55,7 +55,7 @@ class Login extends Component {
                 }
                 <div className="w3-orange full-width flex-box w3-text-white w3-container" style={{position: 'fixed', top: '0px', height: '8%', alignItems: 'center'}}>
                     <i className="fa fa-ravelry w3-xxlarge" aria-hidden="true"></i>
-                    <h2>&nbsp;&nbsp;图像标注系统</h2>
+                    <h2>&nbsp;&nbsp;图像智能分析系统</h2>
                 </div>
                 <div className="flex-box full-height" style={{justifyContent: 'center', alignItems: 'center'}}>
                     <div onKeyPress={this.handleKeyPress} className="flex-box flex-column" style={{width: '20%'}}>

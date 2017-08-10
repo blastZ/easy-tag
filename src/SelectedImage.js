@@ -13,27 +13,58 @@ class SelectedImage extends Component {
         this.getTagedFileCount();
     }
 
+    componentWillUnmount() {
+        document.removeEventListener('keyup', this.deleteImageListener);
+        document.removeEventListener('keyup', this.nextPreviousImageListener);
+    }
+
+    deleteImageListener = (e) => {
+        if(e.keyCode === 46) {
+            this.props.onDeleteImage();
+        }
+    }
+
+    nextPreviousImageListener = (e) => {
+        if(e.keyCode === 37) {
+            this.props.onPreviousImage();
+        } else if(e.keyCode === 39) {
+            this.props.onNextImage();
+        }
+    }
+
     componentDidMount() {
         this.setState({imgLoaded: true});
         const that = this;
+
+        document.addEventListener('keyup', this.deleteImageListener);
+        document.addEventListener('keyup', this.nextPreviousImageListener);
+
         //bind upload and show events
         $('#file').on('change', function() {
-            console.log('hey');
             const files = this.files;
-            //let loadCount = 0; --------maybe use loadCount to setState per 50 times
+            let result = true;
             for(const file of files) {
-                //decide the file is a image or not
-                if(file.type === 'image/jpeg' || file.type === 'image/png') {
-                    const name = file.name;
-                    const reader = new FileReader()
-                    reader.onload = function() {
-                        const url = this.result;
-                        that.props.onShowNewImage(url, name);
-                    }
-                    reader.readAsDataURL(file);
+                if((/^[a-zA-Z0-9\-\_\.]+$/).test(file.name) === false) {
+                    result = false;
                 }
             }
-            that.props.onUploadImgeFiles(files);
+            if(result) {
+                for(const file of files) {
+                    //decide the file is a image or not
+                    if(file.type === 'image/jpeg' || file.type === 'image/png') {
+                        const name = file.name;
+                        const reader = new FileReader()
+                        reader.onload = function() {
+                            const url = this.result;
+                            that.props.onShowNewImage(url, name);
+                        }
+                        reader.readAsDataURL(file);
+                    }
+                }
+                that.props.onUploadImgeFiles(files);
+            } else {
+                window.alert('图片命名不符合规则');
+            }
         })
         let drawing = false
         let x1 = 0, y1 = 0, x_move = 0, y_move = 0

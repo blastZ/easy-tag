@@ -77,7 +77,6 @@ class TaskPage extends Component {
     }
 
     addTask = (arrayData) => {
-        console.log(arrayData);
         if(arrayData.length > 4) {
             this.setState({showInputView: false});
             const newTaskList = [];
@@ -154,17 +153,22 @@ class TaskPage extends Component {
 
     onLookTrainState = (index) => {
         const that = this;
-        try {
-            const lookTrainState = new XMLHttpRequest();
-            lookTrainState.open('GET', `${this.props.defaultURL}taskinfo?usrname=${this.props.username}&taskname=${this.state.taskList[index].taskName}`);
-            lookTrainState.send();
-            lookTrainState.onload = function() {
-                that.setState({showImageView: true}, function() {
-                    document.getElementById('train-state').src = lookTrainState.response;
-                })
+        const taskState = this.state.taskList[index].taskState;
+        if(taskState === '2' || taskState === '3') {
+            try {
+                const lookTrainState = new XMLHttpRequest();
+                lookTrainState.open('GET', `${this.props.defaultURL}taskinfo?usrname=${this.props.username}&taskname=${this.state.taskList[index].taskName}`);
+                lookTrainState.send();
+                lookTrainState.onload = function() {
+                    that.setState({showImageView: true}, function() {
+                        document.getElementById('train-state').src = lookTrainState.response;
+                    })
+                }
+            } catch(error) {
+                console.log(error);
             }
-        } catch(error) {
-            console.log(error);
+        } else {
+
         }
     }
 
@@ -183,36 +187,62 @@ class TaskPage extends Component {
     }
 
     onStartTask = (index) => {
+        const that = this;
         if(this.verifyTagProgress(index) === false) {
             window.alert('标注图片数量不足');
         } else {
-            const that = this;
-            try {
-                const startTask = new XMLHttpRequest();
-                startTask.open('GET', `${this.props.defaultURL}starttask?usrname=${this.props.username}&taskname=${this.state.taskList[index].taskName}`);
-                startTask.send();
-                startTask.onload = function() {
-                    const arrayData = that.getArrayData(startTask.response);
-                    that.addTask(arrayData);
+            const taskState = this.state.taskList[index].taskState;
+            if(taskState === '0') {
+                try {
+                    const startTask = new XMLHttpRequest();
+                    startTask.open('GET', `${this.props.defaultURL}starttask?usrname=${this.props.username}&taskname=${this.state.taskList[index].taskName}`);
+                    startTask.send();
+                    startTask.onload = function() {
+                        const arrayData = that.getArrayData(startTask.response);
+                        that.addTask(arrayData);
+                    }
+                } catch(error) {
+                    console.log(error);
                 }
-            } catch(error) {
-                console.log(error);
+            } else if(taskState === '3') {
+                const result = window.confirm('确定重新训练吗?');
+                if(result) {
+                    try {
+                        const startTask = new XMLHttpRequest();
+                        startTask.open('GET', `${this.props.defaultURL}starttask?usrname=${this.props.username}&taskname=${this.state.taskList[index].taskName}`);
+                        startTask.send();
+                        startTask.onload = function() {
+                            const arrayData = that.getArrayData(startTask.response);
+                            that.addTask(arrayData);
+                        }
+                    } catch(error) {
+                        console.log(error);
+                    }
+                }
             }
         }
     }
 
     onStopTask = (index) => {
         const that = this;
-        try {
-            const startTask = new XMLHttpRequest();
-            startTask.open('GET', `${this.props.defaultURL}stoptask?usrname=${this.props.username}&taskname=${this.state.taskList[index].taskName}`);
-            startTask.send();
-            startTask.onload = function() {
-                const arrayData = that.getArrayData(startTask.response);
-                that.addTask(arrayData);
+        const taskState = this.state.taskList[index].taskState;
+        if(taskState === '1' || taskState === '2') {
+            const result = window.confirm('确定停止训练吗?');
+            if(result) {
+                try {
+                    const startTask = new XMLHttpRequest();
+                    startTask.open('GET', `${this.props.defaultURL}stoptask?usrname=${this.props.username}&taskname=${this.state.taskList[index].taskName}`);
+                    startTask.send();
+                    startTask.onload = function() {
+                        const arrayData = that.getArrayData(startTask.response);
+                        that.addTask(arrayData);
+                    }
+                } catch(error) {
+                    console.log(error);
+                }
             }
-        } catch(error) {
-            console.log(error);
+        } else {
+
         }
     }
 
@@ -240,20 +270,22 @@ class TaskPage extends Component {
     }
 
     onLinkToTest = (index) => {
-        this.props.onChangeUserAndTask(this.props.username, this.state.taskList[index].taskName);
+        if(this.state.taskList[index].taskState === '3') {
+            this.props.onChangeUserAndTask(this.props.username, this.state.taskList[index].taskName);
+        }
     }
 
     getTaskStateName = (taskStateID) => {
         taskStateID = parseInt(taskStateID);
         switch (taskStateID) {
             case 0:
-                return ('初始化');
+                return ('标注中');
             case 1:
-                return ('待处理');
+                return ('待训练');
             case 2:
-                return ('处理中');
+                return ('训练中');
             case 3:
-                return ('处理完成');
+                return ('训练完成');
             case 4:
                 return ('出错');
         }
@@ -390,10 +422,10 @@ class TaskPage extends Component {
                                     <td>{this.getTaskTypeName(task.taskType)}</td>
                                     <td>
                                         <Link onClick={this.onLinkToTag.bind(this, index)} to="/tag"><i className="fa fa-tags table-item-button" aria-hidden="true"> 标注</i></Link>
-                                        <i onClick={this.onStartTask.bind(this, index)} className="fa fa-play-circle table-item-button w3-margin-left" aria-hidden="true"> 开启训练</i>
-                                        <i onClick={this.onStopTask.bind(this, index)} className="fa fa-stop-circle table-item-button w3-margin-left" aria-hidden="true"> 停止训练</i>
-                                        <i onClick={this.onLookTrainState.bind(this, index)} className="fa fa-search table-item-button w3-margin-left" aria-hidden="true"> 查看训练状态</i>
-                                        <Link onClick={this.onLinkToTest.bind(this, index)} to="/test"><i className="fa fa-cog table-item-button w3-margin-left" aria-hidden="true"> 测试</i></Link>
+                                        <i onClick={this.onStartTask.bind(this, index)} className={`fa fa-play-circle ${task.taskState === '0' ? 'table-item-button' : 'et-silence-button'} ${task.taskState === '3' ? 'table-item-button' : 'et-silence-button'} w3-margin-left`} aria-hidden="true">{task.taskState === '3' ? ' 重新训练' : ' 开启训练'}</i>
+                                        <i onClick={this.onStopTask.bind(this, index)} className={`fa fa-stop-circle ${task.taskState === '2' ? 'table-item-button' : 'et-silence-button'} ${task.taskState === '1' ? 'table-item-button' : 'et-silence-button'} w3-margin-left`} aria-hidden="true"> 停止训练</i>
+                                        <i onClick={this.onLookTrainState.bind(this, index)} className={`fa fa-search ${task.taskState === '2' ? 'table-item-button' : 'et-silence-button'} ${task.taskState === '3' ? 'table-item-button' : 'et-silence-button'} w3-margin-left`} aria-hidden="true"> 查看训练状态</i>
+                                        <Link style={{cursor: 'context-menu'}} onClick={this.onLinkToTest.bind(this, index)} to={task.taskState === '3' ? "/test" : "/"}><i className={`fa fa-cog ${task.taskState === '3' ? 'table-item-button' : 'et-silence-button'} w3-margin-left`} aria-hidden="true"> 测试</i></Link>
                                         <i onClick={this.onDeleteTask.bind(this, index)} className="fa fa-trash table-item-button w3-margin-left" aria-hidden="true"> 删除</i>
                                     </td>
                                 </tr>

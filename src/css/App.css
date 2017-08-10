@@ -120,6 +120,15 @@
     color: orange !important;
 }
 
+.et-silence-button {
+    color: gray;
+    cursor: context-menu;
+}
+
+.table-item-button {
+    color: black;
+}
+
 .table-item-button:hover {
     cursor: pointer;
     color: orange !important;

@@ -81,6 +81,7 @@ class App extends Component {
     }
 
     nextImageList = () => {
+        this.saveTagList(this.state.selectedImageNum);
         const that = this;
         const maxValue = that.refs.tagRoute.refs.selectedImage.state.fileCount;
         //load imageList from server
@@ -113,6 +114,7 @@ class App extends Component {
     }
 
     previousImageList = () => {
+        this.saveTagList(this.state.selectedImageNum);
         const that = this;
         //load imageList from server
         const xhr = new XMLHttpRequest();
@@ -180,6 +182,30 @@ class App extends Component {
                 imageList: preState.imageList.concat([{url: url, name: name}])
             };
         };
+    }
+
+    nextImage = () => {
+        const that = this, preIndex = this.state.selectedImageNum;
+        if(preIndex + 1 < this.state.imageList.length) {
+            this.setState((state) => {
+                state.selectedImageNum = preIndex + 1;
+                that.saveTagList(preIndex);
+                that.getTagList(preIndex + 1);
+            })
+        } else if(preIndex + 1 === this.state.imageList.length) {
+            window.alert('当前图片是列表内最后一张');
+        }
+    }
+
+    previousImage = () => {
+        const that = this, preIndex = this.state.selectedImageNum;
+        if(preIndex - 1 >= 0) {
+            this.setState((state) => {
+                state.selectedImageNum = preIndex - 1;
+                that.saveTagList(preIndex);
+                that.getTagList(preIndex - 1);
+            })
+        }
     }
 
     clickItem = (url) => {
@@ -409,13 +435,15 @@ class App extends Component {
                     <div className="flex-box full-height">
                         <div className="flex-box flex-column full-height" style={{flex: '1 1 auto', width: '80%'}}>
                             <SelectedImage ref="selectedImage"
+                                           onNextImage={this.nextImage}
+                                           onPreviousImage={this.previousImage}
                                            num={this.state.num}
                                            info={this.state.info}
                                            currentTagString={this.state.currentTagString}
                                            onAddTag={this.addTag}
                                            selectedImage={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].url : ''}
                                            selectedImageName={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].name : 'No Image'}
-                                           selectedImageNumInAll={this.state.start + this.state.selectedImageNum}
+                                           selectedImageNumInAll={parseInt(this.state.start) + this.state.selectedImageNum}
                                            complete={this.state.complete}
                                            onDeleteImage={this.deleteImage}
                                            onUploadImgeFiles={this.uploadImageFiles}
