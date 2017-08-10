@@ -144,7 +144,7 @@
 }
 
 .et-margin-top-64 {
-    margin-top: 64px;
+    margin-top: 64px !important;
 }
 
 .et-hoverable:hover {
@@ -185,4 +185,9 @@
 .et-content {
     max-width: 1280px;
     margin: 0 auto;
+}
+
+.et-taskname-button:hover {
+    cursor: pointer;
+    color: orange;
 }

@@ -5,10 +5,12 @@ class TaskPage extends Component {
     state = {
         taskList: [], //taskName: 'a', time: '2017-07-28 14:42:19', progress: '0.0', taskState: '1', taskType: '1'
         workerList: [], //workerName: 'a', workerState: '0', taskName: 'a', GPU: '2048/8192', updateTime: '2017-07-02 09:43:12'
+        distredUserList: [], //userName: 'aaa', userLevel: '0'
         newTaskName: '',
         showInputView: false,
         showImageView: false,
-        showPersonPanel: false
+        showPersonPanel: false,
+        showDistributeTaskView: false
     }
 
     componentDidMount() {
@@ -350,6 +352,43 @@ class TaskPage extends Component {
         }
     }
 
+    showDistributeTaskView = (index) => {
+        this.setState({showDistributeTaskView: true});
+        this.getDistredUserList(this.state.taskList[index].taskName);
+    }
+
+    closeDistributeTaskView = () => {
+        this.setState({showDistributeTaskView: false});
+    }
+
+    getDistredUserList = (taskName) => {
+        const that = this;
+        try{
+            const request = new XMLHttpRequest();
+            request.open('GET', `${this.props.defaultURL}distreduserlist?usrname=${this.props.username}&taskname=${taskName}`);
+            request.send();
+            request.onload = function() {
+                const distredUserList = that.getFormatDistredUserList(request.response);
+                that.setState({distredUserList});
+            }
+        } catch(error) {
+            console.log(error);
+        }
+    }
+
+    getFormatDistredUserList = (str) => {
+        const arrayData = str.split(',');
+        const distredUserList = [];
+        if(arrayData.length > 1) {
+            for(var i=0; i<arrayData.length; i=i+2) {
+                const userName = arrayData[i].slice(4, arrayData[i].length - 1);
+                const userLevel = arrayData[i + 1].slice(1, 2);
+                distredUserList.push({userName, userLevel});
+            }
+        }
+        return distredUserList;
+    }
+
     render() {
         return (
             <div className="w3-light-grey full-height">
@@ -365,6 +404,54 @@ class TaskPage extends Component {
                                 <input placeholder="输入新的任务名称" onChange={this.handleInputChange} value={this.state.newTaskName} className="w3-input" type="text"/>
                                 <button onClick={this.onAddTask} className="w3-button w3-orange">添加</button>
                             </div>
+                        </div>
+                    ) : null
+                }
+                {
+                    this.state.showDistributeTaskView ? (
+                        <div className="popup" style={{background: 'rgba(0, 0, 0, 0.4)', position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', zIndex: '100'}}>
+                            <i onClick={this.closeDistributeTaskView} className="fa fa-times w3-text-white w3-xxlarge et-hoverable" aria-hidden="true" style={{position: 'absolute', top: '10px', right: '10px'}}></i>
+                            <div className="w3-content w3-text-white et-margin-top-64" style={{width: '60%', height: '70%'}}>
+                                <h3>已分配用户</h3>
+                                <table className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered">
+                                    <thead className="w3-orange w3-text-white">
+                                        <tr>
+                                            <th>用户名</th>
+                                            <th>用户权限</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    {
+                                        this.state.distredUserList.map((user) => (
+                                            <tr>
+                                                <td>{user.userName}</td>
+                                                <td>{user.userLevel}</td>
+                                                <td><i className="fa fa-trash table-item-buttont" aria-hidden="true"> 取消分配</i></td>
+                                            </tr>
+                                        ))
+                                    }
+                                    </tbody>
+                                    <tfoot></tfoot>
+                                </table>
+                                <h3>分配任务</h3>
+                                <table className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered">
+                                    <thead className="w3-orange w3-text-white">
+                                        <tr>
+                                            <th>用户名</th>
+                                            <th>用户权限</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    {
+                                        
+                                    }
+                                    </tbody>
+                                    <tfoot></tfoot>
+                                </table>
+                            </div>
+                            <div></div>
                         </div>
                     ) : null
                 }
@@ -393,9 +480,13 @@ class TaskPage extends Component {
                 <div className="et-content w3-padding-64">
                     <div style={{position: 'relative'}}>
                         <h3 className="et-margin-top-64 et-table-title">任务表</h3>
-                        <div onClick={this.popupInputView} style={{position: 'absolute', right: '5px', top: '0px'}}>
-                            <i className="fa fa-plus-circle add-task-button w3-text-black" aria-hidden="true"></i>
-                        </div>
+                        {
+                            (this.props.userLevel === 2 || this.props.userLevel === 3) ?
+                            <div onClick={this.popupInputView} style={{position: 'absolute', right: '5px', top: '0px'}}>
+                                <i className="fa fa-plus-circle add-task-button w3-text-black" aria-hidden="true"></i>
+                            </div>
+                            : null
+                        }
                     </div>
                     <table ref="theTaskTable" className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered">
                         <thead className="w3-green">
@@ -404,7 +495,11 @@ class TaskPage extends Component {
                                 <th>任务名称</th>
                                 <th>创建时间</th>
                                 <th>标注进度</th>
-                                <th>训练进度</th>
+                                {
+                                    (this.props.userLevel === 2 || this.props.userLevel === 3) ?
+                                    <th>训练进度</th>
+                                    : null
+                                }
                                 <th>任务状态</th>
                                 <th>任务类型</th>
                                 <th>操作</th>
@@ -414,19 +509,47 @@ class TaskPage extends Component {
                             this.state.taskList.map((task, index) => (
                                 <tr key={task.taskName + index}>
                                     <td>{index + 1}</td>
-                                    <td>{task.taskName}</td>
+                                    {
+                                        (this.props.userLevel === 2 || this.props.userLevel === 3) ?
+                                        <td className="et-taskname-button" onClick={this.showDistributeTaskView.bind(this, index)}>{task.taskName}</td>
+                                        : <td>{task.taskName}</td>
+                                    }
                                     <td>{task.time}</td>
                                     <td>{task.tagProgress}</td>
-                                    <td>{`${task.progress}%`}</td>
+                                    {
+                                        (this.props.userLevel === 2 || this.props.userLevel === 3) ?
+                                        <td>{`${task.progress}%`}</td>
+                                        : null
+                                    }
                                     <td>{this.getTaskStateName(task.taskState)}</td>
                                     <td>{this.getTaskTypeName(task.taskType)}</td>
                                     <td>
                                         <Link onClick={this.onLinkToTag.bind(this, index)} to="/tag"><i className="fa fa-tags table-item-button" aria-hidden="true"> 标注</i></Link>
-                                        <i onClick={this.onStartTask.bind(this, index)} className={`fa fa-play-circle ${task.taskState === '0' ? 'table-item-button' : 'et-silence-button'} ${task.taskState === '3' ? 'table-item-button' : 'et-silence-button'} w3-margin-left`} aria-hidden="true">{task.taskState === '3' ? ' 重新训练' : ' 开启训练'}</i>
-                                        <i onClick={this.onStopTask.bind(this, index)} className={`fa fa-stop-circle ${task.taskState === '2' ? 'table-item-button' : 'et-silence-button'} ${task.taskState === '1' ? 'table-item-button' : 'et-silence-button'} w3-margin-left`} aria-hidden="true"> 停止训练</i>
-                                        <i onClick={this.onLookTrainState.bind(this, index)} className={`fa fa-search ${task.taskState === '2' ? 'table-item-button' : 'et-silence-button'} ${task.taskState === '3' ? 'table-item-button' : 'et-silence-button'} w3-margin-left`} aria-hidden="true"> 查看训练状态</i>
-                                        <Link style={{cursor: 'context-menu'}} onClick={this.onLinkToTest.bind(this, index)} to={task.taskState === '3' ? "/test" : "/"}><i className={`fa fa-cog ${task.taskState === '3' ? 'table-item-button' : 'et-silence-button'} w3-margin-left`} aria-hidden="true"> 测试</i></Link>
-                                        <i onClick={this.onDeleteTask.bind(this, index)} className="fa fa-trash table-item-button w3-margin-left" aria-hidden="true"> 删除</i>
+                                        {
+                                            (this.props.userLevel === 2 || this.props.userLevel === 3) ?
+                                            <i onClick={this.onStartTask.bind(this, index)} className={`fa fa-play-circle ${task.taskState === '0' ? 'table-item-button' : 'et-silence-button'} ${task.taskState === '3' ? 'table-item-button' : 'et-silence-button'} w3-margin-left`} aria-hidden="true">{task.taskState === '3' ? ' 重新训练' : ' 开启训练'}</i>
+                                            : null
+                                        }
+                                        {
+                                            (this.props.userLevel === 2 || this.props.userLevel === 3) ?
+                                            <i onClick={this.onStopTask.bind(this, index)} className={`fa fa-stop-circle ${task.taskState === '2' ? 'table-item-button' : 'et-silence-button'} ${task.taskState === '1' ? 'table-item-button' : 'et-silence-button'} w3-margin-left`} aria-hidden="true"> 停止训练</i>
+                                            : null
+                                        }
+                                        {
+                                            (this.props.userLevel === 2 || this.props.userLevel === 3) ?
+                                            <i onClick={this.onLookTrainState.bind(this, index)} className={`fa fa-search ${task.taskState === '2' ? 'table-item-button' : 'et-silence-button'} ${task.taskState === '3' ? 'table-item-button' : 'et-silence-button'} w3-margin-left`} aria-hidden="true"> 查看训练状态</i>
+                                            : null
+                                        }
+                                        {
+                                            (this.props.userLevel === 1 || this.props.userLevel === 2 || this.props.userLevel === 3) ?
+                                            <Link style={{cursor: 'context-menu'}} onClick={this.onLinkToTest.bind(this, index)} to={task.taskState === '3' ? "/test" : "/"}><i className={`fa fa-cog ${task.taskState === '3' ? 'table-item-button' : 'et-silence-button'} w3-margin-left`} aria-hidden="true"> 测试</i></Link>
+                                            : null
+                                        }
+                                        {
+                                            (this.props.userLevel === 2 || this.props.userLevel === 3) ?
+                                            <i onClick={this.onDeleteTask.bind(this, index)} className="fa fa-trash table-item-button w3-margin-left" aria-hidden="true"> 删除</i>
+                                            : null
+                                        }
                                     </td>
                                 </tr>
                             ))

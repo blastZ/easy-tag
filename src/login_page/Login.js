@@ -32,9 +32,9 @@ class Login extends Component {
         const data = `{"name": "${this.state.username}", "passwd": "${this.state.password}"}`;
         verifyRequest.send(data);
         verifyRequest.onload = () => {
-            console.log(verifyRequest.response);
-            if(verifyRequest.response === 'OK') {
-                this.props.onLogin(that.state.username);
+            const jsonData = JSON.parse(verifyRequest.response);
+            if(jsonData.status === 'OK') {
+                this.props.onLogin(that.state.username, jsonData.level);
             } else {
                 window.alert('用户名或密码错误');
             }

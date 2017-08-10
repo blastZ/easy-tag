@@ -287,20 +287,28 @@ class SelectedImage extends Component {
                 <div style={{position: 'absolute', top: '0', left: '45%'}}>
                     <p className="w3-text-white">{`第 ${this.props.selectedImageNumInAll} 张 图片名称: ${this.props.selectedImageName}`}</p>
                 </div>
-                <i onClick={this.props.onDeleteImage} className="fa fa-times delete-button-white" aria-hidden="true" style={{position: 'absolute', top: '10px', right: '20px'}}></i>
+                {
+                    this.props.userLevel !== 0 ?
+                    <i onClick={this.props.onDeleteImage} className="fa fa-times delete-button-white" aria-hidden="true" style={{position: 'absolute', top: '10px', right: '20px'}}></i>
+                    : null
+                }
                 <div id="selectedImagePanel" style={{position: 'relative', width: '1000px', height: '600px', overflow: 'hidden'}}>
                     <img draggable="false" id="selectedImage" src={this.props.selectedImage} alt={this.props.selectedImage} style={{position: 'absolute'}}/>
                     {
                         this.state.imgLoaded ? this.drawBoxList() : null
                     }
                 </div>
-                <form style={{position: 'absolute', bottom: '25px'}}>
-                    <label htmlFor="file" className="w3-green w3-button w3-text-white">
-                        <i className="fa fa-picture-o" aria-hidden="true"></i>&nbsp;
-                        上 传 本 地 图 片
-                    </label>
-                    <input multiple id="file" type="file" style={{display: 'none'}}/>
-                </form>
+                {
+                    this.props.userLevel !== 0 ?
+                    <form style={{position: 'absolute', bottom: '25px'}}>
+                        <label htmlFor="file" className="w3-green w3-button w3-text-white">
+                            <i className="fa fa-picture-o" aria-hidden="true"></i>&nbsp;
+                            上 传 本 地 图 片
+                        </label>
+                        <input multiple id="file" type="file" style={{display: 'none'}}/>
+                    </form>
+                    : null
+                }
             </div>
         )
     }

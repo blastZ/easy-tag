@@ -104,15 +104,23 @@ class TagView extends Component {
                     ))
                 }
                 </select>
-                <button onClick={this.deleteCurrentTag} className="w3-card w3-button w3-green margin-top-5">删除当前标签</button>
-                <div className="w3-card margin-top-5 flex-box" style={{alignItems: 'center'}}>
-                    <input id="new-tag-string" className="w3-input" type="text" style={{flex: '1', border: 'none', width: '50%'}}/>
-                    <button className="w3-button w3-green" onClick={this.addTagString} style={{width: '15%'}}>
-                        <i className="fa fa-plus" aria-hidden="true"></i>
-                    </button>
-                    <div style={{backgroundColor: 'rgb(211, 204, 204)', width: '2px'}}></div>
-                    <button onClick={this.saveTagList} className="w3-button w3-green" style={{width: '35%'}}>保存标签列表</button>
-                </div>
+                {
+                    this.props.userLevel !== 0 ?
+                    <button onClick={this.deleteCurrentTag} className="w3-card w3-button w3-green margin-top-5">删除当前标签</button>
+                    : null
+                }
+                {
+                    this.props.userLevel !== 0 ?
+                    <div className="w3-card margin-top-5 flex-box" style={{alignItems: 'center'}}>
+                        <input id="new-tag-string" className="w3-input" type="text" style={{flex: '1', border: 'none', width: '50%'}}/>
+                        <button className="w3-button w3-green" onClick={this.addTagString} style={{width: '15%'}}>
+                            <i className="fa fa-plus" aria-hidden="true"></i>
+                        </button>
+                        <div style={{backgroundColor: 'rgb(211, 204, 204)', width: '2px'}}></div>
+                        <button onClick={this.saveTagList} className="w3-button w3-green" style={{width: '35%'}}>保存标签列表</button>
+                    </div>
+                    : null
+                }
                 <ul className="w3-ul w3-hoverable margin-top-5"  style={{overflowY: 'auto', flex: '1'}}>{
                     this.props.boxList.map((box, index) => (
                         <li className="w3-hover-green" key={box.x_start + box.y_end}>

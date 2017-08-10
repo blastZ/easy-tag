@@ -16,6 +16,7 @@ class App extends Component {
     state = {
         userName: '',
         taskName: '',
+        userLevel: 0,
         defaultURL: 'http://demo.codvision.com:16831/api/',
         imageList: [
             //{url: 'http://demo.codvision.com:16831/static/user/fj/task1/data/zhong1_12.jpg', name: 'ding1_6.jpg', labeled: 0}
@@ -414,8 +415,8 @@ class App extends Component {
         this.setState(this.concatNewImage(url, name));
     }
 
-    login = (username) => {
-        this.setState({login: true, userName: username});
+    login = (username, userlevel) => {
+        this.setState({login: true, userName: username, userLevel: userlevel});
     }
 
     logout = (username) => {
@@ -430,7 +431,7 @@ class App extends Component {
         return (
             <div className="App full-height">
                 <Route exact path="/" render={() => (
-                    this.state.login ? <TaskPage onInitStartAndNum={this.initStartAndNum} onLogout={this.logout} defaultURL={this.state.defaultURL} username={this.state.userName} onChangeUserAndTask={this.changeUserAndTask}/> : <Login onLogin={this.login} defaultURL={this.state.defaultURL}/>
+                    this.state.login ? <TaskPage onInitStartAndNum={this.initStartAndNum} onLogout={this.logout} defaultURL={this.state.defaultURL} userLevel={this.state.userLevel} username={this.state.userName} onChangeUserAndTask={this.changeUserAndTask}/> : <Login onLogin={this.login} defaultURL={this.state.defaultURL}/>
                 )}/>
                 <Route ref="tagRoute" exact path="/tag" render={() => (
                     this.state.login ?
@@ -453,6 +454,7 @@ class App extends Component {
                                            boxList={this.state.tagList}
                                            defaultURL={this.state.defaultURL}
                                            userName={this.state.userName}
+                                           userLevel={this.state.userLevel}
                                            taskName={this.state.taskName}/>
                             <SelectBar onClickItem={this.clickItem} selectedImageNum={this.state.selectedImageNum} imageList={this.state.imageList}/>
                         </div>
@@ -472,6 +474,7 @@ class App extends Component {
                                      onChangeBoxInfo={this.changeBoxInfo}
                                      defaultURL={this.state.defaultURL}
                                      userName={this.state.userName}
+                                     userLevel={this.state.userLevel}
                                      taskName={this.state.taskName}/>
                         </div>
                     </div> : null
