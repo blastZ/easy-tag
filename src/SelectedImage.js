@@ -33,8 +33,11 @@ class SelectedImage extends Component {
     }
 
     componentDidMount() {
-        this.setState({imgLoaded: true});
         const that = this;
+
+        document.getElementById('selectedImage').onload = function() {
+            that.setState({imgLoaded: true});
+        }
 
         document.addEventListener('keyup', this.deleteImageListener);
         document.addEventListener('keyup', this.nextPreviousImageListener);
