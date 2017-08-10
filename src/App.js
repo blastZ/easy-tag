@@ -222,6 +222,8 @@ class App extends Component {
                     if(state.imageList.length === 1) {
                         that.saveTagList(preIndex);
                     }
+                }, function() {
+                    that.refs.tagRoute.refs.selectedImage.initSelectedImage();
                 })
                 break
             }

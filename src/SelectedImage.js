@@ -32,10 +32,37 @@ class SelectedImage extends Component {
         }
     }
 
+    initSelectedImage = () => {
+        const theImage = document.getElementById('selectedImage');
+        const container = document.getElementById('selectedImagePanel');
+
+        if(theImage.naturalHeight > 600) {
+            theImage.height = 600;
+        } else {
+            theImage.height = theImage.naturalHeight;
+        }
+        theImage.style.left = container.width - theImage.width > 0 ? ((container.width - theImage.width) / 2).toString() + 'px' : '0px';
+        theImage.style.top = container.height - theImage.height > 0 ? ((container.height - theImage.height) / 2).toString() + 'px' : '0px';
+    }
+
     componentDidMount() {
         const that = this;
+        const theImage = document.getElementById('selectedImage');
+        const container = document.getElementById('selectedImagePanel');
 
-        document.getElementById('selectedImage').onload = function() {
+        container.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+
+        theImage.onload = function() {
+            const container = document.getElementById('selectedImagePanel');
+            container.width = 1000;
+            container.height = 600;
+            if(theImage.height > 600) {
+                theImage.height = 600;
+            }
+            theImage.style.left = container.width - theImage.width > 0 ? ((container.width - theImage.width) / 2).toString() + 'px' : '0px';
+            theImage.style.top = container.height - theImage.height > 0 ? ((container.height - theImage.height) / 2).toString() + 'px' : '0px';
             that.setState({imgLoaded: true});
         }
 
@@ -69,98 +96,149 @@ class SelectedImage extends Component {
                 window.alert('图片命名不符合规则');
             }
         })
+
         let drawing = false
         let x1 = 0, y1 = 0, x_move = 0, y_move = 0
         let rect_width = 0, rect_height = 0
         let offset = {}
+        let start = false;
+        let previousClientX = 0, previousClientY = 0, currentClientX = 0, currentClientY = 0;
         $('#selectedImagePanel').mousedown(function(e) {
-            drawing = true
-            try {
-                offset = $(this).offset()
-                x1 = e.clientX - offset.left
-                y1 = e.clientY - offset.top
-                $(this).append(
-                    `<div id="move-rect" class="black-white-border" style="position: absolute; left: ${x1}px; top: ${y1}px;"></div>`
-                )
-            } catch(e) {
-                alert(e)
+            if(e.which === 1) {
+                drawing = true
+                try {
+                    offset = $(this).offset()
+                    x1 = e.clientX - offset.left
+                    y1 = e.clientY - offset.top
+                    $(this).append(
+                        `<div id="move-rect" class="black-white-border" style="position: absolute; left: ${x1}px; top: ${y1}px;"></div>`
+                    )
+                } catch(e) {
+                    alert(e)
+                }
+            } else if(e.which === 3) {
+                start = true;
+                previousClientX = e.clientX;
+                previousClientY = e.clientY;
             }
         })
 
         $('#selectedImagePanel').mousemove(function(e) {
-            if(drawing) {
-                x_move = e.clientX - offset.left
-                y_move = e.clientY - offset.top
-                if(x_move > x1 && y_move < y1) {
-                    $('#move-rect').css('left', `${x1}px`)
-                    $('#move-rect').css('top', `${y_move}px`)
-                } else if(x_move > x1 && y_move > y1) {
-                    $('#move-rect').css('left', `${x1}px`)
-                    $('#move-rect').css('top', `${y1}px`)
-                } else if(x_move < x1 && y_move > y1) {
-                    $('#move-rect').css('left', `${x_move}px`)
-                    $('#move-rect').css('top', `${y1}px`)
-                } else if(x_move < x1 && y_move < y1) {
-                    $('#move-rect').css('left', `${x_move}px`)
-                    $('#move-rect').css('top', `${y_move}px`)
+            if(e.which === 1) {
+                if(drawing) {
+                    x_move = e.clientX - offset.left
+                    y_move = e.clientY - offset.top
+                    if(x_move > x1 && y_move < y1) {
+                        $('#move-rect').css('left', `${x1}px`)
+                        $('#move-rect').css('top', `${y_move}px`)
+                    } else if(x_move > x1 && y_move > y1) {
+                        $('#move-rect').css('left', `${x1}px`)
+                        $('#move-rect').css('top', `${y1}px`)
+                    } else if(x_move < x1 && y_move > y1) {
+                        $('#move-rect').css('left', `${x_move}px`)
+                        $('#move-rect').css('top', `${y1}px`)
+                    } else if(x_move < x1 && y_move < y1) {
+                        $('#move-rect').css('left', `${x_move}px`)
+                        $('#move-rect').css('top', `${y_move}px`)
+                    }
+                    rect_width = Math.abs(x_move - x1)
+                    rect_height = Math.abs(y_move - y1)
+                    $('#move-rect').css('width', `${rect_width}px`)
+                    $('#move-rect').css('height', `${rect_height}px`)
                 }
-                rect_width = Math.abs(x_move - x1)
-                rect_height = Math.abs(y_move - y1)
-                $('#move-rect').css('width', `${rect_width}px`)
-                $('#move-rect').css('height', `${rect_height}px`)
+            } else if(e.which === 3) {
+                if(start) {
+                    currentClientX = e.clientX;
+                    currentClientY = e.clientY;
+                    theImage.style.left = (parseInt(theImage.style.left) + currentClientX - previousClientX).toString() + 'px';
+                    theImage.style.top = (parseInt(theImage.style.top) + currentClientY - previousClientY).toString() + 'px';
+                    previousClientX = e.clientX;
+                    previousClientY = e.clientY;
+                    that.forceUpdate();
+              }
             }
         })
 
         $(document).mouseup(function(e) {
-            if(drawing) {
-                const img_natural_width = $('#selectedImage')[0].width
-                const img_natural_height = $('#selectedImage')[0].height
-                try {
-                    const x_start = $('#move-rect').css('left')
-                    const x_start_int = parseInt(x_start.slice(0, x_start.length - 2), 10) //remove 'px'
-                    const y_start = $('#move-rect').css('top')
-                    const y_start_int = parseInt(y_start.slice(0, y_start.length - 2), 10)
-                    const x_end = x_start_int + rect_width
-                    const y_end = y_start_int + rect_height
-                    const relative_x_start = (x_start_int / img_natural_width).toFixed(3)
-                    const relative_y_start = (y_start_int / img_natural_height).toFixed(3)
-                    const relative_x_end = (x_end / img_natural_width).toFixed(3)
-                    const relative_y_end = (y_end / img_natural_height).toFixed(3)
-                    const tag = {x_start: relative_x_start, y_start: relative_y_start, x_end: relative_x_end, y_end: relative_y_end, tag: that.props.currentTagString, info: that.props.info}
-                    //console.log(tag)
-                    that.props.onAddTag(tag)
-                    $('#move-rect').remove()
-                } catch(e) {
-                    alert(e)
+            if(e.which === 1) {
+                if(drawing) {
+                    const img_natural_width = document.getElementById('selectedImage').width;
+                    const img_natural_height = document.getElementById('selectedImage').height;
+                    try {
+                        const theImage_left = parseInt(theImage.style.left);
+                        const theImage_top = parseInt(theImage.style.top);
+                        const x_start = $('#move-rect').css('left');
+                        const x_start_int = parseInt(x_start);
+                        const y_start = $('#move-rect').css('top');
+                        const y_start_int = parseInt(y_start);
+                        const x_end = x_start_int + rect_width
+                        const y_end = y_start_int + rect_height
+                        const relative_x_start = ((x_start_int - theImage_left) / img_natural_width).toFixed(3)
+                        const relative_y_start = ((y_start_int - theImage_top) / img_natural_height).toFixed(3)
+                        const relative_x_end = ((x_end - theImage_left) / img_natural_width).toFixed(3)
+                        const relative_y_end = ((y_end - theImage_top) / img_natural_height).toFixed(3)
+                        const tag = {x_start: relative_x_start, y_start: relative_y_start, x_end: relative_x_end, y_end: relative_y_end, tag: that.props.currentTagString, info: that.props.info}
+                        //console.log(tag)
+                        that.props.onAddTag(tag)
+                        $('#move-rect').remove()
+                    } catch(e) {
+                        alert(e)
+                    }
                 }
+                drawing = false
+                rect_width = 0
+                rect_height = 0
+            } else if(e.which === 3) {
+                start = false;
+                that.forceUpdate();
             }
-            drawing = false
-            rect_width = 0
-            rect_height = 0
         })
+
+        container.addEventListener('wheel', function(e) {
+            e.wheelDeltaY > 0 ? that.increaseImageSize() : that.decreaseImageSize();
+            that.forceUpdate();
+        });
+    }
+
+    increaseImageSize = () => {
+        const theImage = document.getElementById('selectedImage');
+        theImage.height += 10;
+        theImage.style.left = (parseInt(theImage.style.left) - 5).toString() + 'px';
+        theImage.style.top = (parseInt(theImage.style.top) - 5).toString() + 'px';
+    }
+
+    decreaseImageSize = () => {
+        const theImage = document.getElementById('selectedImage');
+        theImage.height -= 10;
+        theImage.style.left = (parseInt(theImage.style.left) + 5).toString() + 'px';
+        theImage.style.top = (parseInt(theImage.style.top) + 5).toString() + 'px';
     }
 
     getBoxX = (r_x_start) => {
-        const img_natural_width = $('#selectedImage')[0].width;
-        return (img_natural_width * r_x_start);
+        const img = document.getElementById('selectedImage');
+        const img_width = img.width;
+        const img_left = parseInt(img.style.left);
+        return (img_width * r_x_start + img_left);
     }
 
     getBoxY = (r_y_start) => {
-        const img_natural_height = $('#selectedImage')[0].height;
-        return (img_natural_height * r_y_start);
+        const img = document.getElementById('selectedImage');
+        const img_height = img.height;
+        const img_top = parseInt(img.style.top);
+        return (img_height * r_y_start + img_top);
     }
 
     getBoxWidth = (r_x_start, r_x_end) => {
-        const img_natural_width = $('#selectedImage')[0].width;
-        const x_start = img_natural_width * r_x_start;
-        const x_end = img_natural_width * r_x_end;
+        const img_width = document.getElementById('selectedImage').width;
+        const x_start = img_width * r_x_start;
+        const x_end = img_width * r_x_end;
         return (x_end - x_start);
     }
 
     getBoxHeight = (r_y_start, r_y_end) => {
-        const img_natural_height = $('#selectedImage')[0].height;
-        const y_start = img_natural_height * r_y_start;
-        const y_end = img_natural_height * r_y_end;
+        const img_height = document.getElementById('selectedImage').height;
+        const y_start = img_height * r_y_start;
+        const y_end = img_height * r_y_end;
         return (y_end - y_start);
     }
 
@@ -210,8 +288,8 @@ class SelectedImage extends Component {
                     <p className="w3-text-white">{`第 ${this.props.selectedImageNumInAll} 张 图片名称: ${this.props.selectedImageName}`}</p>
                 </div>
                 <i onClick={this.props.onDeleteImage} className="fa fa-times delete-button-white" aria-hidden="true" style={{position: 'absolute', top: '10px', right: '20px'}}></i>
-                <div id="selectedImagePanel" style={{position: 'relative'}}>
-                    <img draggable="false" id="selectedImage" className="w3-image" src={this.props.selectedImage} alt={this.props.selectedImage} style={{maxHeight: '600px'}}/>
+                <div id="selectedImagePanel" style={{position: 'relative', width: '1000px', height: '600px', overflow: 'hidden'}}>
+                    <img draggable="false" id="selectedImage" src={this.props.selectedImage} alt={this.props.selectedImage} style={{position: 'absolute'}}/>
                     {
                         this.state.imgLoaded ? this.drawBoxList() : null
                     }
