@@ -143,6 +143,10 @@
     to {opacity: 1;}
 }
 
+.et-margin-top-32 {
+    margin-top: 32px !important;
+}
+
 .et-margin-top-64 {
     margin-top: 64px !important;
 }
@@ -190,4 +194,9 @@
 .et-taskname-button:hover {
     cursor: pointer;
     color: orange;
+}
+
+.et-padding-128 {
+    padding-top: 64px !important;
+    padding-bottom: 128px !important;
 }

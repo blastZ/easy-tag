@@ -6,17 +6,28 @@ class TaskPage extends Component {
         taskList: [], //taskName: 'a', time: '2017-07-28 14:42:19', progress: '0.0', taskState: '1', taskType: '1'
         workerList: [], //workerName: 'a', workerState: '0', taskName: 'a', GPU: '2048/8192', updateTime: '2017-07-02 09:43:12'
         distredUserList: [], //userName: 'aaa', userLevel: '0'
+        distrableUserList: [], //userName: 'aaa', userLevel: '0'
+        userManageList: [], //userName: 'aaa', email: 'aa@aa.com', activeState: '0', userLevel: '0', userGroup: 'common'
         newTaskName: '',
         showInputView: false,
         showImageView: false,
         showPersonPanel: false,
-        showDistributeTaskView: false
+        showDistributeTaskView: false,
+        showStartAndNumInputView: false,
+        currentTaskName: '',
+        currentUserName: '',
+        start: 1,
+        num: 1,
+        currentTaskFileCount: '0'
     }
 
     componentDidMount() {
         const that = this;
         const getTaskList = new XMLHttpRequest();
         const getWorkerList = new XMLHttpRequest();
+        if(this.props.userLevel === 3) {
+            this.getUserManageList();
+        }
         try {
             getTaskList.open('GET', `${this.props.defaultURL}gettasklist?usrname=${this.props.username}`);
             getTaskList.send();
@@ -46,12 +57,61 @@ class TaskPage extends Component {
         }, 60000);
     }
 
+    getUserManageList = () => {
+        const that = this;
+        try {
+            const request = new XMLHttpRequest();
+            request.open('POST', `${this.props.defaultURL}getuserlist`);
+            let data = {
+                name: that.props.username,
+                passwd: '1q2w3e4r'
+            }
+            data = JSON.stringify(data);
+            request.send(data);
+            request.onload = function() {
+                that.getFormatUserManageList(request.response);
+            }
+        } catch(error) {
+            console.log(error);
+        }
+    }
+
+    getFormatUserManageList = (str) => {
+        const userManageList = [];
+        const arrayData = str.split(',');
+        if(arrayData.length > 3) {
+            for(let i=0; i<arrayData.length; i=i+5) {
+                const userName = arrayData[i].slice(4, arrayData[i].length - 1);
+                const email = arrayData[i + 1].slice(3, arrayData[i + 1].length - 1);
+                const activeState = arrayData[i + 2].slice(1, 2);
+                const userLevel = arrayData[i + 3].slice(1, 2);
+                let userGroup = '';
+                if((i + 4) === arrayData.length - 1) {
+                    userGroup = arrayData[i + 4].slice(3, arrayData[i + 4].length - 3);
+                } else {
+                    userGroup = arrayData[i + 4].slice(3, arrayData[i + 4].length - 2);
+                }
+                userManageList.push({
+                    userName,
+                    email,
+                    activeState,
+                    userLevel,
+                    userGroup
+                })
+            }
+            this.setState({userManageList});
+        }
+    }
+
     popupInputView = () => {
         this.setState({showInputView: true});
     }
 
     closeInputView = () => {
-        this.setState({showInputView: false});
+        this.setState({
+            showInputView: false,
+            newTaskName: ''
+        });
     }
 
     closeImageView = () => {
@@ -71,6 +131,9 @@ class TaskPage extends Component {
                 getNewTask.onload = function() {
                     const arrayData = that.getArrayData(getNewTask.response);
                     that.addTask(arrayData);
+                    that.setState({
+                        newTaskName: ''
+                    })
                 }
             } catch(error) {
                 console.log(error);
@@ -354,11 +417,90 @@ class TaskPage extends Component {
 
     showDistributeTaskView = (index) => {
         this.setState({showDistributeTaskView: true});
-        this.getDistredUserList(this.state.taskList[index].taskName);
+        this.setState({currentTaskName: this.state.taskList[index].taskName}, function() {
+            this.getDistredUserList(this.state.currentTaskName);
+            this.getDistrableUserList();
+            const that = this;
+            const getFileCount = new XMLHttpRequest();
+            getFileCount.open('GET', `${this.props.defaultURL}filecount?usrname=${this.props.username}&taskname=${this.state.currentTaskName}`);
+            getFileCount.send();
+            getFileCount.onload = function() {
+                that.setState({currentTaskFileCount: getFileCount.response});
+            }
+        })
+    }
+
+    distributeTaskToUser = (index) => {
+        const userName = this.state.distrableUserList[index].userName;
+        this.setState({showStartAndNumInputView: true, currentUserName: userName});
+    }
+
+    confirmDistrTaskToUser = () => {
+        const start = this.state.start;
+        const num = this.state.num;
+        const fileCount = parseInt(this.state.currentTaskFileCount);
+        if((start + num - 1) > fileCount) {
+            window.alert(`总共 ${fileCount} 张,请检查输入`);
+        } else {
+            const that = this;
+            try{
+                const request = new XMLHttpRequest();
+                request.open('GET', `${this.props.defaultURL}distributetask?usrname=${this.props.username}&taskname=${this.state.currentTaskName}&distusrname=${this.state.currentUserName}&start=${this.state.start}&num=${this.state.num}`);
+                request.send();
+                request.onload = function() {
+                    that.getDistredUserList(that.state.currentTaskName);
+                    that.getDistrableUserList();
+                    that.setState({
+                        start: 1,
+                        num: 1,
+                        currentUserName: '',
+                    })
+                }
+            } catch(error) {
+                console.log(error);
+            }
+            this.closeStartAndNumInputView();
+        }
+    }
+
+    unDistributeTaskToUser = (index) => {
+        const userName = this.state.distredUserList[index].userName;
+        const that = this;
+        try{
+            const request = new XMLHttpRequest();
+            request.open('GET', `${this.props.defaultURL}undistributetask?usrname=${this.props.username}&taskname=${this.state.currentTaskName}&distusrname=${userName}`);
+            request.send();
+            request.onload = function() {
+                that.getDistredUserList(that.state.currentTaskName);
+                that.getDistrableUserList();
+            }
+        } catch(error) {
+            console.log(error);
+        }
+    }
+
+    getUserLevelName = (userLevel) => {
+        userLevel = parseInt(userLevel);
+        switch (userLevel) {
+            case 0: return '普通用户';
+            case 1: return '编辑用户';
+            case 2: return '管理用户';
+            case 3: return '超级用户';
+            default: return 'ERROR';
+        }
     }
 
     closeDistributeTaskView = () => {
         this.setState({showDistributeTaskView: false});
+    }
+
+    closeStartAndNumInputView = () => {
+        this.setState({
+            showStartAndNumInputView: false,
+            start: 1,
+            num: 1,
+            currentUserName: ''
+        });
     }
 
     getDistredUserList = (taskName) => {
@@ -368,7 +510,7 @@ class TaskPage extends Component {
             request.open('GET', `${this.props.defaultURL}distreduserlist?usrname=${this.props.username}&taskname=${taskName}`);
             request.send();
             request.onload = function() {
-                const distredUserList = that.getFormatDistredUserList(request.response);
+                const distredUserList = that.getFormatUserList(request.response);
                 that.setState({distredUserList});
             }
         } catch(error) {
@@ -376,7 +518,22 @@ class TaskPage extends Component {
         }
     }
 
-    getFormatDistredUserList = (str) => {
+    getDistrableUserList = () => {
+        const that = this;
+        try{
+            const request = new XMLHttpRequest();
+            request.open('GET', `${this.props.defaultURL}distrableuserlist?usrname=${this.props.username}`);
+            request.send();
+            request.onload = function() {
+                const distrableUserList = that.getFormatUserList(request.response);
+                that.setState({distrableUserList});
+            }
+        } catch(error) {
+            console.log(error);
+        }
+    }
+
+    getFormatUserList = (str) => {
         const arrayData = str.split(',');
         const distredUserList = [];
         if(arrayData.length > 1) {
@@ -387,6 +544,30 @@ class TaskPage extends Component {
             }
         }
         return distredUserList;
+    }
+
+    handleStartInputChange = (e) => {
+        let start = parseInt(e.target.value);
+        const fileCount = parseInt(this.state.currentTaskFileCount);
+        if(start < 1) {
+            start = 1;
+        }
+        if(start > fileCount) {
+            start = fileCount;
+        }
+        this.setState({start: start});
+    }
+
+    handleNumInputChange = (e) => {
+        let num = parseInt(e.target.value);
+        const fileCount = parseInt(this.state.currentTaskFileCount);
+        if(num < 1) {
+            num = 1;
+        }
+        if(num > fileCount) {
+            num = fileCount;
+        }
+        this.setState({num: num});
     }
 
     render() {
@@ -408,11 +589,24 @@ class TaskPage extends Component {
                     ) : null
                 }
                 {
+                    this.state.showStartAndNumInputView === true ? (
+                        <div className="popup" style={{background: 'rgba(0, 0, 0, 0.8)', position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', zIndex: '200'}}>
+                            <i onClick={this.closeStartAndNumInputView} className="fa fa-times w3-text-white w3-xxlarge et-hoverable" aria-hidden="true" style={{position: 'absolute', top: '10px', right: '10px'}}></i>
+                            <div className="flex-box" style={{width: '40%', margin: '0 auto', position: 'absolute', top: '30%', left: '30%'}}>
+                                <input onChange={this.handleStartInputChange} value={this.state.start} placeholder="输入起始序号" className="w3-input" type="number" style={{width: '40%'}}/>
+                                <input onChange={this.handleNumInputChange} value={this.state.num} placeholder="输入图片数量" className="w3-input" type="number" style={{width: '40%', marginLeft: '2px'}}/>
+                                <button onClick={this.confirmDistrTaskToUser} className="w3-button w3-orange" style={{width: '20%', marginLeft: '2px'}}>确定分配</button>
+                            </div>
+                        </div>
+                    ) : null
+                }
+                {
                     this.state.showDistributeTaskView ? (
-                        <div className="popup" style={{background: 'rgba(0, 0, 0, 0.4)', position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', zIndex: '100'}}>
+                        <div className="popup" style={{background: 'rgba(0, 0, 0, 0.6)', position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', zIndex: '100'}}>
                             <i onClick={this.closeDistributeTaskView} className="fa fa-times w3-text-white w3-xxlarge et-hoverable" aria-hidden="true" style={{position: 'absolute', top: '10px', right: '10px'}}></i>
                             <div className="w3-content w3-text-white et-margin-top-64" style={{width: '60%', height: '70%'}}>
-                                <h3>已分配用户</h3>
+                                <h2 className="w3-center">{this.state.currentTaskName}</h2>
+                                <h3 className="et-margin-top-32">已分配用户</h3>
                                 <table className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered">
                                     <thead className="w3-orange w3-text-white">
                                         <tr>
@@ -423,18 +617,18 @@ class TaskPage extends Component {
                                     </thead>
                                     <tbody>
                                     {
-                                        this.state.distredUserList.map((user) => (
-                                            <tr>
+                                        this.state.distredUserList.map((user, index) => (
+                                            <tr key={user.userName + user.userLevel}>
                                                 <td>{user.userName}</td>
-                                                <td>{user.userLevel}</td>
-                                                <td><i className="fa fa-trash table-item-buttont" aria-hidden="true"> 取消分配</i></td>
+                                                <td>{this.getUserLevelName(user.userLevel)}</td>
+                                                <td><i onClick={this.unDistributeTaskToUser.bind(this, index)} className="fa fa-calendar-times-o table-item-button" aria-hidden="true"> 取消分配</i></td>
                                             </tr>
                                         ))
                                     }
                                     </tbody>
                                     <tfoot></tfoot>
                                 </table>
-                                <h3>分配任务</h3>
+                                <h3 className="et-margin-top-64">分配任务</h3>
                                 <table className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered">
                                     <thead className="w3-orange w3-text-white">
                                         <tr>
@@ -445,7 +639,13 @@ class TaskPage extends Component {
                                     </thead>
                                     <tbody>
                                     {
-                                        
+                                        this.state.distrableUserList.map((user, index) => (
+                                            <tr key={user.userName + user.userLevel}>
+                                                <td>{user.userName}</td>
+                                                <td>{this.getUserLevelName(user.userLevel)}</td>
+                                                <td><i onClick={this.distributeTaskToUser.bind(this, index)} className="fa fa-calendar-check-o table-item-button" aria-hidden="true"> 分配任务</i></td>
+                                            </tr>
+                                        ))
                                     }
                                     </tbody>
                                     <tfoot></tfoot>
@@ -477,7 +677,7 @@ class TaskPage extends Component {
                         </div>
                     ) : null
                 }
-                <div className="et-content w3-padding-64">
+                <div className={`et-content ${this.props.userLevel === 3 ? 'et-padding-128' : 'w3-padding-64'}`}>
                     <div style={{position: 'relative'}}>
                         <h3 className="et-margin-top-64 et-table-title">任务表</h3>
                         {
@@ -582,6 +782,42 @@ class TaskPage extends Component {
                         }</tbody>
                         <tfoot></tfoot>
                     </table>
+                    {
+                        this.props.userLevel === 3 ?
+                        <h3 className="et-margin-top-64 et-table-title">用户管理表</h3>
+                        : null
+                    }
+                    {
+                        this.props.userLevel === 3 ?
+                        <table className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered">
+                            <thead className="w3-green">
+                                <tr>
+                                    <th>用户名</th>
+                                    <th>邮箱</th>
+                                    <th>激活状态</th>
+                                    <th>用户权限</th>
+                                    <th>所在组别</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>{
+                                this.state.userManageList.map((user) => (
+                                    <tr key={user.userName + user.email}>
+                                        <td>{user.userName}</td>
+                                        <td>{user.email}</td>
+                                        <td>{user.activeState}</td>
+                                        <td>{user.userLevel}</td>
+                                        <td>{user.userGroup}</td>
+                                        <td>
+                                            <i className="fa fa-minus-square table-item-button"> 删除用户</i>
+                                        </td>
+                                    </tr>
+                                ))
+                            }</tbody>
+                            <tfoot></tfoot>
+                        </table>
+                        : null
+                    }
                 </div>
             </div>
         )
