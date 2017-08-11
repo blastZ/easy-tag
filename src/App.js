@@ -17,6 +17,7 @@ class App extends Component {
         userName: '',
         taskName: '',
         userLevel: 0,
+        password: '',
         defaultURL: 'http://demo.codvision.com:16831/api/',
         imageList: [
             //{url: 'http://demo.codvision.com:16831/static/user/fj/task1/data/zhong1_12.jpg', name: 'ding1_6.jpg', labeled: 0}
@@ -415,8 +416,8 @@ class App extends Component {
         this.setState(this.concatNewImage(url, name));
     }
 
-    login = (username, userlevel) => {
-        this.setState({login: true, userName: username, userLevel: userlevel});
+    login = (userName, userLevel, password) => {
+        this.setState({login: true, userName, userLevel, password});
     }
 
     logout = (username) => {
@@ -431,7 +432,7 @@ class App extends Component {
         return (
             <div className="App full-height">
                 <Route exact path="/" render={() => (
-                    this.state.login ? <TaskPage onInitStartAndNum={this.initStartAndNum} onLogout={this.logout} defaultURL={this.state.defaultURL} userLevel={this.state.userLevel} username={this.state.userName} onChangeUserAndTask={this.changeUserAndTask}/> : <Login onLogin={this.login} defaultURL={this.state.defaultURL}/>
+                    this.state.login ? <TaskPage onInitStartAndNum={this.initStartAndNum} onLogout={this.logout} defaultURL={this.state.defaultURL} userLevel={this.state.userLevel} username={this.state.userName} password={this.state.password} onChangeUserAndTask={this.changeUserAndTask}/> : <Login onLogin={this.login} defaultURL={this.state.defaultURL}/>
                 )}/>
                 <Route ref="tagRoute" exact path="/tag" render={() => (
                     this.state.login ?

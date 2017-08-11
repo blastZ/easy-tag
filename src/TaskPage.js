@@ -62,7 +62,7 @@ class TaskPage extends Component {
     getManagerData = () => {
         let data = {
             name: this.props.username,
-            passwd: '1q2w3e4r'
+            passwd: this.props.password
         }
         data = JSON.stringify(data);
         return data;
@@ -1040,7 +1040,7 @@ class TaskPage extends Component {
                             </thead>
                             <tbody>{
                                 this.state.userGroupList.map((group, index) => (
-                                    <tr>
+                                    <tr key={group + index}>
                                         <td>{group}</td>
                                         <td>
                                             <i onClick={this.deleteUserGroup.bind(this, index)} className="fa fa-minus-circle table-item-button"> 删除</i>

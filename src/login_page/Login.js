@@ -33,7 +33,7 @@ class Login extends Component {
         verifyRequest.onload = () => {
             const jsonData = JSON.parse(verifyRequest.response);
             if(jsonData.status === 'OK') {
-                this.props.onLogin(that.state.username, jsonData.level);
+                this.props.onLogin(that.state.username, jsonData.level, this.state.password);
             } else {
                 window.alert('用户名或密码错误');
             }
