@@ -5,7 +5,44 @@ class RegisterView extends Component {
         username: '',
         password: '',
         rePassword: '',
-        email: ''
+        email: '',
+        userGroupList: []
+    }
+
+    componentDidMount() {
+        this.getUserGroupList();
+    }
+
+    getUserGroupList = () => {
+        const that = this;
+        try {
+            const request = new XMLHttpRequest();
+            request.open('GET', `${this.props.defaultURL}getgrouplist`);
+            request.send();
+            request.onload = function() {
+                console.log('get userGroupList success');
+                that.getFormatUserGroupList(request.response);
+            }
+        } catch(error) {
+            console.log(error);
+        }
+    }
+
+    getFormatUserGroupList = (str) => {
+        const userGroupList = [];
+        const arrayData = str.split(',');
+        if(arrayData.length > 0) {
+            for(let i=0; i<arrayData.length; i++) {
+                let groupName = '';
+                if(i === arrayData.length - 1) {
+                    groupName = arrayData[i].slice(3, arrayData[i].length - 2);
+                } else {
+                    groupName = arrayData[i].slice(3, arrayData[i].length - 1);
+                }
+                userGroupList.push(groupName)
+            }
+            this.setState({userGroupList});
+        }
     }
 
     handleUsername = (e) => {
@@ -74,7 +111,12 @@ class RegisterView extends Component {
                 <i onClick={this.props.onCloseRegisterView} className="fa fa-times w3-text-white w3-xxlarge et-hoverable" aria-hidden="true" style={{position: 'absolute', top: '10px', right: '10px'}}></i>
                 <div className="flex-box flex-column" style={{width: '20%'}}>
                     <h3 className="w3-text-white"><b>注册</b></h3>
-                    <input onChange={this.handleUsername} value={this.state.username} className="w3-input" type="text" placeholder="用户名"/>
+                    <select className="w3-margin-top w3-select">{
+                        this.state.userGroupList.map((group) => (
+                            <option>{group}</option>
+                        ))
+                    }</select>
+                    <input onChange={this.handleUsername} value={this.state.username} className="w3-input w3-margin-top" type="text" placeholder="用户名"/>
                     <input onChange={this.handlePassword} value={this.state.password} className="w3-input w3-margin-top" type="password" placeholder="密码"/>
                     <input onChange={this.handleRePassword} value={this.state.rePassword} className="w3-input w3-margin-top" type="password" placeholder="重复密码"/>
                     <input onChange={this.handleEmail} value={this.state.email} className="w3-input w3-margin-top" type="email" placeholder="邮箱"/>

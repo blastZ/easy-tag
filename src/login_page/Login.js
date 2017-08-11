@@ -9,8 +9,7 @@ class Login extends Component {
     }
 
     showRegisterView = () => {
-        window.alert('注册请联系 web@codvision.com');
-        // this.setState({showRegisterView: true});
+        this.setState({showRegisterView: true});
     }
 
     closeRegisterView = () => {

@@ -8,6 +8,7 @@ class TaskPage extends Component {
         distredUserList: [], //userName: 'aaa', userLevel: '0'
         distrableUserList: [], //userName: 'aaa', userLevel: '0'
         userManageList: [], //userName: 'aaa', email: 'aa@aa.com', activeState: '0', userLevel: '0', userGroup: 'common'
+        userGroupList: [], // 'common', 'test'
         newTaskName: '',
         showInputView: false,
         showImageView: false,
@@ -27,6 +28,7 @@ class TaskPage extends Component {
         const getWorkerList = new XMLHttpRequest();
         if(this.props.userLevel === 3) {
             this.getUserManageList();
+            this.getUserGroupList();
         }
         try {
             getTaskList.open('GET', `${this.props.defaultURL}gettasklist?usrname=${this.props.username}`);
@@ -57,22 +59,60 @@ class TaskPage extends Component {
         }, 60000);
     }
 
+    getManagerData = () => {
+        let data = {
+            name: this.props.username,
+            passwd: '1q2w3e4r'
+        }
+        data = JSON.stringify(data);
+        return data;
+    }
+
     getUserManageList = () => {
         const that = this;
         try {
             const request = new XMLHttpRequest();
             request.open('POST', `${this.props.defaultURL}getuserlist`);
-            let data = {
-                name: that.props.username,
-                passwd: '1q2w3e4r'
-            }
-            data = JSON.stringify(data);
+            const data = this.getManagerData();
             request.send(data);
             request.onload = function() {
+                console.log('get userManageList success');
                 that.getFormatUserManageList(request.response);
             }
         } catch(error) {
             console.log(error);
+        }
+    }
+
+    getUserGroupList = () => {
+        const that = this;
+        try {
+            const request = new XMLHttpRequest();
+            request.open('GET', `${this.props.defaultURL}getgrouplist`);
+            request.send();
+            request.onload = function() {
+                console.log('get userGroupList success');
+                that.getFormatUserGroupList(request.response);
+            }
+        } catch(error) {
+            console.log(error);
+        }
+    }
+
+    getFormatUserGroupList = (str) => {
+        const userGroupList = [];
+        const arrayData = str.split(',');
+        if(arrayData.length > 0) {
+            for(let i=0; i<arrayData.length; i++) {
+                let groupName = '';
+                if(i === arrayData.length - 1) {
+                    groupName = arrayData[i].slice(3, arrayData[i].length - 2);
+                } else {
+                    groupName = arrayData[i].slice(3, arrayData[i].length - 1);
+                }
+                userGroupList.push(groupName)
+            }
+            this.setState({userGroupList});
         }
     }
 
@@ -413,6 +453,10 @@ class TaskPage extends Component {
         } catch(error) {
             console.log(error);
         }
+        if(this.props.userLevel === 3) {
+            this.getUserManageList();
+            this.getUserGroupList();
+        }
     }
 
     showDistributeTaskView = (index) => {
@@ -570,6 +614,159 @@ class TaskPage extends Component {
         this.setState({num: num});
     }
 
+    deleteUser = (index) => {
+        const that = this;
+        const result = window.confirm("确定删除该用户吗?");
+        if(result) {
+            try{
+                const request = new XMLHttpRequest();
+                request.open('POST', `${this.props.defaultURL}delusr?usrname=${this.state.userManageList[index].userName}`);
+                const data = this.getManagerData();
+                request.send(data);
+                request.onload = function() {
+                    that.getUserManageList();
+                }
+            } catch(error) {
+                console.log(error);
+            }
+        }
+    }
+
+    changeUserLevel = (index) => {
+        const that = this;
+        const result = window.prompt("输入新的用户权限名", "普通用户/编辑用户/管理用户/超级用户");
+        let userLevel = -1;
+        switch(result) {
+            case '普通用户': userLevel = 0; break;
+            case '编辑用户': userLevel = 1; break;
+            case '管理用户': userLevel = 2; break;
+            case '超级用户': userLevel = 3; break;
+        }
+        if(userLevel !== -1) {
+            try{
+                const request = new XMLHttpRequest();
+                request.open('POST', `${this.props.defaultURL}setusrlevel?usrname=${this.state.userManageList[index].userName}&level=${userLevel}`);
+                const data = this.getManagerData();
+                request.send(data);
+                request.onload = function() {
+                    that.getUserManageList();
+                }
+            } catch(error) {
+                console.log(error);
+            }
+        } else {
+            if(result) window.alert("请输入正确的用户权限名");
+        }
+    }
+
+    changeUserGroup = (index) => {
+        const that = this;
+        const result = window.prompt("输入新的用户组别名", "");
+        let rightGroup = -1;
+        if(this.state.userGroupList.filter((group) => (group === result)).length > 0) {
+            rightGroup = 1;
+        }
+        if(rightGroup !== -1) {
+            try{
+                const request = new XMLHttpRequest();
+                request.open('POST', `${this.props.defaultURL}setusrgroup?usrname=${this.state.userManageList[index].userName}&group=${result}`);
+                const data = this.getManagerData();
+                request.send(data);
+                request.onload = function() {
+                    that.getUserManageList();
+                }
+            } catch(error) {
+                console.log(error);
+            }
+        } else {
+            if(result) window.alert("请输入正确的用户组别名");
+        }
+    }
+
+    changeUserEmail = (index) => {
+        const that = this;
+        const result = window.prompt("输入新的用户邮箱", "aaaa@bbbb.com");
+        let rightEmail = -1;
+        if(/^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.test(result)) {
+            rightEmail = 1;
+        }
+        if(rightEmail !== -1) {
+            try{
+                const request = new XMLHttpRequest();
+                request.open('POST', `${this.props.defaultURL}setusremail?usrname=${this.state.userManageList[index].userName}&email=${result}`);
+                const data = this.getManagerData();
+                request.send(data);
+                request.onload = function() {
+                    that.getUserManageList();
+                }
+            } catch(error) {
+                console.log(error);
+            }
+        } else {
+            if(result) window.alert("请输入正确的用户邮箱");
+        }
+    }
+
+    changeUserPassword = (index) => {
+        const that = this;
+        const result = window.prompt("输入新的用户密码", "");
+        let rightPassword = 1;
+        if(rightPassword !== -1) {
+            try{
+                const request = new XMLHttpRequest();
+                request.open('POST', `${this.props.defaultURL}setusrpasswd?usrname=${this.state.userManageList[index].userName}&passwd=${result}`);
+                const data = this.getManagerData();
+                request.send(data);
+                request.onload = function() {
+                    that.getUserManageList();
+                }
+            } catch(error) {
+                console.log(error);
+            }
+        } else {
+            if(result) window.alert("请输入正确的用户密码");
+        }
+    }
+
+    deleteUserGroup = (index) => {
+        const that = this;
+        const result = window.confirm("确定删除该用户组吗?");
+        if(result) {
+            try{
+                const request = new XMLHttpRequest();
+                request.open('POST', `${this.props.defaultURL}delgroup?groupname=${this.state.userGroupList[index]}`);
+                const data = this.getManagerData();
+                request.send(data);
+                request.onload = function() {
+                    that.getUserGroupList();
+                }
+            } catch(error) {
+                console.log(error);
+            }
+        }
+    }
+
+    addUserGroup = () => {
+        const that = this;
+        const result = window.prompt("输入新的用户组名", "");
+        let rightGroupName = 1;
+        if(rightGroupName !== -1) {
+            try{
+                const request = new XMLHttpRequest();
+                request.open('POST', `${this.props.defaultURL}addgroup?groupname=${result}`);
+                const data = this.getManagerData();
+                request.send(data);
+                request.onload = function() {
+                    that.getUserGroupList();
+                }
+            } catch(error) {
+                console.log(error);
+            }
+        } else {
+            if(result) window.alert("请输入正确的用户组名");
+        }
+    }
+
     render() {
         return (
             <div className="w3-light-grey full-height">
@@ -679,7 +876,7 @@ class TaskPage extends Component {
                 }
                 <div className={`et-content ${this.props.userLevel === 3 ? 'et-padding-128' : 'w3-padding-64'}`}>
                     <div style={{position: 'relative'}}>
-                        <h3 className="et-margin-top-64 et-table-title">任务表</h3>
+                        <h3 className="et-margin-top-32 et-table-title">任务表</h3>
                         {
                             (this.props.userLevel === 2 || this.props.userLevel === 3) ?
                             <div onClick={this.popupInputView} style={{position: 'absolute', right: '5px', top: '0px'}}>
@@ -801,20 +998,56 @@ class TaskPage extends Component {
                                 </tr>
                             </thead>
                             <tbody>{
-                                this.state.userManageList.map((user) => (
+                                this.state.userManageList.map((user, index) => (
                                     <tr key={user.userName + user.email}>
                                         <td>{user.userName}</td>
                                         <td>{user.email}</td>
-                                        <td>{user.activeState}</td>
-                                        <td>{user.userLevel}</td>
+                                        <td>{user.activeState === '0' ? '未激活' : '已激活'}</td>
+                                        <td>{this.getUserLevelName(user.userLevel)}</td>
                                         <td>{user.userGroup}</td>
                                         <td>
-                                            <i className="fa fa-minus-square table-item-button"> 删除用户</i>
+                                            <i onClick={this.deleteUser.bind(this, index)} className="fa fa-minus-square table-item-button"> 删除用户</i>
+                                            <i onClick={this.changeUserLevel.bind(this, index)} className="fa fa-key table-item-button w3-margin-left"> 修改权限</i>
+                                            <i onClick={this.changeUserGroup.bind(this, index)} className="fa fa-users table-item-button w3-margin-left"> 修改组别</i>
+                                            <i onClick={this.changeUserEmail.bind(this, index)} className="fa fa-envelope table-item-button w3-margin-left"> 修改邮箱</i>
+                                            <i onClick={this.changeUserPassword.bind(this, index)} className="fa fa-unlock-alt table-item-button w3-margin-left"> 修改密码</i>
                                         </td>
                                     </tr>
                                 ))
                             }</tbody>
                             <tfoot></tfoot>
+                        </table>
+                        : null
+                    }
+                    {
+                        this.props.userLevel === 3 ?
+                        <div style={{position: 'relative'}}>
+                            <h3 className="et-margin-top-64 et-table-title">用户组列表</h3>
+                            <div style={{position: 'absolute', right: '5px', top: '0px'}}>
+                                <i onClick={this.addUserGroup} className="fa fa-plus-circle add-task-button w3-text-black" aria-hidden="true"></i>
+                            </div>
+                        </div>
+                        : null
+                    }
+                    {
+                        this.props.userLevel === 3 ?
+                        <table ref="theTaskTable" className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered">
+                            <thead className="w3-green">
+                                <tr>
+                                    <th>组名</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>{
+                                this.state.userGroupList.map((group, index) => (
+                                    <tr>
+                                        <td>{group}</td>
+                                        <td>
+                                            <i onClick={this.deleteUserGroup.bind(this, index)} className="fa fa-minus-circle table-item-button"> 删除</i>
+                                        </td>
+                                    </tr>
+                                ))
+                            }</tbody>
                         </table>
                         : null
                     }
