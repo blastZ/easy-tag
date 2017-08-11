@@ -17,8 +17,8 @@ class TaskPage extends Component {
         showStartAndNumInputView: false,
         currentTaskName: '',
         currentUserName: '',
-        start: 1,
-        num: 1,
+        start: '',
+        num: '',
         currentTaskFileCount: '0'
     }
 
@@ -485,6 +485,8 @@ class TaskPage extends Component {
         const fileCount = parseInt(this.state.currentTaskFileCount);
         if((start + num - 1) > fileCount) {
             window.alert(`总共 ${fileCount} 张,请检查输入`);
+        } else if(start === '' || num === '') {
+            window.alert('起始序号或图片数量不能为空');
         } else {
             const that = this;
             try{
@@ -495,8 +497,8 @@ class TaskPage extends Component {
                     that.getDistredUserList(that.state.currentTaskName);
                     that.getDistrableUserList();
                     that.setState({
-                        start: 1,
-                        num: 1,
+                        start: '',
+                        num: '',
                         currentUserName: '',
                     })
                 }
@@ -541,8 +543,8 @@ class TaskPage extends Component {
     closeStartAndNumInputView = () => {
         this.setState({
             showStartAndNumInputView: false,
-            start: 1,
-            num: 1,
+            start: '',
+            num: '',
             currentUserName: ''
         });
     }

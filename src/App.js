@@ -104,6 +104,8 @@ class App extends Component {
                 state.selectedImageNum = 0;
                 state.tagList = [];
                 state.imageList = newImageList;
+            }, function() {
+                that.refs.tagRoute.refs.selectedImage.initSelectedImage();
             })
             that.getTagList(0);
         }
@@ -135,6 +137,8 @@ class App extends Component {
                 state.selectedImageNum = 0;
                 state.tagList = [];
                 state.imageList = newImageList;
+            }, function() {
+                that.refs.tagRoute.refs.selectedImage.initSelectedImage();
             })
             that.getTagList(0)
         }
@@ -193,9 +197,11 @@ class App extends Component {
                 state.selectedImageNum = preIndex + 1;
                 that.saveTagList(preIndex);
                 that.getTagList(preIndex + 1);
+            }, function() {
+                that.refs.tagRoute.refs.selectedImage.initSelectedImage();
             })
         } else if(preIndex + 1 === this.state.imageList.length) {
-            window.alert('当前图片是列表内最后一张');
+            this.nextImageList();
         }
     }
 
@@ -206,7 +212,11 @@ class App extends Component {
                 state.selectedImageNum = preIndex - 1;
                 that.saveTagList(preIndex);
                 that.getTagList(preIndex - 1);
+            }, function() {
+                that.refs.tagRoute.refs.selectedImage.initSelectedImage();
             })
+        } else {
+            this.previousImageList();
         }
     }
 
