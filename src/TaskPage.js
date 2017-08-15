@@ -9,17 +9,23 @@ class TaskPage extends Component {
         distrableUserList: [], //userName: 'aaa', userLevel: '0'
         userManageList: [], //userName: 'aaa', email: 'aa@aa.com', activeState: '0', userLevel: '0', userGroup: 'common'
         userGroupList: [], // 'common', 'test'
+        tagStatisticsList: [], //tagName: 'aa', tagNum: '11'
         newTaskName: '',
         showInputView: false,
         showImageView: false,
         showPersonPanel: false,
         showDistributeTaskView: false,
         showStartAndNumInputView: false,
+        showLabelStatisticsView: false,
         currentTaskName: '',
         currentUserName: '',
         start: '',
         num: '',
         currentTaskFileCount: '0'
+    }
+
+    shouldShowLabelStatisticsView = () => {
+        this.setState({showLabelStatisticsView: !this.state.showLabelStatisticsView});
     }
 
     componentDidMount() {
@@ -400,7 +406,7 @@ class TaskPage extends Component {
         taskTypeID = parseInt(taskTypeID);
         switch (taskTypeID) {
             case 0:
-                return ('图片检测');
+                return ('物体检测');
             case 1:
                 return ('图片分类');
             case 2:
@@ -769,6 +775,51 @@ class TaskPage extends Component {
         }
     }
 
+    showLabelStatistics = (index) => {
+        const that = this;
+        try {
+            const request = new XMLHttpRequest();
+            request.open('GET', `${this.props.defaultURL}labelstatistics?usrname=${this.props.username}&taskname=${this.state.taskList[index].taskName}`);
+            request.send();
+            request.onload = function() {
+                const tagStatisticsList = that.getFormatLabelStatistics(request.response);
+                that.setState({tagStatisticsList}, function() {
+                    that.shouldShowLabelStatisticsView();
+                });
+            }
+        } catch(error) {
+            console.log(error);
+        }
+    }
+
+    getFormatLabelStatistics = (data) => {
+        const arrayData = data.split(',');
+        const newArrayData = [];
+        const tagStatisticsList = [];
+        for(let i=0; i<arrayData.length; i++) {
+            const innerArrayData = arrayData[i].split(':');
+            newArrayData.push(innerArrayData);
+        }
+        for(let i=0; i<newArrayData.length; i++) {
+            const tagName = newArrayData[i][0].slice(3, newArrayData[i][0].length - 1);
+            let tagNum = '';
+            if(i !== newArrayData.length - 1) {
+                tagNum = newArrayData[i][1].slice(1, newArrayData[i][1].length);
+            } else {
+                tagNum = newArrayData[i][1].slice(1, newArrayData[i][1].length - 1);
+            }
+            tagStatisticsList.push({tagName, tagNum});
+        }
+
+        return tagStatisticsList;
+    }
+
+    unicodeToChar = (text) => {
+        return text.replace(/\\u[\dA-F]{4}/gi, function(match) {
+            return String.fromCharCode(parseInt(match.replace(/\\u/g, ''), 16));
+        });
+    }
+
     render() {
         return (
             <div className="w3-light-grey full-height">
@@ -779,7 +830,7 @@ class TaskPage extends Component {
                             <i onClick={this.closeInputView} className="fa fa-times w3-text-white w3-xxlarge et-hoverable" aria-hidden="true" style={{position: 'absolute', top: '10px', right: '10px'}}></i>
                             <div className="flex-box" style={{width: '40%', margin: '0 auto', position: 'absolute', top: '30%', left: '30%'}}>
                                 <select>
-                                    <option>图片检测</option>
+                                    <option>物体检测</option>
                                 </select>
                                 <input placeholder="输入新的任务名称" onChange={this.handleInputChange} value={this.state.newTaskName} className="w3-input" type="text"/>
                                 <button onClick={this.onAddTask} className="w3-button w3-orange">添加</button>
@@ -876,6 +927,31 @@ class TaskPage extends Component {
                         </div>
                     ) : null
                 }
+                {
+                    this.state.showLabelStatisticsView === true ? (
+                        <div onClick={this.shouldShowLabelStatisticsView} className="popup w3-center w3-padding-64" style={{background: 'rgba(0, 0, 0, 0.4)', position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', zIndex: '100'}}>
+                            <table className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered" style={{width: '50%', margin: '0 auto', marginTop: '80px'}}>
+                                <thead className="w3-orange w3-text-white">
+                                    <tr>
+                                        <th>标签名</th>
+                                        <th>已标记数量</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                {
+                                    this.state.tagStatisticsList.map((tag) => (
+                                        <tr key={tag.tagName + tag.tagNum}>
+                                            <td>{this.unicodeToChar(tag.tagName)}</td>
+                                            <td>{tag.tagNum}</td>
+                                        </tr>
+                                    ))
+                                }
+                                </tbody>
+                                <tfoot></tfoot>
+                            </table>
+                        </div>
+                    ) : null
+                }
                 <div className={`et-content ${this.props.userLevel === 3 ? 'et-padding-128' : 'w3-padding-64'}`}>
                     <div style={{position: 'relative'}}>
                         <h3 className="et-margin-top-32 et-table-title">任务表</h3>
@@ -924,6 +1000,7 @@ class TaskPage extends Component {
                                     <td>{this.getTaskTypeName(task.taskType)}</td>
                                     <td>
                                         <Link onClick={this.onLinkToTag.bind(this, index)} to="/tag"><i className="fa fa-tags table-item-button" aria-hidden="true"> 标注</i></Link>
+                                        <i onClick={this.showLabelStatistics.bind(this, index)} className="fa fa-area-chart table-item-button w3-margin-left"> 标注统计</i>
                                         {
                                             (this.props.userLevel === 2 || this.props.userLevel === 3) ?
                                             <i onClick={this.onStartTask.bind(this, index)} className={`fa fa-play-circle ${task.taskState === '0' ? 'table-item-button' : 'et-silence-button'} ${task.taskState === '3' ? 'table-item-button' : 'et-silence-button'} w3-margin-left`} aria-hidden="true">{task.taskState === '3' ? ' 重新训练' : ' 开启训练'}</i>
