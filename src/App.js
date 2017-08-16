@@ -140,11 +140,43 @@ class App extends Component {
             }, function() {
                 that.refs.tagRoute.refs.selectedImage.initSelectedImage();
             })
-            that.getTagList(0)
+            that.getTagList(0);
         }
         xhr.onerror = function() {
             console.log('getNextList failed');
             that.getTagList(0);
+        }
+        xhr.send();
+    }
+
+    previousImageListForShortcut = () => {
+        this.saveTagList(this.state.selectedImageNum);
+        const that = this;
+        //load imageList from server
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', `${that.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
+        const newImageList = [];
+        xhr.onload = function() {
+            console.log('getNextList success');
+            if(xhr.response) {
+                const jsonResponse = JSON.parse(xhr.response);
+                jsonResponse.map((image) => {
+                    newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
+                })
+            }
+            that.setState((state) => {
+                state.start = state.start - state.num > 0 ? state.start - state.num : 1;
+                state.selectedImageNum = newImageList.length - 1;
+                state.tagList = [];
+                state.imageList = newImageList;
+            }, function() {
+                that.refs.tagRoute.refs.selectedImage.initSelectedImage();
+            })
+            that.getTagList(newImageList.length - 1);
+        }
+        xhr.onerror = function() {
+            console.log('getNextList failed');
+            that.getTagList(newImageList.length - 1);
         }
         xhr.send();
     }
@@ -216,7 +248,7 @@ class App extends Component {
                 that.refs.tagRoute.refs.selectedImage.initSelectedImage();
             })
         } else {
-            this.previousImageList();
+            this.previousImageListForShortcut();
         }
     }
 
@@ -442,7 +474,15 @@ class App extends Component {
         return (
             <div className="App full-height">
                 <Route exact path="/" render={() => (
-                    this.state.login ? <TaskPage onInitStartAndNum={this.initStartAndNum} onLogout={this.logout} defaultURL={this.state.defaultURL} userLevel={this.state.userLevel} username={this.state.userName} password={this.state.password} onChangeUserAndTask={this.changeUserAndTask}/> : <Login onLogin={this.login} defaultURL={this.state.defaultURL}/>
+                    this.state.login ?
+                    <TaskPage onInitStartAndNum={this.initStartAndNum}
+                              onLogout={this.logout}
+                              defaultURL={this.state.defaultURL}
+                              userLevel={this.state.userLevel}
+                              username={this.state.userName}
+                              password={this.state.password}
+                              onChangeUserAndTask={this.changeUserAndTask}/>
+                    : <Login onLogin={this.login} defaultURL={this.state.defaultURL}/>
                 )}/>
                 <Route ref="tagRoute" exact path="/tag" render={() => (
                     this.state.login ?

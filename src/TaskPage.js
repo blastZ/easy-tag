@@ -17,15 +17,76 @@ class TaskPage extends Component {
         showDistributeTaskView: false,
         showStartAndNumInputView: false,
         showLabelStatisticsView: false,
+        showUserManageEditView: false,
         currentTaskName: '',
         currentUserName: '',
         start: '',
         num: '',
-        currentTaskFileCount: '0'
+        currentTaskFileCount: '0',
+        editState: {
+            userName: '',
+            email: '',
+            userLevel: '',
+            userGroup: '',
+            password: '',
+            rePassword: ''
+        }
     }
 
     shouldShowLabelStatisticsView = () => {
         this.setState({showLabelStatisticsView: !this.state.showLabelStatisticsView});
+    }
+
+    shouldShowUserManageEditView = (index) => {
+        if(typeof(index) !== 'number') {
+            this.setState({showUserManageEditView: !this.state.showUserManageEditView, editUserIndex: -1});
+        } else {
+            const { userName, email, userLevel, userGroup } = this.state.userManageList[index];
+            this.setState({showUserManageEditView: !this.state.showUserManageEditView, editUserIndex: index, editState: {
+                ... this.state.editState,
+                userName,
+                email,
+                userLevel,
+                userGroup
+            }});
+        }
+
+    }
+
+    handleEditEmail = (e) => {
+        this.setState({editState: {
+            ...this.state.editState,
+            email: e.target.value
+        }})
+    }
+
+    handleEditUserLevel = (e) => {
+        const userLevel = this.getUserLevelCode(e.target.value);
+        this.setState({editState: {
+            ...this.state.editState,
+            userLevel
+        }})
+    }
+
+    handleEditUserGroup = (e) => {
+        this.setState({editState: {
+            ...this.state.editState,
+            userGroup: e.target.value
+        }})
+    }
+
+    handleEditPassword = (e) => {
+        this.setState({editState: {
+            ...this.state.editState,
+            password: e.target.value
+        }})
+    }
+
+    handleEditRePassword = (e) => {
+        this.setState({editState: {
+            ...this.state.editState,
+            rePassword: e.target.value
+        }})
     }
 
     componentDidMount() {
@@ -127,8 +188,8 @@ class TaskPage extends Component {
         const arrayData = str.split(',');
         if(arrayData.length > 3) {
             for(let i=0; i<arrayData.length; i=i+5) {
-                const userName = arrayData[i].slice(4, arrayData[i].length - 1);
-                const email = arrayData[i + 1].slice(3, arrayData[i + 1].length - 1);
+                const userName = arrayData[i].slice(3, arrayData[i].length - 1);
+                const email = arrayData[i + 1].slice(2, arrayData[i + 1].length - 1);
                 const activeState = arrayData[i + 2].slice(1, 2);
                 const userLevel = arrayData[i + 3].slice(1, 2);
                 let userGroup = '';
@@ -164,6 +225,14 @@ class TaskPage extends Component {
         this.setState({showImageView: false});
     }
 
+    getTaskTypeCode = (str) => {
+        switch (str) {
+            case '物体检测': return 0;
+            case '图片分类': return 1;
+            default: return 0;
+        }
+    }
+
     onAddTask = () => {
         const that = this;
         const result = /^[a-zA-Z0-9]+$/.test(this.state.newTaskName);
@@ -172,10 +241,12 @@ class TaskPage extends Component {
         } else {
             const getNewTask = new XMLHttpRequest();
             try {
-                getNewTask.open('GET', `${this.props.defaultURL}addtask?usrname=${this.props.username}&taskname=${this.state.newTaskName}`);
+                const type = document.getElementById('newTaskType').value;
+                getNewTask.open('GET', `${this.props.defaultURL}addtask?usrname=${this.props.username}&taskname=${this.state.newTaskName}&type=${this.getTaskTypeCode(type)}`);
                 getNewTask.send();
                 getNewTask.onload = function() {
                     const arrayData = that.getArrayData(getNewTask.response);
+                    console.log(arrayData);
                     that.addTask(arrayData);
                     that.setState({
                         newTaskName: ''
@@ -586,11 +657,13 @@ class TaskPage extends Component {
     }
 
     getFormatUserList = (str) => {
+        console.log(str);
         const arrayData = str.split(',');
+        console.log(arrayData);
         const distredUserList = [];
         if(arrayData.length > 1) {
             for(var i=0; i<arrayData.length; i=i+2) {
-                const userName = arrayData[i].slice(4, arrayData[i].length - 1);
+                const userName = arrayData[i].slice(3, arrayData[i].length - 1);
                 const userLevel = arrayData[i + 1].slice(1, 2);
                 distredUserList.push({userName, userLevel});
             }
@@ -640,100 +713,66 @@ class TaskPage extends Component {
         }
     }
 
-    changeUserLevel = (index) => {
-        const that = this;
-        const result = window.prompt("输入新的用户权限名", "普通用户/编辑用户/管理用户/超级用户");
+    getUserLevelCode = (str) => {
         let userLevel = -1;
-        switch(result) {
+        switch(str) {
             case '普通用户': userLevel = 0; break;
             case '编辑用户': userLevel = 1; break;
             case '管理用户': userLevel = 2; break;
             case '超级用户': userLevel = 3; break;
         }
-        if(userLevel !== -1) {
-            try{
-                const request = new XMLHttpRequest();
-                request.open('POST', `${this.props.defaultURL}setusrlevel?usrname=${this.state.userManageList[index].userName}&level=${userLevel}`);
-                const data = this.getManagerData();
-                request.send(data);
-                request.onload = function() {
-                    that.getUserManageList();
-                }
-            } catch(error) {
-                console.log(error);
-            }
-        } else {
-            if(result) window.alert("请输入正确的用户权限名");
-        }
+        return userLevel;
     }
 
-    changeUserGroup = (index) => {
+    saveEditResult = () => {
         const that = this;
-        const result = window.prompt("输入新的用户组别名", "");
-        let rightGroup = -1;
-        if(this.state.userGroupList.filter((group) => (group === result)).length > 0) {
-            rightGroup = 1;
-        }
-        if(rightGroup !== -1) {
-            try{
-                const request = new XMLHttpRequest();
-                request.open('POST', `${this.props.defaultURL}setusrgroup?usrname=${this.state.userManageList[index].userName}&group=${result}`);
-                const data = this.getManagerData();
-                request.send(data);
-                request.onload = function() {
+        const { defaultURL } = this.props;
+        const { userName, userLevel, email, userGroup, password, rePassword } = this.state.editState;
+        let closeWindow = true;
+        try{
+            const userLevelRequest = new XMLHttpRequest();
+            const emailRequest = new XMLHttpRequest();
+            const userGroupRequest = new XMLHttpRequest();
+            const passwordRequest = new XMLHttpRequest();
+            userLevelRequest.open('POST', `${defaultURL}setusrlevel?usrname=${userName}&level=${userLevel}`);
+            userGroupRequest.open('POST', `${defaultURL}setusrgroup?usrname=${userName}&group=${userGroup}`);
+            emailRequest.open('POST', `${defaultURL}setusremail?usrname=${userName}&email=${email}`);
+            passwordRequest.open('POST', `${defaultURL}setusrpasswd?usrname=${userName}&passwd=${password}`);
+            const data = this.getManagerData();
+            userLevelRequest.send(data);
+            userGroupRequest.send(data);
+            if(email !== '') {
+                if(/^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.test(email)) {
+                    emailRequest.send(data);
+                    emailRequest.onload = function() {
+                        that.getUserManageList();
+                    }
+                } else {
+                    window.alert('请输入正确的邮箱地址');
+                    closeWindow = false;
+                }
+            }
+            if(password !== '' && password === rePassword) {
+                passwordRequest.send(data);
+                passwordRequest.onload = function() {
                     that.getUserManageList();
                 }
-            } catch(error) {
-                console.log(error);
-            }
-        } else {
-            if(result) window.alert("请输入正确的用户组别名");
-        }
-    }
-
-    changeUserEmail = (index) => {
-        const that = this;
-        const result = window.prompt("输入新的用户邮箱", "aaaa@bbbb.com");
-        let rightEmail = -1;
-        if(/^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.test(result)) {
-            rightEmail = 1;
-        }
-        if(rightEmail !== -1) {
-            try{
-                const request = new XMLHttpRequest();
-                request.open('POST', `${this.props.defaultURL}setusremail?usrname=${this.state.userManageList[index].userName}&email=${result}`);
-                const data = this.getManagerData();
-                request.send(data);
-                request.onload = function() {
-                    that.getUserManageList();
+            } else {
+                if(password !== rePassword) {
+                    window.alert('两次输入密码不相同');
+                    closeWindow = false;
                 }
-            } catch(error) {
-                console.log(error);
             }
-        } else {
-            if(result) window.alert("请输入正确的用户邮箱");
-        }
-    }
-
-    changeUserPassword = (index) => {
-        const that = this;
-        const result = window.prompt("输入新的用户密码", "");
-        let rightPassword = 1;
-        if(rightPassword !== -1) {
-            try{
-                const request = new XMLHttpRequest();
-                request.open('POST', `${this.props.defaultURL}setusrpasswd?usrname=${this.state.userManageList[index].userName}&passwd=${result}`);
-                const data = this.getManagerData();
-                request.send(data);
-                request.onload = function() {
-                    that.getUserManageList();
-                }
-            } catch(error) {
-                console.log(error);
+            userLevelRequest.onload = function() {
+                that.getUserManageList();
             }
-        } else {
-            if(result) window.alert("请输入正确的用户密码");
+            userGroupRequest.onload = function() {
+                that.getUserManageList();
+            }
+        } catch(error) {
+            console.log(error);
         }
+        if(closeWindow) this.shouldShowUserManageEditView();
     }
 
     deleteUserGroup = (index) => {
@@ -825,12 +864,55 @@ class TaskPage extends Component {
             <div className="w3-light-grey full-height">
                 <i onClick={this.refreshTaskPage} className="fa fa-refresh et-refresh-button" aria-hidden="true"></i>
                 {
-                    this.state.showInputView === true ? (
-                        <div className="popup" style={{background: 'rgba(0, 0, 0, 0.4)', position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', zIndex: '100'}}>
+                    this.state.showUserManageEditView ?
+                        <div className="popup w3-modal">
+                            <div className="w3-modal-content w3-container w3-text-white" style={{width: '600px', padding: '0px 0px 36px 0px', background: 'rgba(0, 0, 0, 0.7)', borderRadius: '10px'}}>
+                                <div className="w3-container" style={{fontSize: '1.4em'}}>
+                                    <p style={{marginBottom: '10px'}}>{`用户名: ${this.state.editState.userName}`}</p>
+                                </div>
+                                <div className="w3-container">
+                                    <p>邮箱:</p>
+                                    <input onChange={this.handleEditEmail} value={this.state.editState.email} className="w3-input" type="text"/>
+                                </div>
+                                <div className="w3-container">
+                                    <p>用户权限:</p>
+                                    <select onChange={this.handleEditUserLevel} value={this.getUserLevelName(this.state.editState.userLevel)} className="w3-select">
+                                        <option>普通用户</option>
+                                        <option>编辑用户</option>
+                                        <option>管理用户</option>
+                                        <option>超级用户</option>
+                                    </select>
+                                </div>
+                                <div className="w3-container">
+                                    <p>所在组别:</p>
+                                    <select onChange={this.handleEditUserGroup} value={this.state.editState.userGroup} className="w3-select">{
+                                        this.state.userGroupList.map((group, index) => (
+                                            <option key={group + index}>{group}</option>
+                                        ))
+                                    }</select>
+                                </div>
+                                <div className="w3-container">
+                                    <p>新密码:</p>
+                                    <input onChange={this.handleEditPassword} className="w3-input" type="password"/>
+                                    <p>确认新密码:</p>
+                                    <input onChange={this.handleEditRePassword} className="w3-input" type="password"/>
+                                </div>
+                                <div className="w3-container" style={{marginTop: '20px'}}>
+                                    <button onClick={this.shouldShowUserManageEditView} className="w3-button w3-orange w3-left w3-text-white" style={{width: '90px', borderRadius: '5px'}}>取消</button>
+                                    <button onClick={this.saveEditResult} className="w3-button w3-orange w3-right w3-text-white" style={{width: '90px', borderRadius: '5px'}}>保存</button>
+                                </div>
+                            </div>
+                        </div>
+                        : null
+                }
+                {
+                    this.state.showInputView ? (
+                        <div className="popup w3-modal">
                             <i onClick={this.closeInputView} className="fa fa-times w3-text-white w3-xxlarge et-hoverable" aria-hidden="true" style={{position: 'absolute', top: '10px', right: '10px'}}></i>
                             <div className="flex-box" style={{width: '40%', margin: '0 auto', position: 'absolute', top: '30%', left: '30%'}}>
-                                <select>
+                                <select id="newTaskType">
                                     <option>物体检测</option>
+                                    <option>图片分类</option>
                                 </select>
                                 <input placeholder="输入新的任务名称" onChange={this.handleInputChange} value={this.state.newTaskName} className="w3-input" type="text"/>
                                 <button onClick={this.onAddTask} className="w3-button w3-orange">添加</button>
@@ -839,7 +921,7 @@ class TaskPage extends Component {
                     ) : null
                 }
                 {
-                    this.state.showStartAndNumInputView === true ? (
+                    this.state.showStartAndNumInputView ? (
                         <div className="popup" style={{background: 'rgba(0, 0, 0, 0.8)', position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', zIndex: '200'}}>
                             <i onClick={this.closeStartAndNumInputView} className="fa fa-times w3-text-white w3-xxlarge et-hoverable" aria-hidden="true" style={{position: 'absolute', top: '10px', right: '10px'}}></i>
                             <div className="flex-box" style={{width: '40%', margin: '0 auto', position: 'absolute', top: '30%', left: '30%'}}>
@@ -1086,10 +1168,7 @@ class TaskPage extends Component {
                                         <td>{user.userGroup}</td>
                                         <td>
                                             <i onClick={this.deleteUser.bind(this, index)} className="fa fa-minus-square table-item-button"> 删除用户</i>
-                                            <i onClick={this.changeUserLevel.bind(this, index)} className="fa fa-key table-item-button w3-margin-left"> 修改权限</i>
-                                            <i onClick={this.changeUserGroup.bind(this, index)} className="fa fa-users table-item-button w3-margin-left"> 修改组别</i>
-                                            <i onClick={this.changeUserEmail.bind(this, index)} className="fa fa-envelope table-item-button w3-margin-left"> 修改邮箱</i>
-                                            <i onClick={this.changeUserPassword.bind(this, index)} className="fa fa-unlock-alt table-item-button w3-margin-left"> 修改密码</i>
+                                            <i onClick={this.shouldShowUserManageEditView.bind(this, index)} className="fa fa-cog table-item-button w3-margin-left"> 编辑用户</i>
                                         </td>
                                     </tr>
                                 ))

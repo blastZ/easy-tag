@@ -94,7 +94,7 @@ class RegisterView extends Component {
     register = () => {
         const verifyRequest = new XMLHttpRequest();
         verifyRequest.open('POST', `${this.props.defaultURL}userreg`);
-        const data = `{"name": "${this.state.username}", "email": "${this.state.email}", "passwd": "${this.state.password}", "active": 0, "level": 0, "group": "common"}`;
+        const data = `{"name": "${this.state.username}", "email": "${this.state.email}", "passwd": "${this.state.password}", "active": 0, "level": 0, "group": "${document.getElementById('userGroup').value}"}`;
         verifyRequest.send(data);
         verifyRequest.onload = () => {
             if(verifyRequest.response === 'OK') {
@@ -111,9 +111,9 @@ class RegisterView extends Component {
                 <i onClick={this.props.onCloseRegisterView} className="fa fa-times w3-text-white w3-xxlarge et-hoverable" aria-hidden="true" style={{position: 'absolute', top: '10px', right: '10px'}}></i>
                 <div className="flex-box flex-column" style={{width: '20%'}}>
                     <h3 className="w3-text-white"><b>注册</b></h3>
-                    <select className="w3-margin-top w3-select">{
-                        this.state.userGroupList.map((group) => (
-                            <option>{group}</option>
+                    <select id="userGroup" className="w3-margin-top w3-select">{
+                        this.state.userGroupList.map((group, index) => (
+                            <option key={group + index}>{group}</option>
                         ))
                     }</select>
                     <input onChange={this.handleUsername} value={this.state.username} className="w3-input w3-margin-top" type="text" placeholder="用户名"/>
