@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 
 class TaskPage extends Component {
     state = {
-        taskList: [], //taskName: 'a', time: '2017-07-28 14:42:19', progress: '0.0', taskState: '1', taskType: '1'
+        taskList: [], //taskName: 'a', time: '2017-07-28 14:42:19', progress: '0.0', tagProgress: '1000/1000', taskState: '1', taskType: '1'
         workerList: [], //workerName: 'a', workerState: '0', taskName: 'a', GPU: '2048/8192', updateTime: '2017-07-02 09:43:12'
         distredUserList: [], //userName: 'aaa', userLevel: '0'
         distrableUserList: [], //userName: 'aaa', userLevel: '0'
@@ -19,10 +19,13 @@ class TaskPage extends Component {
         showLabelStatisticsView: false,
         showUserManageEditView: false,
         currentTaskName: '',
+        destination: '/tag',
         currentUserName: '',
         start: '',
         num: '',
         currentTaskFileCount: '0',
+        currentProgress: '',
+        currentTagProgress: '',
         editState: {
             userName: '',
             email: '',
@@ -121,9 +124,15 @@ class TaskPage extends Component {
             console.log(error);
         }
 
-        window.setInterval(function() {
-          that.refreshTaskPage();
-        }, 60000);
+        window.setInterval(this.refreshInterval, 60000);
+    }
+
+    refreshInterval = () => {
+        this.refreshTaskPage();
+    }
+
+    componentWillUnmount() {
+        window.clearInterval(this.refreshInterval);
     }
 
     getManagerData = () => {
@@ -268,7 +277,6 @@ class TaskPage extends Component {
                 const progress = arrayData[i + 2].slice(1,arrayData[i + 2].length);
                 const taskState = arrayData[i + 3].slice(1, 2);
                 const taskType = arrayData[i + 4].slice(1, 2);
-                this.getTagProgress(taskName);
                 newTaskList.push({taskName: taskName, time: time,tagProgress: '0/0', progress: progress, taskState: taskState, taskType: taskType});
             }
             if(this.refs.theTaskTable) {
@@ -277,7 +285,7 @@ class TaskPage extends Component {
         }
     }
 
-    getTagProgress = (taskName) => {
+    getTagProgress = (taskName, showLabelStatistics) => {
         const that = this;
         const getFileCount = new XMLHttpRequest();
         getFileCount.open('GET', `${this.props.defaultURL}filecount?usrname=${this.props.username}&taskname=${taskName}`);
@@ -289,7 +297,6 @@ class TaskPage extends Component {
             getTagedFileCount.open('GET', `${that.props.defaultURL}labeledfilecount?usrname=${that.props.username}&taskname=${taskName}`);
             getTagedFileCount.send();
             getTagedFileCount.onload = function() {
-                console.log('getTagedFileCount success.');
                 const theTagedFileCount = getTagedFileCount.response;
                 const tagProgress = `${theTagedFileCount}/${theFileCount}`;
                 if(that.refs.theTaskTable) {
@@ -299,6 +306,8 @@ class TaskPage extends Component {
                                 task.tagProgress = tagProgress;
                             }
                         })
+                    }, function() {
+                        showLabelStatistics();
                     })
                 }
             }
@@ -336,13 +345,14 @@ class TaskPage extends Component {
     onLookTrainState = (index) => {
         const that = this;
         const taskState = this.state.taskList[index].taskState;
+        const currentProgress = this.state.taskList[index].progress;
         if(taskState === '2' || taskState === '3') {
             try {
                 const lookTrainState = new XMLHttpRequest();
                 lookTrainState.open('GET', `${this.props.defaultURL}taskinfo?usrname=${this.props.username}&taskname=${this.state.taskList[index].taskName}`);
                 lookTrainState.send();
                 lookTrainState.onload = function() {
-                    that.setState({showImageView: true}, function() {
+                    that.setState({showImageView: true, currentProgress}, function() {
                         document.getElementById('train-state').src = lookTrainState.response;
                     })
                 }
@@ -657,9 +667,7 @@ class TaskPage extends Component {
     }
 
     getFormatUserList = (str) => {
-        console.log(str);
         const arrayData = str.split(',');
-        console.log(arrayData);
         const distredUserList = [];
         if(arrayData.length > 1) {
             for(var i=0; i<arrayData.length; i=i+2) {
@@ -816,38 +824,44 @@ class TaskPage extends Component {
 
     showLabelStatistics = (index) => {
         const that = this;
-        try {
-            const request = new XMLHttpRequest();
-            request.open('GET', `${this.props.defaultURL}labelstatistics?usrname=${this.props.username}&taskname=${this.state.taskList[index].taskName}`);
-            request.send();
-            request.onload = function() {
-                const tagStatisticsList = that.getFormatLabelStatistics(request.response);
-                that.setState({tagStatisticsList}, function() {
-                    that.shouldShowLabelStatisticsView();
-                });
+        this.getTagProgress(this.state.taskList[index].taskName, function() {
+            const currentTagProgress = that.state.taskList[index].tagProgress;
+            try {
+                const request = new XMLHttpRequest();
+                request.open('GET', `${that.props.defaultURL}labelstatistics?usrname=${that.props.username}&taskname=${that.state.taskList[index].taskName}`);
+                request.send();
+                request.onload = function() {
+                    const tagStatisticsList = that.getFormatLabelStatistics(request.response);
+                    that.setState({tagStatisticsList, currentTagProgress}, function() {
+                        that.shouldShowLabelStatisticsView();
+                    });
+                }
+            } catch(error) {
+                console.log(error);
             }
-        } catch(error) {
-            console.log(error);
-        }
+        });
+
     }
 
     getFormatLabelStatistics = (data) => {
         const arrayData = data.split(',');
         const newArrayData = [];
         const tagStatisticsList = [];
-        for(let i=0; i<arrayData.length; i++) {
-            const innerArrayData = arrayData[i].split(':');
-            newArrayData.push(innerArrayData);
-        }
-        for(let i=0; i<newArrayData.length; i++) {
-            const tagName = newArrayData[i][0].slice(3, newArrayData[i][0].length - 1);
-            let tagNum = '';
-            if(i !== newArrayData.length - 1) {
-                tagNum = newArrayData[i][1].slice(1, newArrayData[i][1].length);
-            } else {
-                tagNum = newArrayData[i][1].slice(1, newArrayData[i][1].length - 1);
+        if(arrayData[0] !== '{}') {
+            for(let i=0; i<arrayData.length; i++) {
+                const innerArrayData = arrayData[i].split(':');
+                newArrayData.push(innerArrayData);
             }
-            tagStatisticsList.push({tagName, tagNum});
+            for(let i=0; i<newArrayData.length; i++) {
+                const tagName = newArrayData[i][0].slice(3, newArrayData[i][0].length - 1);
+                let tagNum = '';
+                if(i !== newArrayData.length - 1) {
+                    tagNum = newArrayData[i][1].slice(1, newArrayData[i][1].length);
+                } else {
+                    tagNum = newArrayData[i][1].slice(1, newArrayData[i][1].length - 1);
+                }
+                tagStatisticsList.push({tagName, tagNum});
+            }
         }
 
         return tagStatisticsList;
@@ -991,7 +1005,7 @@ class TaskPage extends Component {
                     <div style={{position: 'absolute', left: '15px'}}>
                         <div className="flex-box" style={{justifyContent: 'center', alignItems: 'center'}}>
                             <i onMouseOver={this.showPersonPanel} className="fa fa-user-circle-o w3-text-white w3-xxlarge" aria-hidden="true"></i>
-                            <h3 className="w3-text-white">&nbsp;{this.props.username}</h3>
+                            <h3 className="w3-text-white">&nbsp;{`${this.props.username} - ${this.getUserLevelName(this.props.userLevel)}`}</h3>
                         </div>
                         {
                             this.state.showPersonPanel ?
@@ -1005,6 +1019,7 @@ class TaskPage extends Component {
                 {
                     this.state.showImageView === true ? (
                         <div onClick={this.closeImageView} className="popup w3-center w3-padding-64" style={{background: 'rgba(0, 0, 0, 0.4)', position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', zIndex: '100'}}>
+                            <h3 className="w3-text-white">{`训练进度: ${this.state.currentProgress}%`}</h3>
                             <img className="w3-image" id="train-state"/>
                         </div>
                     ) : null
@@ -1012,7 +1027,8 @@ class TaskPage extends Component {
                 {
                     this.state.showLabelStatisticsView === true ? (
                         <div onClick={this.shouldShowLabelStatisticsView} className="popup w3-center w3-padding-64" style={{background: 'rgba(0, 0, 0, 0.4)', position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', zIndex: '100'}}>
-                            <table className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered" style={{width: '50%', margin: '0 auto', marginTop: '80px'}}>
+                            <h3 className="w3-text-white">{`标注进度: ${this.state.currentTagProgress}`}</h3>
+                            <table className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered" style={{width: '50%', margin: '0 auto', marginTop: '10px'}}>
                                 <thead className="w3-orange w3-text-white">
                                     <tr>
                                         <th>标签名</th>
@@ -1036,7 +1052,7 @@ class TaskPage extends Component {
                 }
                 <div className={`et-content ${this.props.userLevel === 3 ? 'et-padding-128' : 'w3-padding-64'}`}>
                     <div style={{position: 'relative'}}>
-                        <h3 className="et-margin-top-32 et-table-title">任务表</h3>
+                        <h3 className="et-margin-top-32 et-table-title">任务列表</h3>
                         {
                             (this.props.userLevel === 2 || this.props.userLevel === 3) ?
                             <div onClick={this.popupInputView} style={{position: 'absolute', right: '5px', top: '0px'}}>
@@ -1051,12 +1067,6 @@ class TaskPage extends Component {
                                 <th>编号</th>
                                 <th>任务名称</th>
                                 <th>创建时间</th>
-                                <th>标注进度</th>
-                                {
-                                    (this.props.userLevel === 2 || this.props.userLevel === 3) ?
-                                    <th>训练进度</th>
-                                    : null
-                                }
                                 <th>任务状态</th>
                                 <th>任务类型</th>
                                 <th>操作</th>
@@ -1072,16 +1082,19 @@ class TaskPage extends Component {
                                         : <td>{task.taskName}</td>
                                     }
                                     <td>{task.time}</td>
-                                    <td>{task.tagProgress}</td>
-                                    {
-                                        (this.props.userLevel === 2 || this.props.userLevel === 3) ?
-                                        <td>{`${task.progress}%`}</td>
-                                        : null
-                                    }
                                     <td>{this.getTaskStateName(task.taskState)}</td>
                                     <td>{this.getTaskTypeName(task.taskType)}</td>
                                     <td>
-                                        <Link onClick={this.onLinkToTag.bind(this, index)} to="/tag"><i className="fa fa-tags table-item-button" aria-hidden="true"> 标注</i></Link>
+                                        {
+                                            parseInt(task.taskType) === 0 ?
+                                            <Link onClick={this.onLinkToTag.bind(this, index)} to="/tag"><i className="fa fa-tags table-item-button" aria-hidden="true"> 标注</i></Link>
+                                            : null
+                                        }
+                                        {
+                                            parseInt(task.taskType) === 1 ?
+                                            <Link onClick={this.onLinkToTag.bind(this, index)} to="/tagobject"><i className="fa fa-tags table-item-button" aria-hidden="true"> 标注</i></Link>
+                                            : null
+                                        }
                                         <i onClick={this.showLabelStatistics.bind(this, index)} className="fa fa-area-chart table-item-button w3-margin-left"> 标注统计</i>
                                         {
                                             (this.props.userLevel === 2 || this.props.userLevel === 3) ?
@@ -1114,35 +1127,43 @@ class TaskPage extends Component {
                         }</tbody>
                         <tfoot></tfoot>
                     </table>
-                    <h3 className="et-margin-top-64 et-table-title">Worker表</h3>
-                    <table ref="theWorkerTable" className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered">
-                        <thead className="w3-green">
-                            <tr>
-                                <th>编号</th>
-                                <th>worker名称</th>
-                                <th>worker状态</th>
-                                <th>显卡使用情况</th>
-                                <th>正在服务的任务名称</th>
-                                <th>更新时间</th>
-                            </tr>
-                        </thead>
-                        <tbody>{
-                            this.state.workerList.map((worker, index) => (
-                                <tr key={worker.workerName + index}>
-                                    <td>{index + 1}</td>
-                                    <td>{worker.workerName}</td>
-                                    <td>{this.getWorkerStateName(worker.workerState)}</td>
-                                    <td>{worker.GPU}</td>
-                                    <td>{worker.taskName}</td>
-                                    <td>{worker.updateTime}</td>
+                    {
+                        (this.props.userLevel === 2 || this.props.userLevel === 3) ?
+                        <h3 className="et-margin-top-64 et-table-title">Worker列表</h3>
+                        : null
+                    }
+                    {
+                        (this.props.userLevel === 2 || this.props.userLevel === 3) ?
+                        <table ref="theWorkerTable" className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered">
+                            <thead className="w3-green">
+                                <tr>
+                                    <th>编号</th>
+                                    <th>worker名称</th>
+                                    <th>worker状态</th>
+                                    <th>显卡使用情况</th>
+                                    <th>正在服务的任务名称</th>
+                                    <th>更新时间</th>
                                 </tr>
-                            ))
-                        }</tbody>
-                        <tfoot></tfoot>
-                    </table>
+                            </thead>
+                            <tbody>{
+                                this.state.workerList.map((worker, index) => (
+                                    <tr key={worker.workerName + index}>
+                                        <td>{index + 1}</td>
+                                        <td>{worker.workerName}</td>
+                                        <td>{this.getWorkerStateName(worker.workerState)}</td>
+                                        <td>{worker.GPU}</td>
+                                        <td>{worker.taskName}</td>
+                                        <td>{worker.updateTime}</td>
+                                    </tr>
+                                ))
+                            }</tbody>
+                            <tfoot></tfoot>
+                        </table>
+                        : null
+                    }
                     {
                         this.props.userLevel === 3 ?
-                        <h3 className="et-margin-top-64 et-table-title">用户管理表</h3>
+                        <h3 className="et-margin-top-64 et-table-title">用户管理列表</h3>
                         : null
                     }
                     {

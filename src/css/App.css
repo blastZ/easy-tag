@@ -200,3 +200,7 @@
     padding-top: 64px !important;
     padding-bottom: 128px !important;
 }
+
+.et-cursor-move:hover {
+    cursor: move !important;
+}

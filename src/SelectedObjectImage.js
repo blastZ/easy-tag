@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import $ from 'jquery';
 
-class SelectedImage extends Component {
+class SelectedObjectImage extends Component {
     state = {
         fileCount: 0,
         tagedFileCount: 0,
@@ -97,26 +97,10 @@ class SelectedImage extends Component {
             }
         })
 
-        let drawing = false
-        let x1 = 0, y1 = 0, x_move = 0, y_move = 0
-        let rect_width = 0, rect_height = 0
-        let offset = {}
         let start = false;
         let previousClientX = 0, previousClientY = 0, currentClientX = 0, currentClientY = 0;
         $('#selectedImagePanel').mousedown(function(e) {
             if(e.which === 1) {
-                drawing = true
-                try {
-                    offset = $(this).offset()
-                    x1 = e.clientX - offset.left
-                    y1 = e.clientY - offset.top
-                    $(this).append(
-                        `<div id="move-rect" class="black-white-border" style="position: absolute; left: ${x1}px; top: ${y1}px;"></div>`
-                    )
-                } catch(e) {
-                    alert(e)
-                }
-            } else if(e.which === 3) {
                 start = true;
                 previousClientX = e.clientX;
                 previousClientY = e.clientY;
@@ -125,28 +109,6 @@ class SelectedImage extends Component {
 
         $('#selectedImagePanel').mousemove(function(e) {
             if(e.which === 1) {
-                if(drawing) {
-                    x_move = e.clientX - offset.left
-                    y_move = e.clientY - offset.top
-                    if(x_move > x1 && y_move < y1) {
-                        $('#move-rect').css('left', `${x1}px`)
-                        $('#move-rect').css('top', `${y_move}px`)
-                    } else if(x_move > x1 && y_move > y1) {
-                        $('#move-rect').css('left', `${x1}px`)
-                        $('#move-rect').css('top', `${y1}px`)
-                    } else if(x_move < x1 && y_move > y1) {
-                        $('#move-rect').css('left', `${x_move}px`)
-                        $('#move-rect').css('top', `${y1}px`)
-                    } else if(x_move < x1 && y_move < y1) {
-                        $('#move-rect').css('left', `${x_move}px`)
-                        $('#move-rect').css('top', `${y_move}px`)
-                    }
-                    rect_width = Math.abs(x_move - x1)
-                    rect_height = Math.abs(y_move - y1)
-                    $('#move-rect').css('width', `${rect_width}px`)
-                    $('#move-rect').css('height', `${rect_height}px`)
-                }
-            } else if(e.which === 3) {
                 if(start) {
                     currentClientX = e.clientX;
                     currentClientY = e.clientY;
@@ -161,34 +123,6 @@ class SelectedImage extends Component {
 
         $(document).mouseup(function(e) {
             if(e.which === 1) {
-                if(drawing) {
-                    const img_natural_width = document.getElementById('selectedImage').width;
-                    const img_natural_height = document.getElementById('selectedImage').height;
-                    try {
-                        const theImage_left = parseInt(theImage.style.left);
-                        const theImage_top = parseInt(theImage.style.top);
-                        const x_start = $('#move-rect').css('left');
-                        const x_start_int = parseInt(x_start);
-                        const y_start = $('#move-rect').css('top');
-                        const y_start_int = parseInt(y_start);
-                        const x_end = x_start_int + rect_width
-                        const y_end = y_start_int + rect_height
-                        const relative_x_start = ((x_start_int - theImage_left) / img_natural_width).toFixed(3)
-                        const relative_y_start = ((y_start_int - theImage_top) / img_natural_height).toFixed(3)
-                        const relative_x_end = ((x_end - theImage_left) / img_natural_width).toFixed(3)
-                        const relative_y_end = ((y_end - theImage_top) / img_natural_height).toFixed(3)
-                        const tag = {x_start: relative_x_start, y_start: relative_y_start, x_end: relative_x_end, y_end: relative_y_end, tag: that.props.currentTagString, info: that.props.info}
-                        //console.log(tag)
-                        that.props.onAddTag(tag)
-                        $('#move-rect').remove()
-                    } catch(e) {
-                        alert(e)
-                    }
-                }
-                drawing = false
-                rect_width = 0
-                rect_height = 0
-            } else if(e.which === 3) {
                 start = false;
                 that.forceUpdate();
             }
@@ -212,34 +146,6 @@ class SelectedImage extends Component {
         theImage.height -= 10;
         theImage.style.left = (parseInt(theImage.style.left) + 5).toString() + 'px';
         theImage.style.top = (parseInt(theImage.style.top) + 5).toString() + 'px';
-    }
-
-    getBoxX = (r_x_start) => {
-        const img = document.getElementById('selectedImage');
-        const img_width = img.width;
-        const img_left = parseInt(img.style.left);
-        return (img_width * r_x_start + img_left);
-    }
-
-    getBoxY = (r_y_start) => {
-        const img = document.getElementById('selectedImage');
-        const img_height = img.height;
-        const img_top = parseInt(img.style.top);
-        return (img_height * r_y_start + img_top);
-    }
-
-    getBoxWidth = (r_x_start, r_x_end) => {
-        const img_width = document.getElementById('selectedImage').width;
-        const x_start = img_width * r_x_start;
-        const x_end = img_width * r_x_end;
-        return (x_end - x_start);
-    }
-
-    getBoxHeight = (r_y_start, r_y_end) => {
-        const img_height = document.getElementById('selectedImage').height;
-        const y_start = img_height * r_y_start;
-        const y_end = img_height * r_y_end;
-        return (y_end - y_start);
     }
 
     getFileCount = () => {
@@ -266,18 +172,6 @@ class SelectedImage extends Component {
         }
     }
 
-    drawBoxList = () => {
-        return (
-            this.props.boxList.length > 0 ?
-            this.props.boxList.map((box, index) => (
-                <div className="black-white-border" key={box.x_start + box.y_end} style={{width: `${this.getBoxWidth(box.x_start, box.x_end)}px`, height: `${this.getBoxHeight(box.y_start, box.y_end)}px`,
-                             position: 'absolute', left: `${this.getBoxX(box.x_start)}px`, top: `${this.getBoxY(box.y_start)}px`}}>
-                             <span className="tag-title"><b>No.{index + 1}<br/>{box.tag}</b></span>
-                </div>
-            )) : null
-        );
-    }
-
     render() {
         return (
             <div className="w3-center w3-padding-24 flex-box full-width" style={{position: 'relative', justifyContent: 'center', alignItems: 'center', backgroundColor: '#303030', flex: '1'}}>
@@ -293,10 +187,7 @@ class SelectedImage extends Component {
                     : null
                 }
                 <div id="selectedImagePanel" style={{position: 'relative', width: '1200px', height: '600px', overflow: 'hidden'}}>
-                    <img draggable="false" id="selectedImage" src={this.props.selectedImage} alt={this.props.selectedImage} style={{position: 'absolute'}}/>
-                    {
-                        this.state.imgLoaded ? this.drawBoxList() : null
-                    }
+                    <img draggable="false" id="selectedImage" className="et-cursor-move" src={this.props.selectedImage} alt={this.props.selectedImage} style={{position: 'absolute'}}/>
                 </div>
                 {
                     this.props.userLevel !== 0 ?
@@ -314,4 +205,4 @@ class SelectedImage extends Component {
     }
 }
 
-export default SelectedImage
+export default SelectedObjectImage

@@ -6,6 +6,8 @@ import './css/font-awesome.min.css'
 import SelectBar from './SelectBar.js'
 import SelectedImage from './SelectedImage.js'
 import TagView from './TagView.js'
+import SelectedObjectImage from './SelectedObjectImage';
+import TagObjectView from './TagObjectView';
 import TaskPage from './TaskPage'
 import { Route } from 'react-router-dom'
 import Demo from './test_page/Demo';
@@ -31,7 +33,8 @@ class App extends Component {
         num: 10,
         complete: 0,
         login: false,
-        shouldPostTagList: false
+        shouldPostTagList: false,
+        shouldPostObjectTagList: false
     }
 
     uploadImageFiles = (files) => {
@@ -85,7 +88,10 @@ class App extends Component {
     nextImageList = () => {
         this.saveTagList(this.state.selectedImageNum);
         const that = this;
-        const maxValue = that.refs.tagRoute.refs.selectedImage.state.fileCount;
+        let maxValue = 0;
+        if(that.refs.tagRoute && that.refs.tagRoute.refs.selectedImage) {
+            maxValue = that.refs.tagRoute.refs.selectedImage.state.fileCount;
+        }
         //load imageList from server
         const xhr = new XMLHttpRequest();
         //it is doesn't matter send a number larger than the maxValue, server side will detect it
@@ -115,6 +121,41 @@ class App extends Component {
         }
         xhr.send();
 
+    }
+
+    nextImageListForObject = () => {
+        this.saveObjectTagList(this.state.selectedImageNum);
+        const that = this;
+        let maxValue = 0;
+        if(that.refs.tagObjectRoute && that.refs.tagObjectRoute.refs.selectedObjectImage) {
+            maxValue = that.refs.tagObjectRoute.refs.selectedObjectImage.state.fileCount;
+        }
+        //load imageList from server
+        const xhr = new XMLHttpRequest();
+        //it is doesn't matter send a number larger than the maxValue, server side will detect it
+        xhr.open('GET', `${that.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start + this.state.num}&num=${this.state.num}`);
+        xhr.onload = function() {
+            const newImageList = [];
+            if(xhr.response) {
+                const jsonResponse = JSON.parse(xhr.response);
+                jsonResponse.map((image) => {
+                    newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
+                })
+            }
+            that.setState((state) => {
+                state.start = state.start + state.num > maxValue ? maxValue : state.start + state.num;
+                state.selectedImageNum = 0;
+                state.tagList = [];
+                state.imageList = newImageList;
+            }, function() {
+                that.refs.tagObjectRoute.refs.selectedObjectImage.initSelectedImage();
+            })
+            that.getTagList(0);
+        }
+        xhr.onerror = function() {
+            that.getTagList(0);
+        }
+        xhr.send();
     }
 
     previousImageList = () => {
@@ -149,15 +190,14 @@ class App extends Component {
         xhr.send();
     }
 
-    previousImageListForShortcut = () => {
-        this.saveTagList(this.state.selectedImageNum);
+    previousImageListForObject = () => {
+        this.saveObjectTagList(this.state.selectedImageNum);
         const that = this;
         //load imageList from server
         const xhr = new XMLHttpRequest();
         xhr.open('GET', `${that.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
-        const newImageList = [];
         xhr.onload = function() {
-            console.log('getNextList success');
+            const newImageList = [];
             if(xhr.response) {
                 const jsonResponse = JSON.parse(xhr.response);
                 jsonResponse.map((image) => {
@@ -166,19 +206,96 @@ class App extends Component {
             }
             that.setState((state) => {
                 state.start = state.start - state.num > 0 ? state.start - state.num : 1;
-                state.selectedImageNum = newImageList.length - 1;
+                state.selectedImageNum = 0;
                 state.tagList = [];
                 state.imageList = newImageList;
             }, function() {
-                that.refs.tagRoute.refs.selectedImage.initSelectedImage();
+                that.refs.tagObjectRoute.refs.selectedObjectImage.initSelectedImage();
             })
-            that.getTagList(newImageList.length - 1);
+            that.getTagList(0);
         }
         xhr.onerror = function() {
-            console.log('getNextList failed');
-            that.getTagList(newImageList.length - 1);
+            that.getTagList(0);
         }
         xhr.send();
+    }
+
+    previousImageListForShortcut = () => {
+        this.saveTagList(this.state.selectedImageNum);
+        const that = this;
+        //load imageList from server
+        if(this.state.start === 1 && this.state.selectedImageNum === 0) {
+
+        } else {
+            try {
+                const xhr = new XMLHttpRequest();
+                xhr.open('GET', `${that.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
+                const newImageList = [];
+                xhr.onload = function() {
+                    console.log('getNextList success');
+                    if(xhr.response) {
+                        const jsonResponse = JSON.parse(xhr.response);
+                        jsonResponse.map((image) => {
+                            newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
+                        })
+                    }
+                    that.setState((state) => {
+                        state.start = state.start - state.num > 0 ? state.start - state.num : 1;
+                        state.selectedImageNum = newImageList.length - 1;
+                        state.tagList = [];
+                        state.imageList = newImageList;
+                    }, function() {
+                        that.refs.tagRoute.refs.selectedImage.initSelectedImage();
+                    })
+                    that.getTagList(newImageList.length - 1);
+                }
+                xhr.onerror = function() {
+                    console.log('getNextList failed');
+                    that.getTagList(newImageList.length - 1);
+                }
+                xhr.send();
+            } catch(error) {
+                console.log(error);
+            }
+        }
+    }
+
+    previousImageListForShortcutForObject = () => {
+        this.saveObjectTagList(this.state.selectedImageNum);
+        const that = this;
+        //load imageList from server
+        if(this.state.start === 1 && this.state.selectedImageNum === 0) {
+
+        } else {
+            try {
+                const xhr = new XMLHttpRequest();
+                xhr.open('GET', `${that.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
+                const newImageList = [];
+                xhr.onload = function() {
+                    if(xhr.response) {
+                        const jsonResponse = JSON.parse(xhr.response);
+                        jsonResponse.map((image) => {
+                            newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
+                        })
+                    }
+                    that.setState((state) => {
+                        state.start = state.start - state.num > 0 ? state.start - state.num : 1;
+                        state.selectedImageNum = newImageList.length - 1;
+                        state.tagList = [];
+                        state.imageList = newImageList;
+                    }, function() {
+                        that.refs.tagObjectRoute.refs.selectedObjectImage.initSelectedImage();
+                    })
+                    that.getTagList(newImageList.length - 1);
+                }
+                xhr.onerror = function() {
+                    that.getTagList(newImageList.length - 1);
+                }
+                xhr.send();
+            } catch(error) {
+                console.log(error);
+            }
+        }
     }
 
     deleteImage = () => {
@@ -209,8 +326,15 @@ class App extends Component {
                     })
                 }
             }
-            that.refs.tagRoute.refs.selectedImage.getFileCount();
-            that.refs.tagRoute.refs.selectedImage.getTagedFileCount();
+            if(that.refs.tagRoute.refs.selectedImage) {
+                that.refs.tagRoute.refs.selectedImage.getFileCount();
+                that.refs.tagRoute.refs.selectedImage.getTagedFileCount();
+            }
+            if(that.refs.tagObjectRoute.refs.selectedObjectImage) {
+                that.refs.tagObjectRoute.refs.selectedObjectImage.getFileCount();
+                that.refs.tagObjectRoute.refs.selectedObjectImage.getTagedFileCount();
+            }
+
         }
     }
 
@@ -237,6 +361,21 @@ class App extends Component {
         }
     }
 
+    nextImageForObject = () => {
+        const that = this, preIndex = this.state.selectedImageNum;
+        if(preIndex + 1 < this.state.imageList.length) {
+            this.setState((state) => {
+                state.selectedImageNum = preIndex + 1;
+                that.saveObjectTagList(preIndex);
+                that.getTagList(preIndex + 1);
+            }, function() {
+                that.refs.tagObjectRoute.refs.selectedObjectImage.initSelectedImage();
+            })
+        } else if(preIndex + 1 === this.state.imageList.length) {
+            this.nextImageListForObject();
+        }
+    }
+
     previousImage = () => {
         const that = this, preIndex = this.state.selectedImageNum;
         if(preIndex - 1 >= 0) {
@@ -249,6 +388,21 @@ class App extends Component {
             })
         } else {
             this.previousImageListForShortcut();
+        }
+    }
+
+    previousImageForObject = () => {
+        const that = this, preIndex = this.state.selectedImageNum;
+        if(preIndex - 1 >= 0) {
+            this.setState((state) => {
+                state.selectedImageNum = preIndex - 1;
+                that.saveObjectTagList(preIndex);
+                that.getTagList(preIndex - 1);
+            }, function() {
+                that.refs.tagObjectRoute.refs.selectedObjectImage.initSelectedImage();
+            })
+        } else {
+            this.previousImageListForShortcutForObject();
         }
     }
 
@@ -274,8 +428,31 @@ class App extends Component {
         }
     }
 
+    clickObjectItem = (url) => {
+        const preIndex = this.state.selectedImageNum;
+        const that = this;
+        for(let i=0; i<this.state.imageList.length; i++) {
+            if(this.state.imageList[i].url === url) {
+                this.setState((state) => {
+                    state.selectedImageNum = i
+                    if(preIndex !== i) {
+                        that.saveObjectTagList(preIndex);
+                        that.getTagList(i);
+                    }
+                    if(state.imageList.length === 1) {
+                        that.saveObjectTagList(preIndex);
+                    }
+                }, function() {
+                    that.refs.tagObjectRoute.refs.selectedObjectImage.initSelectedImage();
+                })
+                break
+            }
+        }
+    }
+
     getTagList = (index) => {
         const that = this;
+        let tagList = [];
         try {
             const tagListRequest = new XMLHttpRequest();
             tagListRequest.open('GET', `${that.state.defaultURL}loadlabel?usrname=${this.state.userName}&taskname=${this.state.taskName}&filename=${this.state.imageList[index].name}`);
@@ -284,10 +461,12 @@ class App extends Component {
                 console.log('getBoxList success.');
                 const jsonResponse = JSON.parse(tagListRequest.response);
                 if(jsonResponse.length > 0) {
-                    that.setState({tagList: jsonResponse.objects});
-                } else {
-                    that.setState({tagList: []});
+                    tagList = jsonResponse.objects;
                 }
+                that.setState({tagList}, function() {
+                    if(that.refs.tagObjectRoute.refs.tagObjectView)
+                        that.refs.tagObjectRoute.refs.tagObjectView.initTagString();
+                })
             }
             tagListRequest.onerror = function() {
                 console.log('get boxList error.');
@@ -331,6 +510,35 @@ class App extends Component {
                 saveTagListRequest.onerror = function() {
                     console.log('post taglist error.');
                 }
+            }
+        }
+    }
+
+    saveObjectTagList = (index) => {
+        if(this.state.shouldPostObjectTagList) {
+            this.setState((state) => {
+                state.shouldPostObjectTagList = false;
+                state.imageList[index].labeled = 1;
+            })
+            const that = this;
+            const request = new XMLHttpRequest();
+            request.open('POST', `${that.state.defaultURL}savelabel?usrname=${this.state.userName}&taskname=${this.state.taskName}&filename=${this.state.imageList[index].name}`);
+            const result = `{
+                "length": 1,
+                "objects": [
+                    {
+                        "x_start": 0.0,
+                        "y_start": 0.0,
+                        "x_end": 1.0,
+                        "y_end": 1.0,
+                        "tag": "${document.getElementById('mySelect').value}",
+                        "info": "${this.state.tagList[0].info}"
+                    }
+                ]
+            }`
+            request.send(result);
+            request.onload = function() {
+                that.refs.tagObjectRoute.refs.selectedObjectImage.getTagedFileCount();
             }
         }
     }
@@ -411,12 +619,17 @@ class App extends Component {
     changeBoxInfo = (index, value) => {
         this.setState((state) => {
             state.shouldPostTagList = true;
+            state.shouldPostObjectTagList = true;
             state.tagList[index].info = value;
         })
     }
 
     changeTagString = () => {
-        this.setState({currentTagString: $('#mySelect').val()})
+        this.setState({currentTagString: $('#mySelect').val()});
+    }
+
+    changeObjectTagString = () => {
+        this.setState({shouldPostObjectTagList: true});
     }
 
     handleNumChange = (e) => {
@@ -520,6 +733,52 @@ class App extends Component {
                                      onGetImageList={this.getImageList}
                                      onNextImageList={this.nextImageList}
                                      onPreviousImageList={this.previousImageList}
+                                     boxList={this.state.tagList}
+                                     onDeleteBox={this.deleteBox}
+                                     onChangeBoxInfo={this.changeBoxInfo}
+                                     defaultURL={this.state.defaultURL}
+                                     userName={this.state.userName}
+                                     userLevel={this.state.userLevel}
+                                     taskName={this.state.taskName}/>
+                        </div>
+                    </div> : null
+                )}/>
+                <Route ref="tagObjectRoute" exact path="/tagobject" render={() => (
+                    this.state.login ?
+                    <div className="flex-box full-height">
+                        <div className="flex-box flex-column full-height" style={{flex: '1 1 auto', width: '80%'}}>
+                            <SelectedObjectImage ref="selectedObjectImage"
+                                           onNextImage={this.nextImageForObject}
+                                           onPreviousImage={this.previousImageForObject}
+                                           num={this.state.num}
+                                           info={this.state.info}
+                                           currentTagString={this.state.currentTagString}
+                                           onAddTag={this.addTag}
+                                           selectedImage={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].url : ''}
+                                           selectedImageName={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].name : 'No Image'}
+                                           selectedImageNumInAll={parseInt(this.state.start) + this.state.selectedImageNum}
+                                           complete={this.state.complete}
+                                           onDeleteImage={this.deleteImage}
+                                           onUploadImgeFiles={this.uploadImageFiles}
+                                           onShowNewImage={this.showNewImage}
+                                           boxList={this.state.tagList}
+                                           defaultURL={this.state.defaultURL}
+                                           userName={this.state.userName}
+                                           userLevel={this.state.userLevel}
+                                           taskName={this.state.taskName}/>
+                            <SelectBar onClickItem={this.clickObjectItem} selectedImageNum={this.state.selectedImageNum} imageList={this.state.imageList}/>
+                        </div>
+                        <div className="flex-box flex-column" style={{width: '20%', backgroundColor: '#F0F0F0'}}>
+                            <TagObjectView ref="tagObjectView" onHandleNumChange={this.handleNumChange}
+                                     onHandleStartChange={this.handleStartChange}
+                                     start={this.state.start}
+                                     num={this.state.num}
+                                     info={this.state.info}
+                                     currentTagString={this.state.currentTagString}
+                                     onChangeTagString={this.changeObjectTagString}
+                                     onGetImageList={this.getImageList}
+                                     onNextImageList={this.nextImageListForObject}
+                                     onPreviousImageList={this.previousImageListForObject}
                                      boxList={this.state.tagList}
                                      onDeleteBox={this.deleteBox}
                                      onChangeBoxInfo={this.changeBoxInfo}
