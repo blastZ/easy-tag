@@ -50,8 +50,14 @@ class App extends Component {
             fileRequest.send(formData);
             fileRequest.onload = function() {
                 console.log('post image success.');
-                that.refs.tagRoute.refs.selectedImage.getFileCount();
-                that.refs.tagRoute.refs.selectedImage.getTagedFileCount();
+                if(that.refs.tagRoute.refs.selectedImage) {
+                    that.refs.tagRoute.refs.selectedImage.getFileCount();
+                    that.refs.tagRoute.refs.selectedImage.getTagedFileCount();
+                }
+                if(that.refs.tagObjectRoute.refs.selectedObjectImage) {
+                    that.refs.tagObjectRoute.refs.selectedObjectImage.getFileCount();
+                    that.refs.tagObjectRoute.refs.selectedObjectImage.getTagedFileCount();
+                }
             }
             fileRequest.onerror = function() {
                 console.log('post image failed.');
@@ -515,7 +521,7 @@ class App extends Component {
     }
 
     saveObjectTagList = (index) => {
-        if(this.state.shouldPostObjectTagList) {
+        {
             this.setState((state) => {
                 state.shouldPostObjectTagList = false;
                 state.imageList[index].labeled = 1;
@@ -532,7 +538,7 @@ class App extends Component {
                         "x_end": 1.0,
                         "y_end": 1.0,
                         "tag": "${document.getElementById('mySelect').value}",
-                        "info": "${this.state.tagList[0].info}"
+                        "info": "${this.state.tagList[0] ? this.state.tagList[0].info : ''}"
                     }
                 ]
             }`

@@ -88,7 +88,8 @@ class TagObjectView extends Component {
     }
 
     initTagString = () => {
-        document.getElementById('mySelect').value = this.props.boxList[0].tag;
+        if(this.props.boxList[0])
+            document.getElementById('mySelect').value = this.props.boxList[0].tag;
     }
 
     onDeleteBox = (index) => {
@@ -130,9 +131,9 @@ class TagObjectView extends Component {
                         <li className="w3-hover-green">
                             <span>标签:{this.props.boxList[0] ? this.props.boxList[0].tag : 'none'}</span>
                             {
-                                this.props.boxList.map((box, index) => (
-                                    <div key={box.tag + index}>额外信息:<input id="myInput" type="text" onChange={this.onChangeBoxInfo.bind(this, index)} value={this.props.boxList[index].info}/></div>
-                                ))
+
+                                    <div>额外信息:<input id="myInput" type="text" onChange={this.onChangeBoxInfo.bind(this, 0)} value={this.props.boxList[0] ? this.props.boxList[0].info : ''}/></div>
+
                             }
                         </li>
                 }</ul>
