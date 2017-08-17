@@ -130,11 +130,7 @@ class TagObjectView extends Component {
                 <ul className="w3-ul w3-hoverable margin-top-5"  style={{overflowY: 'auto', flex: '1'}}>{
                         <li className="w3-hover-green">
                             <span>标签:{this.props.boxList[0] ? this.props.boxList[0].tag : 'none'}</span>
-                            {
-
-                                    <div>额外信息:<input id="myInput" type="text" onChange={this.onChangeBoxInfo.bind(this, 0)} value={this.props.boxList[0] ? this.props.boxList[0].info : ''}/></div>
-
-                            }
+                            <div>额外信息:<input id="myInput" type="text" onChange={this.onChangeBoxInfo.bind(this, 0)} value={this.props.boxList[0] ? this.props.boxList[0].info : ''}/></div>
                         </li>
                 }</ul>
                 <div>

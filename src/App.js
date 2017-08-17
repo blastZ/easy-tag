@@ -521,7 +521,7 @@ class App extends Component {
     }
 
     saveObjectTagList = (index) => {
-        {
+        if(this.state.shouldPostObjectTagList || this.state.tagList.length === 0){
             this.setState((state) => {
                 state.shouldPostObjectTagList = false;
                 state.imageList[index].labeled = 1;
@@ -537,8 +537,8 @@ class App extends Component {
                         "y_start": 0.0,
                         "x_end": 1.0,
                         "y_end": 1.0,
-                        "tag": "${document.getElementById('mySelect').value}",
-                        "info": "${this.state.tagList[0] ? this.state.tagList[0].info : ''}"
+                        "tag": "${this.state.tagList[0] ? this.state.tagList[0].tag : document.getElementById('mySelect').value}",
+                        "info": "${this.state.tagList[0]? this.state.tagList[0].info : ''}"
                     }
                 ]
             }`
@@ -600,6 +600,13 @@ class App extends Component {
         })
     }
 
+    addObjectTag = (tag) => {
+        this.setState((state) => {
+            state.shouldPostObjectTagList = true;
+            state.tagList = [tag];
+        })
+    }
+
     deleteBox = (index) => {
         const that = this;
         this.setState((state) => {
@@ -635,7 +642,9 @@ class App extends Component {
     }
 
     changeObjectTagString = () => {
-        this.setState({shouldPostObjectTagList: true});
+        this.setState({currentTagString: document.getElementById('mySelect').value});
+        this.addObjectTag({x_start: 0.0, y_start: 0.0, x_end: 1.0, y_end: 1.0, tag: document.getElementById('mySelect').value, info: document.getElementById('myInput').value});
+        document.getElementById('mySelect').blur();
     }
 
     handleNumChange = (e) => {

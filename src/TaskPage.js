@@ -365,43 +365,22 @@ class TaskPage extends Component {
     }
 
     verifyTagProgress = (index) => {
-        const str = this.state.taskList[index].tagProgress;
-        const numStr = str.split('/');
-        const tagedImageNum = parseInt(numStr[0]);
-        const AllImageNum = parseInt(numStr[1]);
-        if(tagedImageNum < 500) {
-            return false;
-        }
-        if((tagedImageNum / AllImageNum) < 0.5) {
-            return false;
-        }
-        return true;
-    }
-
-    onStartTask = (index) => {
         const that = this;
-        if(this.verifyTagProgress(index) === false) {
-            window.alert('标注图片数量不足');
-        } else {
-            const taskState = this.state.taskList[index].taskState;
-            if(taskState === '0') {
-                try {
-                    const startTask = new XMLHttpRequest();
-                    startTask.open('GET', `${this.props.defaultURL}starttask?usrname=${this.props.username}&taskname=${this.state.taskList[index].taskName}`);
-                    startTask.send();
-                    startTask.onload = function() {
-                        const arrayData = that.getArrayData(startTask.response);
-                        that.addTask(arrayData);
-                    }
-                } catch(error) {
-                    console.log(error);
-                }
-            } else if(taskState === '3') {
-                const result = window.confirm('确定重新训练吗?');
-                if(result) {
+        this.getTagProgress(this.state.taskList[index].taskName, function(){
+            const str = that.state.taskList[index].tagProgress;
+            const numStr = str.split('/');
+            const tagedImageNum = parseInt(numStr[0]);
+            const AllImageNum = parseInt(numStr[1]);
+            console.log(tagedImageNum);
+            console.log(AllImageNum);
+            if(tagedImageNum < 500 || (tagedImageNum / AllImageNum) < 0.5) {
+                window.alert('标注图片数量不足');
+            } else {
+                const taskState = that.state.taskList[index].taskState;
+                if(taskState === '0') {
                     try {
                         const startTask = new XMLHttpRequest();
-                        startTask.open('GET', `${this.props.defaultURL}starttask?usrname=${this.props.username}&taskname=${this.state.taskList[index].taskName}`);
+                        startTask.open('GET', `${that.props.defaultURL}starttask?usrname=${that.props.username}&taskname=${that.state.taskList[index].taskName}`);
                         startTask.send();
                         startTask.onload = function() {
                             const arrayData = that.getArrayData(startTask.response);
@@ -410,9 +389,28 @@ class TaskPage extends Component {
                     } catch(error) {
                         console.log(error);
                     }
+                } else if(taskState === '3') {
+                    const result = window.confirm('确定重新训练吗?');
+                    if(result) {
+                        try {
+                            const startTask = new XMLHttpRequest();
+                            startTask.open('GET', `${that.props.defaultURL}starttask?usrname=${that.props.username}&taskname=${that.state.taskList[index].taskName}`);
+                            startTask.send();
+                            startTask.onload = function() {
+                                const arrayData = that.getArrayData(startTask.response);
+                                that.addTask(arrayData);
+                            }
+                        } catch(error) {
+                            console.log(error);
+                        }
+                    }
                 }
             }
-        }
+        });
+    }
+
+    onStartTask = (index) => {
+        this.verifyTagProgress(index);
     }
 
     onStopTask = (index) => {
@@ -1112,7 +1110,7 @@ class TaskPage extends Component {
                                             : null
                                         }
                                         {
-                                            (this.props.userLevel === 1 || this.props.userLevel === 2 || this.props.userLevel === 3) ?
+                                            (this.props.userLevel === 2 || this.props.userLevel === 3) ?
                                             <Link style={{cursor: 'context-menu'}} onClick={this.onLinkToTest.bind(this, index)} to={task.taskState === '3' ? "/test" : "/"}><i className={`fa fa-cog ${task.taskState === '3' ? 'table-item-button' : 'et-silence-button'} w3-margin-left`} aria-hidden="true"> 测试</i></Link>
                                             : null
                                         }
