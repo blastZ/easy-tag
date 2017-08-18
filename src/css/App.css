@@ -204,3 +204,8 @@
 .et-cursor-move:hover {
     cursor: move !important;
 }
+
+.et-output-train-object-button:hover {
+    background-color: #f1f1f1 !important;
+    color: black !important;
+}

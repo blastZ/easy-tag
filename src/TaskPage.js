@@ -10,6 +10,7 @@ class TaskPage extends Component {
         userManageList: [], //userName: 'aaa', email: 'aa@aa.com', activeState: '0', userLevel: '0', userGroup: 'common'
         userGroupList: [], // 'common', 'test'
         tagStatisticsList: [], //tagName: 'aa', tagNum: '11'
+        workerOwnerList: [], //"public", "codvision"
         newTaskName: '',
         showInputView: false,
         showImageView: false,
@@ -18,9 +19,12 @@ class TaskPage extends Component {
         showStartAndNumInputView: false,
         showLabelStatisticsView: false,
         showUserManageEditView: false,
+        showEditWorkerOwner: false,
         currentTaskName: '',
+        editWorkerIndex: -1,
         destination: '/tag',
         currentUserName: '',
+        loadingTrainObjectData: false,
         start: '',
         num: '',
         currentTaskFileCount: '0',
@@ -33,6 +37,85 @@ class TaskPage extends Component {
             userGroup: '',
             password: '',
             rePassword: ''
+        }
+    }
+
+    outputTagData = () => {
+        try {
+            const request = new XMLHttpRequest();
+            request.open('POST', `${this.props.defaultURL}getlabelzip?usrname=${this.props.username}&taskname=${this.state.currentTaskName}`);
+            const data = this.getManagerData();
+            request.send(data);
+            request.onload = () => {
+                window.open(request.response);
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    outputTrainObjectData = () => {
+        try {
+            this.setState({loadingTrainObjectData: true});
+            const request = new XMLHttpRequest();
+            request.open('POST', `${this.props.defaultURL}getmodel?usrname=${this.props.username}&taskname=${this.state.currentTaskName}`);
+            const data = this.getManagerData();
+            request.send(data);
+            request.onload = () => {
+                this.setState({loadingTrainObjectData: false});
+                window.open(request.response);
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    shouldShowEditWorkerOwner = (index) => {
+        if(!this.state.showEditWorkerOwner) {
+            this.getWorkerOwnerList(index);
+        } else {
+            this.setState({showEditWorkerOwner: !this.state.showEditWorkerOwner, editWorkerIndex: -1});
+        }
+    }
+
+    saveWorkerOwnerChange = (index) => {
+        const newOwner = document.getElementById('workerOwnerSelect').value;
+        try {
+            const request = new XMLHttpRequest();
+            request.open('POST', `${this.props.defaultURL}modifyworkerowner?workername=${this.state.workerList[index].workerName}&ownername=${newOwner}`);
+            const data = this.getManagerData();
+            request.send(data);
+            this.setState({showEditWorkerOwner: !this.state.showEditWorkerOwner}, () => {
+                this.refreshTaskPage();
+            });
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    getWorkerOwnerList = (index) => {
+        try {
+            const request = new XMLHttpRequest();
+            request.open('POST', `${this.props.defaultURL}getmanagerusrlist`);
+            const data = this.getManagerData();
+            request.send(data);
+            request.onload = () => {
+                const arrayData = request.response.split(',');
+                let workerOwnerList = [];
+                for(let i=0; i<arrayData.length; i++) {
+                    if(i === arrayData.length - 1) {
+                        workerOwnerList.push(arrayData[i].slice(2, arrayData[i].length - 2));
+                    } else {
+                        workerOwnerList.push(arrayData[i].slice(2, arrayData[i].length - 1));
+                    }
+                }
+                this.setState({workerOwnerList}, () => {
+                    this.setState({showEditWorkerOwner: !this.state.showEditWorkerOwner, editWorkerIndex: index});
+                });
+            }
+
+        } catch(error) {
+            console.log(error);
         }
     }
 
@@ -317,13 +400,19 @@ class TaskPage extends Component {
     addWorker = (arrayData) => {
         if(arrayData.length > 4) {
             const newWorkerList = [];
-            for(let i=0; i<arrayData.length; i=i+5) {
+            for(let i=0; i<arrayData.length; i=i+6) {
                 const workerName = arrayData[i].slice(4, arrayData[i].length - 1);
                 const workerState = arrayData[i + 1].slice(1, 2);
                 const taskName = arrayData[i + 2].slice(3, arrayData[i + 2].length - 1);
                 const GPU = arrayData[i + 3].slice(3, arrayData[i + 3].length - 1);
                 const updateTime = arrayData[i + 4].slice(3, 22);
-                newWorkerList.push({workerName: workerName, workerState: workerState, GPU: GPU, taskName: taskName, updateTime: updateTime});
+                let owner = '';
+                if(i + 5 === arrayData.length - 1) {
+                    owner = arrayData[i + 5].slice(3, arrayData[i + 5].length - 3);
+                } else {
+                    owner = arrayData[i + 5].slice(3, arrayData[i + 5].length - 2);
+                }
+                newWorkerList.push({workerName, workerState, GPU, taskName, updateTime, owner});
             }
             if(this.refs.theWorkerTable) {
                 this.setState({workerList: newWorkerList});
@@ -352,7 +441,7 @@ class TaskPage extends Component {
                 lookTrainState.open('GET', `${this.props.defaultURL}taskinfo?usrname=${this.props.username}&taskname=${this.state.taskList[index].taskName}`);
                 lookTrainState.send();
                 lookTrainState.onload = function() {
-                    that.setState({showImageView: true, currentProgress}, function() {
+                    that.setState({showImageView: true, currentProgress, currentTaskName: that.state.taskList[index].taskName}, function() {
                         document.getElementById('train-state').src = lookTrainState.response;
                     })
                 }
@@ -830,7 +919,7 @@ class TaskPage extends Component {
                 request.send();
                 request.onload = function() {
                     const tagStatisticsList = that.getFormatLabelStatistics(request.response);
-                    that.setState({tagStatisticsList, currentTagProgress}, function() {
+                    that.setState({tagStatisticsList, currentTagProgress, currentTaskName: that.state.taskList[index].taskName}, function() {
                         that.shouldShowLabelStatisticsView();
                     });
                 }
@@ -1016,35 +1105,49 @@ class TaskPage extends Component {
                 </div>
                 {
                     this.state.showImageView === true ? (
-                        <div onClick={this.closeImageView} className="popup w3-center w3-padding-64" style={{background: 'rgba(0, 0, 0, 0.4)', position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', zIndex: '100'}}>
-                            <h3 className="w3-text-white">{`训练进度: ${this.state.currentProgress}%`}</h3>
-                            <img className="w3-image" id="train-state"/>
+                        <div className="popup w3-center w3-padding-64" style={{background: 'rgba(0, 0, 0, 0.4)', position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', zIndex: '100'}}>
+                            <i onClick={this.closeImageView} className="fa fa-times w3-text-white w3-xxlarge et-hoverable" aria-hidden="true" style={{position: 'absolute', top: '10px', right: '10px'}}></i>
+                            <div className="w3-modal-content" style={{backgroundColor: 'rgba(0,0,0,0)'}}>
+                                <h3 className="w3-text-white">{`训练进度: ${this.state.currentProgress}%`}</h3>
+                                <img className="w3-image" id="train-state"/>
+                                {
+                                    this.state.currentProgress === '100.0' ?
+                                        !this.state.loadingTrainObjectData ?
+                                        <button onClick={this.outputTrainObjectData} className="w3-button w3-orange w3-text-white w3-margin-top">输出训练模型数据</button>
+                                        : <i className="fa fa-spinner w3-spin w3-xxlarge w3-text-white w3-margin-top" style={{display: 'block'}}></i>
+                                    : null
+                                }
+                            </div>
                         </div>
                     ) : null
                 }
                 {
                     this.state.showLabelStatisticsView === true ? (
-                        <div onClick={this.shouldShowLabelStatisticsView} className="popup w3-center w3-padding-64" style={{background: 'rgba(0, 0, 0, 0.4)', position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', zIndex: '100'}}>
-                            <h3 className="w3-text-white">{`标注进度: ${this.state.currentTagProgress}`}</h3>
-                            <table className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered" style={{width: '50%', margin: '0 auto', marginTop: '10px'}}>
-                                <thead className="w3-orange w3-text-white">
-                                    <tr>
-                                        <th>标签名</th>
-                                        <th>已标记数量</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                {
-                                    this.state.tagStatisticsList.map((tag) => (
-                                        <tr key={tag.tagName + tag.tagNum}>
-                                            <td>{this.unicodeToChar(tag.tagName)}</td>
-                                            <td>{tag.tagNum}</td>
+                        <div className="popup w3-center w3-padding-64" style={{background: 'rgba(0, 0, 0, 0.4)', position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', zIndex: '100'}}>
+                            <i onClick={this.shouldShowLabelStatisticsView} className="fa fa-times w3-text-white w3-xxlarge et-hoverable" aria-hidden="true" style={{position: 'absolute', top: '10px', right: '10px'}}></i>
+                            <div>
+                                <h3 className="w3-text-white">{`标注进度: ${this.state.currentTagProgress}`}</h3>
+                                <table className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered" style={{width: '50%', margin: '0 auto', marginTop: '10px'}}>
+                                    <thead className="w3-orange w3-text-white">
+                                        <tr>
+                                            <th>标签名</th>
+                                            <th>已标记数量</th>
                                         </tr>
-                                    ))
-                                }
-                                </tbody>
-                                <tfoot></tfoot>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                    {
+                                        this.state.tagStatisticsList.map((tag) => (
+                                            <tr key={tag.tagName + tag.tagNum}>
+                                                <td>{this.unicodeToChar(tag.tagName)}</td>
+                                                <td>{tag.tagNum}</td>
+                                            </tr>
+                                        ))
+                                    }
+                                    </tbody>
+                                    <tfoot></tfoot>
+                                </table>
+                                <button onClick={this.outputTagData} className="w3-button w3-orange w3-text-white w3-margin-top" style={{borderRadius: '5px'}}>输出标记数据</button>
+                            </div>
                         </div>
                     ) : null
                 }
@@ -1139,8 +1242,14 @@ class TaskPage extends Component {
                                     <th>worker名称</th>
                                     <th>worker状态</th>
                                     <th>显卡使用情况</th>
-                                    <th>正在服务的任务名称</th>
+                                    <th style={{width: '9%'}}>正在服务的任务名称</th>
                                     <th>更新时间</th>
+                                    <th>拥有者</th>
+                                    {
+                                        this.props.userLevel === 3 ?
+                                        <th>操作</th>
+                                        : null
+                                    }
                                 </tr>
                             </thead>
                             <tbody>{
@@ -1152,6 +1261,27 @@ class TaskPage extends Component {
                                         <td>{worker.GPU}</td>
                                         <td>{worker.taskName}</td>
                                         <td>{worker.updateTime}</td>
+                                        <td>{
+                                            this.state.editWorkerIndex === index && this.state.showEditWorkerOwner ?
+                                                <select id="workerOwnerSelect">{
+                                                    this.state.workerOwnerList.map((owner, index) => (
+                                                        <option key={owner + index}>{owner}</option>
+                                                    ))
+                                                }</select>
+                                                : worker.owner
+                                        }</td>
+                                        {
+                                            this.props.userLevel === 3 ?
+                                            <td>{
+                                                !this.state.showEditWorkerOwner ?
+                                                <i onClick={this.shouldShowEditWorkerOwner.bind(this, index)} className="fa fa-address-book table-item-button"> 修改拥有者</i>
+                                                :<div>
+                                                <i onClick={this.saveWorkerOwnerChange.bind(this, index)} className="fa fa-minus-square table-item-button"> 保存</i>
+                                                <i onClick={this.shouldShowEditWorkerOwner.bind(this, index)} className="fa fa-minus-square table-item-button w3-margin-left"> 取消</i>
+                                                </div>
+                                            }</td>
+                                            : null
+                                        }
                                     </tr>
                                 ))
                             }</tbody>
