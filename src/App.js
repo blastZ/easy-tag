@@ -8,7 +8,7 @@ import SelectedImage from './SelectedImage.js'
 import TagView from './TagView.js'
 import SelectedObjectImage from './SelectedObjectImage';
 import TagObjectView from './TagObjectView';
-import TaskPage from './TaskPage'
+import TaskPage from './taskpage/TaskPage'
 import { Route } from 'react-router-dom'
 import Demo from './test_page/Demo';
 import Login from './login_page/Login';
@@ -19,6 +19,7 @@ class App extends Component {
         userName: '',
         taskName: '',
         userLevel: 0,
+        userGroup: '',
         password: '',
         defaultURL: 'http://demo.codvision.com:16831/api/',
         imageList: [
@@ -686,8 +687,8 @@ class App extends Component {
         this.setState(this.concatNewImage(url, name));
     }
 
-    login = (userName, userLevel, password) => {
-        this.setState({login: true, userName, userLevel, password});
+    login = (userName, userLevel, userGroup, password) => {
+        this.setState({login: true, userName, userLevel, userGroup, password});
     }
 
     logout = (username) => {
@@ -708,6 +709,7 @@ class App extends Component {
                               defaultURL={this.state.defaultURL}
                               userLevel={this.state.userLevel}
                               username={this.state.userName}
+                              userGroup={this.state.userGroup}
                               password={this.state.password}
                               onChangeUserAndTask={this.changeUserAndTask}/>
                     : <Login onLogin={this.login} defaultURL={this.state.defaultURL}/>
