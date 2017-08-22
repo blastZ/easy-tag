@@ -27,3 +27,22 @@ export function getTaskTypeName(taskTypeID) {
             return ('视频分类');
     }
 }
+
+export function getTaskTypeCode(str) {
+    switch (str) {
+        case '物体检测': return 0;
+        case '图片分类': return 1;
+        default: return 0;
+    }
+}
+
+export  function getUserLevelCode(str) {
+    let userLevel = -1;
+    switch(str) {
+        case '普通用户': userLevel = 0; break;
+        case '编辑用户': userLevel = 1; break;
+        case '管理用户': userLevel = 2; break;
+        case '超级用户': userLevel = 3; break;
+    }
+    return userLevel;
+}

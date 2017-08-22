@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
 import TopBar from './TopBar'
-import { getTaskStateName, getTaskTypeName } from '../utils/Task';
+import { getTaskStateName, getTaskTypeName, getUserLevelCode, getTaskTypeCode } from '../utils/Task';
 import TrainTaskTable from './tables/TrainTaskTable';
 
 class TaskPage extends Component {
@@ -17,16 +17,21 @@ class TaskPage extends Component {
         newTaskName: '',
         showInputView: false,
         showImageView: false,
+        showImageViewForTrainTask: false,
+        showTrainSettingView: false,
         showPersonPanel: false,
         showDistributeTaskView: false,
         showStartAndNumInputView: false,
         showLabelStatisticsView: false,
+        showLabelStatisticsViewForTrainTask: false,
         showUserManageEditView: false,
         showEditWorkerOwner: false,
         currentTaskName: '',
+        currentTaskType: -1,
         editWorkerIndex: -1,
         destination: '/tag',
         currentUserName: '',
+        currentTrainTaskUserName: '',
         loadingTrainObjectData: false,
         start: '',
         num: '',
@@ -40,7 +45,40 @@ class TaskPage extends Component {
             userGroup: '',
             password: '',
             rePassword: ''
-        }
+        },
+        trainParamsForObject: {
+            structure: '',
+            epoch: 200,
+            batchsize: 64,
+            learningrate: 0.05,
+            weightdecay: 0.0005,
+            momentum: 0.9
+        },
+        trainParams: {
+            structure: '',
+            epoch: 5000,
+            batchsize: 32,
+            learningrate: 0.0001,
+            weightdecay: 0.0005,
+            momentum: 0.9
+        },
+        structureList : [],
+        structureListForObject: []
+    }
+
+    shouldShowTrainSettingView = () => {
+        this.setState({showTrainSettingView: !this.state.showTrainSettingView}, () => {
+            if(this.state.showTrainSettingView === true) {
+                const select = document.getElementById('structureSelect');
+                if(this.state.currentTaskType === 0) {
+                    if(this.state.trainParams.structure !== '')
+                        select.value = this.state.trainParams.structure;
+                } else if(this.state.currentTaskType === 1) {
+                    if(this.state.trainParamsForObject.structure !== '')
+                        select.value = this.state.trainParamsForObject.structure;
+                }
+            }
+        });
     }
 
     outputTagData = () => {
@@ -71,6 +109,26 @@ class TaskPage extends Component {
         } catch (error) {
             console.log(error);
         }
+    }
+
+    outputTrainObjectDataForTrainTask = () => {
+        try {
+            this.setState({loadingTrainObjectData: true});
+            const request = new XMLHttpRequest();
+            request.open('POST', `${this.props.defaultURL}getmodel?usrname=${this.state.currentTrainTaskUserName}&taskname=${this.state.currentTaskName}`);
+            const data = this.getManagerData();
+            request.send(data);
+            request.onload = () => {
+                this.setState({loadingTrainObjectData: false});
+                window.open(request.response);
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    shouldShowImageViewForTrainTask = () => {
+        this.setState({showImageViewForTrainTask: !this.state.showImageViewForTrainTask});
     }
 
     shouldShowEditWorkerOwner = (index) => {
@@ -126,6 +184,10 @@ class TaskPage extends Component {
         this.setState({showLabelStatisticsView: !this.state.showLabelStatisticsView});
     }
 
+    shouldShowLabelStatisticsViewForTrainTask = () => {
+        this.setState({showLabelStatisticsView: !this.state.showLabelStatisticsView});
+    }
+
     shouldShowUserManageEditView = (index) => {
         if(typeof(index) !== 'number') {
             this.setState({showUserManageEditView: !this.state.showUserManageEditView, editUserIndex: -1});
@@ -150,7 +212,7 @@ class TaskPage extends Component {
     }
 
     handleEditUserLevel = (e) => {
-        const userLevel = this.getUserLevelCode(e.target.value);
+        const userLevel = getUserLevelCode(e.target.value);
         this.setState({editState: {
             ...this.state.editState,
             userLevel
@@ -320,14 +382,6 @@ class TaskPage extends Component {
         this.setState({showImageView: false});
     }
 
-    getTaskTypeCode = (str) => {
-        switch (str) {
-            case '物体检测': return 0;
-            case '图片分类': return 1;
-            default: return 0;
-        }
-    }
-
     onAddTask = () => {
         const that = this;
         const result = /^[a-zA-Z0-9]+$/.test(this.state.newTaskName);
@@ -337,7 +391,7 @@ class TaskPage extends Component {
             const getNewTask = new XMLHttpRequest();
             try {
                 const type = document.getElementById('newTaskType').value;
-                getNewTask.open('GET', `${this.props.defaultURL}addtask?usrname=${this.props.username}&taskname=${this.state.newTaskName}&type=${this.getTaskTypeCode(type)}`);
+                getNewTask.open('GET', `${this.props.defaultURL}addtask?usrname=${this.props.username}&taskname=${this.state.newTaskName}&type=${getTaskTypeCode(type)}`);
                 getNewTask.send();
                 getNewTask.onload = function() {
                     const arrayData = that.getArrayData(getNewTask.response);
@@ -400,6 +454,26 @@ class TaskPage extends Component {
         }
     }
 
+    getTagProgressForTrainTask = (task, showLabelStatisticsForTrainTask) => {
+        const that = this;
+        const getFileCount = new XMLHttpRequest();
+        getFileCount.open('GET', `${this.props.defaultURL}filecount?usrname=${task.userName}&taskname=${task.taskName}`);
+        getFileCount.send();
+        getFileCount.onload = function() {
+            console.log('getFileCount success.');
+            const theFileCount = getFileCount.response;
+            const getTagedFileCount = new XMLHttpRequest();
+            getTagedFileCount.open('GET', `${that.props.defaultURL}labeledfilecount?usrname=${task.userName}&taskname=${task.taskName}`);
+            getTagedFileCount.send();
+            getTagedFileCount.onload = function() {
+                const theTagedFileCount = getTagedFileCount.response;
+                const tagProgress = `${theTagedFileCount}/${theFileCount}`;
+                task.tagProgress = tagProgress;
+                showLabelStatisticsForTrainTask(task);
+            }
+        }
+    }
+
     addWorker = (arrayData) => {
         if(arrayData.length > 4) {
             const newWorkerList = [];
@@ -451,15 +525,33 @@ class TaskPage extends Component {
             } catch(error) {
                 console.log(error);
             }
-        } else {
+        }
+    }
 
+    onLookTrainStateForTrainTask = (task) => {
+        const that = this;
+        const taskState = task.taskState;
+        const currentProgress = task.progress;
+        if(taskState === '2' || taskState === '3') {
+            try {
+                const lookTrainState = new XMLHttpRequest();
+                lookTrainState.open('GET', `${this.props.defaultURL}taskinfo?usrname=${task.userName}&taskname=${task.taskName}`);
+                lookTrainState.send();
+                lookTrainState.onload = function() {
+                    that.setState({showImageViewForTrainTask: !that.state.showImageViewForTrainTask, currentProgress, currentTaskName: task.taskName, currentTrainTaskUserName: task.userName}, function() {
+                        document.getElementById('train-state').src = lookTrainState.response;
+                    })
+                }
+            } catch(error) {
+                console.log(error);
+            }
         }
     }
 
     verifyTagProgress = (index) => {
         const that = this;
-        this.getTagProgress(this.state.taskList[index].taskName, function(){
-            const str = that.state.taskList[index].tagProgress;
+        this.getTagProgress(this.state.currentTaskName, function(){
+            const str = that.state.taskList.filter((task) => (task.taskName === that.state.currentTaskName))[0].tagProgress;
             const numStr = str.split('/');
             const tagedImageNum = parseInt(numStr[0]);
             const AllImageNum = parseInt(numStr[1]);
@@ -468,41 +560,287 @@ class TaskPage extends Component {
             } else if((tagedImageNum / AllImageNum) < 0.5) {
                 window.alert('完成度不足50%');
             } else {
-                const taskState = that.state.taskList[index].taskState;
-                if(taskState === '0') {
-                    try {
-                        const startTask = new XMLHttpRequest();
-                        startTask.open('GET', `${that.props.defaultURL}starttask?usrname=${that.props.username}&taskname=${that.state.taskList[index].taskName}`);
-                        startTask.send();
-                        startTask.onload = function() {
-                            const arrayData = that.getArrayData(startTask.response);
-                            that.addTask(arrayData);
+                try {
+                    const theValue = document.getElementById('structureSelect').value;
+                    that.shouldShowTrainSettingView();
+                    const startTask = new XMLHttpRequest();
+                    startTask.open('GET', `${that.props.defaultURL}starttask?usrname=${that.props.username}&taskname=${that.state.currentTaskName}`);
+                    startTask.send();
+                    startTask.onload = function() {
+                        const arrayData = that.getArrayData(startTask.response);
+                        that.addTask(arrayData);
+                        const request = new XMLHttpRequest();
+                        request.open('POST', `${that.props.defaultURL}savetrainparams?usrname=${that.props.username}&taskname=${that.state.currentTaskName}`)
+                        let data = '';
+                        if(that.state.currentTaskType === 1) {
+                            const structureList = that.state.trainParamsForObject;
+                            structureList.structure = theValue;
+                            data = JSON.stringify(structureList);
+                        } else if(that.state.currentTaskType === 0) {
+                            const structureList = that.state.trainParams;
+                            structureList.structure = theValue;
+                            data = JSON.stringify(structureList);
                         }
-                    } catch(error) {
-                        console.log(error);
-                    }
-                } else if(taskState === '3') {
-                    const result = window.confirm('确定重新训练吗?');
-                    if(result) {
-                        try {
-                            const startTask = new XMLHttpRequest();
-                            startTask.open('GET', `${that.props.defaultURL}starttask?usrname=${that.props.username}&taskname=${that.state.taskList[index].taskName}`);
-                            startTask.send();
-                            startTask.onload = function() {
-                                const arrayData = that.getArrayData(startTask.response);
-                                that.addTask(arrayData);
-                            }
-                        } catch(error) {
-                            console.log(error);
+                        request.send(data);
+                        request.onload = function() {
+                            console.log(request.response);
                         }
                     }
+                } catch(error) {
+                    console.log(error);
                 }
             }
         });
     }
 
+    handleTrainSetEpoch = (e) => {
+        let value = e.target.value;
+        if(parseInt(this.state.currentTaskType, 10) === 0) {
+            if(value.trim() === '') {
+                value = 5000;
+            }
+            if(parseInt(value, 10) > 10000) {
+                value = 10000;
+            }
+            if(parseInt(value, 10) <= 0) {
+                value = 0;
+            }
+            console.log(value);
+            value = parseInt(value, 10);
+            console.log(value);
+            this.setState({
+                trainParams: {
+                    ...this.state.trainParams,
+                    epoch: value
+                }
+            })
+        } else if(parseInt(this.state.currentTaskType, 10) === 1){
+            if(value.trim() === '') {
+                value = 200;
+            }
+            if(parseInt(value, 10) > 500) {
+                value = 500;
+            }
+            if(parseInt(value, 10) <= 0) {
+                value = 0;
+            }
+            this.setState({
+                trainParamsForObject: {
+                    ...this.state.trainParamsForObject,
+                    epoch: parseInt(value, 10)
+                }
+            })
+        }
+    }
+
+    handleTrainSetBatchsize = (e) => {
+        let value = e.target.value;
+        if(parseInt(this.state.currentTaskType, 10) === 0) {
+            if(value.trim() === '') {
+                value = 32;
+            }
+            if(parseInt(value, 10) > 64) {
+                value = 64;
+            }
+            if(parseInt(value, 10) <= 0) {
+                value = 0;
+            }
+            this.setState({
+                trainParams: {
+                    ...this.state.trainParams,
+                    batchsize: parseInt(value, 10)
+                }
+            })
+        } else if(parseInt(this.state.currentTaskType, 10) === 1){
+            if(value.trim() === '') {
+                value = 64;
+            }
+            if(parseInt(value, 10) > 128) {
+                value = 128;
+            }
+            if(parseInt(value, 10) <= 0) {
+                value = 0;
+            }
+            this.setState({
+                trainParamsForObject: {
+                    ...this.state.trainParamsForObject,
+                    batchsize: parseInt(value, 10)
+                }
+            })
+        }
+    }
+
+    handleTrainSetLearningRate = (e) => {
+        let value = e.target.value;
+        if(parseInt(this.state.currentTaskType, 10) === 0) {
+            if(value.trim() === '') {
+                value = 0.0001;
+            }
+
+            if(parseFloat(value, 10) <= 0) {
+                value = 0;
+            }
+            this.setState({
+                trainParams: {
+                    ...this.state.trainParams,
+                    learningrate: value
+                }
+            })
+        } else if(parseInt(this.state.currentTaskType, 10) === 1){
+            if(value.trim() === '') {
+                value = 0.05;
+            }
+
+            if(parseFloat(value, 10) <= 0) {
+                value = 0;
+            }
+            this.setState({
+                trainParamsForObject: {
+                    ...this.state.trainParamsForObject,
+                    learningrate: value
+                }
+            })
+        }
+    }
+
+    handleTrainSetWeightDecay = (e) => {
+        let value = e.target.value;
+        if(parseInt(this.state.currentTaskType, 10) === 0) {
+            if(value.trim() === '') {
+                value = 0.0005;
+            }
+
+            if(parseFloat(value, 10) <= 0) {
+                value = 0;
+            }
+            this.setState({
+                trainParams: {
+                    ...this.state.trainParams,
+                    weightdecay: value
+                }
+            })
+        } else if(parseInt(this.state.currentTaskType, 10) === 1){
+            if(value.trim() === '') {
+                value = 0.0005;
+            }
+
+            if(parseFloat(value, 10) <= 0) {
+                value = 0;
+            }
+            this.setState({
+                trainParamsForObject: {
+                    ...this.state.trainParamsForObject,
+                    weightdecay: value
+                }
+            })
+        }
+    }
+
+    handleTrainSetMomentum = (e) => {
+        let value = e.target.value;
+        if(parseInt(this.state.currentTaskType, 10) === 0) {
+            if(value.trim() === '') {
+                value = 0.9;
+            }
+
+            if(parseFloat(value, 10) <= 0) {
+                value = 0;
+            }
+            this.setState({
+                trainParams: {
+                    ...this.state.trainParams,
+                    momentum: value
+                }
+            })
+        } else if(parseInt(this.state.currentTaskType, 10) === 1){
+            if(value.trim() === '') {
+                value = 0.9;
+            }
+
+            if(parseFloat(value, 10) <= 0) {
+                value = 0;
+            }
+            this.setState({
+                trainParamsForObject: {
+                    ...this.state.trainParamsForObject,
+                    momentum: value
+                }
+            })
+        }
+    }
+
     onStartTask = (index) => {
-        this.verifyTagProgress(index);
+        try {
+            const request = new XMLHttpRequest();
+            request.open('GET', `${this.props.defaultURL}gettrainparams?usrname=${this.props.username}&taskname=${this.state.taskList[index].taskName}`);
+            request.send();
+            request.onload = () => {
+                console.log(request.response);
+                this.setState({currentTaskName: this.state.taskList[index].taskName, currentTaskType: parseInt(this.state.taskList[index].taskType, 10)}, () => {
+                    if(parseInt(this.state.currentTaskType, 10) === 0) {
+                        if(request.response !== '{}') {
+                            const trainParams = JSON.parse(request.response);
+                            this.setState({trainParams})
+                        } else {
+                            this.setState({
+                                trainParams: {
+                                    structure: '',
+                                    epoch: 5000,
+                                    batchsize: 32,
+                                    learningrate: 0.0001,
+                                    weightdecay: 0.0005,
+                                    momentum: 0.9
+                                }
+                            })
+                        }
+                        const request2 = new XMLHttpRequest();
+                        request2.open('GET', `${this.props.defaultURL}getdetstructure`);
+                        request2.send();
+                        request2.onload = () => {
+                            let structureList = [];
+                            structureList = JSON.parse(request2.response);
+                            this.setState({
+                                structureList
+                            }, () => {
+                                this.shouldShowTrainSettingView();
+                            })
+                        }
+                    } else if(parseInt(this.state.currentTaskType, 10) === 1) {
+                        if(request.response !== '{}') {
+                            const trainParamsForObject = JSON.parse(request.response);
+                            this.setState({trainParamsForObject})
+                        } else {
+                            this.setState({
+                                trainParamsForObject: {
+                                    structure: '',
+                                    epoch: 200,
+                                    batchsize: 64,
+                                    learningrate: 0.05,
+                                    weightdecay: 0.0005,
+                                    momentum: 0.9
+                                }
+                            })
+                        }
+                        const request2 = new XMLHttpRequest();
+                        request2.open('GET', `${this.props.defaultURL}getclsstructure`);
+                        request2.send();
+                        request2.onload = () => {
+                            let structureListForObject = [];
+                            structureListForObject = JSON.parse(request2.response);
+                            this.setState({
+                                structureListForObject
+                            }, () => {
+                                this.shouldShowTrainSettingView();
+                            })
+                        }
+                    }
+                })
+            }
+        } catch(error) {
+            console.log(error);
+        }
+
+        //this.verifyTagProgress(index);
     }
 
     onStopTask = (index) => {
@@ -528,6 +866,28 @@ class TaskPage extends Component {
         }
     }
 
+    onStopTaskForTrainTask = (task) => {
+        const that = this;
+        const taskState = task.taskState;
+        if(taskState === '1' || taskState === '2') {
+            const result = window.confirm('确定停止训练吗?');
+            if(result) {
+                try {
+                    const request = new XMLHttpRequest();
+                    request.open('GET', `${this.props.defaultURL}stoptask?usrname=${task.userName}&taskname=${task.taskName}`);
+                    request.send();
+                    request.onload = () => {
+                        that.refreshTaskPage();
+                    }
+                } catch(error) {
+                    console.log(error);
+                }
+            }
+        } else {
+
+        }
+    }
+
     onDeleteTask = (index) => {
         const result = window.confirm('确定删除该任务吗?');
         if(result) {
@@ -539,6 +899,23 @@ class TaskPage extends Component {
                 deleteTask.onload = function() {
                     const arrayData = that.getArrayData(deleteTask.response);
                     that.addTask(arrayData);
+                }
+            } catch(error) {
+                console.log(error);
+            }
+        }
+    }
+
+    onDeleteTaskForTrainTask = (task) => {
+        const result = window.confirm('确定删除该任务吗?');
+        if(result) {
+            const that = this;
+            try {
+                const deleteTask = new XMLHttpRequest();
+                deleteTask.open('GET', `${this.props.defaultURL}deltask?usrname=${task.userName}&taskname=${task.taskName}`);
+                deleteTask.send();
+                deleteTask.onload = function() {
+                    that.refreshTaskPage();
                 }
             } catch(error) {
                 console.log(error);
@@ -784,17 +1161,6 @@ class TaskPage extends Component {
         }
     }
 
-    getUserLevelCode = (str) => {
-        let userLevel = -1;
-        switch(str) {
-            case '普通用户': userLevel = 0; break;
-            case '编辑用户': userLevel = 1; break;
-            case '管理用户': userLevel = 2; break;
-            case '超级用户': userLevel = 3; break;
-        }
-        return userLevel;
-    }
-
     saveEditResult = () => {
         const that = this;
         const { defaultURL } = this.props;
@@ -906,6 +1272,26 @@ class TaskPage extends Component {
 
     }
 
+    showLabelStatisticsForTrainTask = (task) => {
+        const that = this;
+        this.getTagProgressForTrainTask(task, function(task) {
+            const currentTagProgress = task.tagProgress;
+            try {
+                const request = new XMLHttpRequest();
+                request.open('GET', `${that.props.defaultURL}labelstatistics?usrname=${task.userName}&taskname=${task.taskName}`);
+                request.send();
+                request.onload = function() {
+                    const tagStatisticsList = that.getFormatLabelStatistics(request.response);
+                    that.setState({tagStatisticsList, currentTagProgress, currentTaskName: task.taskName}, function() {
+                        that.shouldShowLabelStatisticsViewForTrainTask();
+                    });
+                }
+            } catch(error) {
+                console.log(error);
+            }
+        });
+    }
+
     getFormatLabelStatistics = (data) => {
         const arrayData = data.split(',');
         const newArrayData = [];
@@ -984,6 +1370,52 @@ class TaskPage extends Component {
                                 <div className="w3-container" style={{marginTop: '20px'}}>
                                     <button onClick={this.shouldShowUserManageEditView} className="w3-button w3-orange w3-left w3-text-white" style={{width: '90px', borderRadius: '5px'}}>取消</button>
                                     <button onClick={this.saveEditResult} className="w3-button w3-orange w3-right w3-text-white" style={{width: '90px', borderRadius: '5px'}}>保存</button>
+                                </div>
+                            </div>
+                        </div>
+                        : null
+                }
+                {
+                    this.state.showTrainSettingView ?
+                        <div className="popup w3-modal">
+                            <div className="w3-modal-content w3-container w3-text-white" style={{width: '600px', padding: '0px 0px 36px 0px', background: 'rgba(0, 0, 0, 0.7)', borderRadius: '10px'}}>
+                                <div className="w3-container">
+                                    <p>网络结构:</p>
+                                    <select id="structureSelect" className="w3-select">{
+                                        this.state.currentTaskType === 1 ?
+                                        this.state.structureListForObject.map((item, index) => (
+                                            <option key={item + index}>{item}</option>
+                                        ))
+                                        :
+                                        this.state.structureList.map((item, index) => (
+                                            <option key={item + index}>{item}</option>
+                                        ))
+
+                                    }</select>
+                                </div>
+                                <div className="w3-container">
+                                    <p>迭代次数:</p>
+                                    <input onChange={this.handleTrainSetEpoch} value={this.state.currentTaskType === 1 ? this.state.trainParamsForObject.epoch : this.state.trainParams.epoch} className="w3-input" type="number"/>
+                                </div>
+                                <div className="w3-container">
+                                    <p>batch size:</p>
+                                    <input onChange={this.handleTrainSetBatchsize} value={this.state.currentTaskType === 1 ? this.state.trainParamsForObject.batchsize : this.state.trainParams.batchsize} className="w3-input" type="number"/>
+                                </div>
+                                <div className="w3-container">
+                                    <p>learning rate:</p>
+                                    <input onChange={this.handleTrainSetLearningRate} value={this.state.currentTaskType === 1 ? this.state.trainParamsForObject.learningrate : this.state.trainParams.learningrate} className="w3-input" type="number"/>
+                                </div>
+                                <div className="w3-container">
+                                    <p>weight decay:</p>
+                                    <input onChange={this.handleTrainSetWeightDecay} value={this.state.currentTaskType === 1 ? this.state.trainParamsForObject.weightdecay : this.state.trainParams.weightdecay} className="w3-input" type="number"/>
+                                </div>
+                                <div className="w3-container">
+                                    <p>momentum:</p>
+                                    <input onChange={this.handleTrainSetMomentum} value={this.state.currentTaskType === 1 ? this.state.trainParamsForObject.momentum : this.state.trainParams.momentum} className="w3-input" type="number"/>
+                                </div>
+                                <div className="w3-container" style={{marginTop: '20px'}}>
+                                    <button onClick={this.shouldShowTrainSettingView} className="w3-button w3-orange w3-left w3-text-white" style={{width: '90px', borderRadius: '5px'}}>取消</button>
+                                    <button onClick={this.verifyTagProgress} className="w3-button w3-orange w3-right w3-text-white" style={{width: '90px', borderRadius: '5px'}}>确定</button>
                                 </div>
                             </div>
                         </div>
@@ -1090,6 +1522,24 @@ class TaskPage extends Component {
                     ) : null
                 }
                 {
+                    this.state.showImageViewForTrainTask === true ? (
+                        <div className="popup w3-center w3-padding-64" style={{background: 'rgba(0, 0, 0, 0.4)', position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', zIndex: '100'}}>
+                            <i onClick={this.shouldShowImageViewForTrainTask} className="fa fa-times w3-text-white w3-xxlarge et-hoverable" aria-hidden="true" style={{position: 'absolute', top: '10px', right: '10px'}}></i>
+                            <div className="w3-modal-content" style={{backgroundColor: 'rgba(0,0,0,0)'}}>
+                                <h3 className="w3-text-white">{`训练进度: ${this.state.currentProgress}%`}</h3>
+                                <img className="w3-image" id="train-state"/>
+                                {
+                                    this.state.currentProgress === '100.0' ?
+                                        !this.state.loadingTrainObjectData ?
+                                        <button onClick={this.outputTrainObjectDataForTrainTask} className="w3-button w3-orange w3-text-white w3-margin-top">输出训练模型数据</button>
+                                        : <i className="fa fa-spinner w3-spin w3-xxlarge w3-text-white w3-margin-top" style={{display: 'block'}}></i>
+                                    : null
+                                }
+                            </div>
+                        </div>
+                    ) : null
+                }
+                {
                     this.state.showLabelStatisticsView === true ? (
                         <div className="popup w3-center w3-padding-64" style={{background: 'rgba(0, 0, 0, 0.4)', position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', zIndex: '100', overflowY: 'scroll'}}>
                             <i onClick={this.shouldShowLabelStatisticsView} className="fa fa-times w3-text-white w3-xxlarge et-hoverable" aria-hidden="true" style={{position: 'absolute', top: '10px', right: '10px'}}></i>
@@ -1115,6 +1565,36 @@ class TaskPage extends Component {
                                     <tfoot></tfoot>
                                 </table>
                                 <button onClick={this.outputTagData} className="w3-button w3-orange w3-text-white w3-margin-top" style={{borderRadius: '5px'}}>输出标记数据</button>
+                            </div>
+                        </div>
+                    ) : null
+                }
+                {
+                    this.state.showLabelStatisticsViewForTrainTask === true ? (
+                        <div className="popup w3-center w3-padding-64" style={{background: 'rgba(0, 0, 0, 0.4)', position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', zIndex: '100', overflowY: 'scroll'}}>
+                            <i onClick={this.shouldShowLabelStatisticsViewForTrainTask} className="fa fa-times w3-text-white w3-xxlarge et-hoverable" aria-hidden="true" style={{position: 'absolute', top: '10px', right: '10px'}}></i>
+                            <div>
+                                <h3 className="w3-text-white">{`标注进度: ${this.state.currentTagProgress}`}</h3>
+                                <table className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered" style={{width: '50%', margin: '0 auto', marginTop: '10px'}}>
+                                    <thead className="w3-orange w3-text-white">
+                                        <tr>
+                                            <th>标签名</th>
+                                            <th>已标记数量</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    {
+                                        this.state.tagStatisticsList.map((tag) => (
+                                            <tr key={tag.tagName + tag.tagNum}>
+                                                <td>{this.unicodeToChar(tag.tagName)}</td>
+                                                <td>{tag.tagNum}</td>
+                                            </tr>
+                                        ))
+                                    }
+                                    </tbody>
+                                    <tfoot></tfoot>
+                                </table>
+                                <button onClick={this.outputTagDataForTrainTask} className="w3-button w3-orange w3-text-white w3-margin-top" style={{borderRadius: '5px'}}>输出标记数据</button>
                             </div>
                         </div>
                     ) : null
@@ -1200,10 +1680,10 @@ class TaskPage extends Component {
                         this.props.userLevel === 3 ?
                         <TrainTaskTable ref="trainTaskList"
                                         getManagerData={this.getManagerData}
-                                        showLabelStatistics={this.showLabelStatistics}
-                                        onStopTask={this.onStopTask}
-                                        onLookTrainState={this.onLookTrainState}
-                                        onDeleteTask={this.onDeleteTask}/>
+                                        showLabelStatistics={this.showLabelStatisticsForTrainTask}
+                                        onStopTask={this.onStopTaskForTrainTask}
+                                        onLookTrainState={this.onLookTrainStateForTrainTask}
+                                        onDeleteTask={this.onDeleteTaskForTrainTask}/>
                         : null
                     }
                     {

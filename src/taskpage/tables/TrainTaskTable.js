@@ -3,7 +3,7 @@ import { defaultURL, getTaskStateName, getTaskTypeName } from '../../utils/Task'
 
 class TrainTaskTable extends Component {
     state = {
-        trainTaskList: []
+        trainTaskList: [] //userName: 'aa' taskName: 'aa' time:'2015-03-21 15:00:00' taskType: '0' taskState: '0'
     }
 
     updateTrainTaskList = () => {
@@ -23,19 +23,41 @@ class TrainTaskTable extends Component {
             request.onload = () => {
                 const arrayData = request.response.split(',');
                 const trainTaskList = [];
-                for(let i=0; i<arrayData.length; i=i+5) {
+                for(let i=0; i<arrayData.length; i=i+6) {
                     const userName = arrayData[i].slice(4, arrayData[i].length - 1);
                     const taskName = arrayData[i + 1].slice(3, arrayData[i + 1].length - 1);
                     const time = arrayData[i + 2].slice(3, arrayData[i + 2].length - 1);
                     const taskType = arrayData[i + 3].slice(1, 2);
                     const taskState = arrayData[i + 4].slice(1, 2);
-                    trainTaskList.push({userName, taskName, time, taskType, taskState});
+                    let progress = '';
+                    if(i + 5 === arrayData.length - 1) {
+                        progress = arrayData[i + 5].slice(1, arrayData[i + 5].length - 2);
+                    } else {
+                        progress = arrayData[i + 5].slice(1, arrayData[i + 5].length - 1);
+                    }
+                    trainTaskList.push({userName, taskName, time, taskType, taskState, progress});
                 }
                 this.setState({trainTaskList});
             }
         } catch(error) {
             console.log(error);
         }
+    }
+
+    onLookTrainState = (index) => {
+        this.props.onLookTrainState(this.state.trainTaskList[index]);
+    }
+
+    showLabelStatistics = (index) => {
+        this.props.showLabelStatistics(this.state.trainTaskList[index]);
+    }
+
+    onStopTask = (index) => {
+        this.props.onStopTask(this.state.trainTaskList[index]);
+    }
+
+    onDeleteTask = (index) => {
+        this.props.onDeleteTask(this.state.trainTaskList[index]);
     }
 
     render() {
@@ -65,10 +87,10 @@ class TrainTaskTable extends Component {
                                 <td>{getTaskStateName(task.taskState)}</td>
                                 <td>{getTaskTypeName(task.taskType)}</td>
                                 <td>
-                                    <i onClick={this.props.showLabelStatistics.bind(this, index)} className="fa fa-area-chart table-item-button w3-margin-left"> 标注统计</i>
-                                    <i onClick={this.props.onStopTask.bind(this, index)} className={`fa fa-stop-circle ${task.taskState === '2' ? 'table-item-button' : 'et-silence-button'} ${task.taskState === '1' ? 'table-item-button' : 'et-silence-button'} w3-margin-left`}> 停止训练</i>
-                                    <i onClick={this.props.onLookTrainState.bind(this, index)} className={`fa fa-search ${task.taskState === '2' ? 'table-item-button' : 'et-silence-button'} table-item-button w3-margin-left`}> 查看训练状态</i>
-                                    <i onClick={this.props.onDeleteTask.bind(this, index)} className="fa fa-trash table-item-button w3-margin-left" aria-hidden="true"> 删除</i>
+                                    <i onClick={this.showLabelStatistics.bind(this, index)} className="fa fa-area-chart table-item-button"> 标注统计</i>
+                                    <i onClick={this.onStopTask.bind(this, index)} className={`fa fa-stop-circle ${task.taskState === '2' ? 'table-item-button' : 'et-silence-button'} ${task.taskState === '1' ? 'table-item-button' : 'et-silence-button'} w3-margin-left`}> 停止训练</i>
+                                    <i onClick={this.onLookTrainState.bind(this, index)} className={`fa fa-search ${(task.taskState === '2' || task.taskState === '3') ? 'table-item-button' : 'et-silence-button'} w3-margin-left`}> 查看训练状态</i>
+                                    <i onClick={this.onDeleteTask.bind(this, index)} className="fa fa-trash table-item-button w3-margin-left"> 删除</i>
                                 </td>
                             </tr>
                         ))
