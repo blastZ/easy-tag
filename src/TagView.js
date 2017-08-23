@@ -1,10 +1,27 @@
 import React, { Component } from 'react'
-import $ from 'jquery'
 
 class TagView extends Component {
     state = {
-        tagStringList: ['1', '2', '3'],
-        targetTag: ''
+        listNameList: [], // 'tagname','tagname2'
+        tagStringList: [], // '1','2','3'
+        tagStringListAll: {}, // {tagname: ['1','2','3'], tagname2: ['4','5','6']}
+        targetTag: '',
+        newTagString: '',
+        showTagEditView: false,
+        showAddNewTagStringView: false,
+        showAddNewListNameView: false
+    }
+
+    shouldShowTagEditView = () => {
+        this.setState({showTagEditView: !this.state.showTagEditView});
+    }
+
+    shouldShowAddNewTagStringView = () => {
+        this.setState({showAddNewTagStringView: !this.state.showAddNewTagStringView});
+    }
+
+    shouldShowAddNewListNameView = () => {
+        this.setState({showAddNewListNameView: !this.state.showAddNewListNameView});
     }
 
     componentWillUnmount() {
@@ -26,12 +43,30 @@ class TagView extends Component {
     }
 
     addTagString = () => {
-        const tagString = $('#new-tag-string').val().trim()
-        if(tagString) {
-            $('#new-tag-string').val('');
+        const tagString = document.getElementById('new-tag-string').value;
+        if(tagString.trim() !== '') {
+            document.getElementById('new-tag-string').value = '';
             this.setState((state) => {
-                state.tagStringList = state.tagStringList.concat([tagString])
+                state.tagStringList = state.tagStringList.concat([tagString]);
+                state.tagStringListAll[document.getElementById('mySelectForListName').value] = state.tagStringList;
             })
+            this.shouldShowAddNewTagStringView();
+        } else {
+            window.alert('标签名不能为空');
+        }
+    }
+
+    addListName = () => {
+        const listName = document.getElementById('new-list-name').value;
+        if(listName.trim() !== '') {
+            document.getElementById('new-list-name').value = '';
+            this.setState((state) => {
+                state.listNameList = state.listNameList.concat([listName]);
+                state.tagStringListAll[listName] = ['None'];
+            })
+            this.shouldShowAddNewListNameView();
+        } else {
+            window.alert('标签组名不能为空');
         }
     }
 
@@ -50,41 +85,34 @@ class TagView extends Component {
     }
 
     saveTagList = () => {
-        $.ajax({
-            url: `${this.props.defaultURL}savetag?usrname=${this.props.userName}&taskname=${this.props.taskName}`,
-            type: 'POST',
-            headers: {
-                'Content-Type': 'text/plain'
-            },
-            data: `{"taglist": ${JSON.stringify(this.state.tagStringList)}}`,
-            dataType: 'text/plain'
-        }).done(function() {
-            console.log('success');
-        }).fail(function(error) {
-            console.log('failed');
-        })
+        const request = new XMLHttpRequest();
+        request.open('POST', `${this.props.defaultURL}savetag?usrname=${this.props.userName}&taskname=${this.props.taskName}`);
+        const data = JSON.stringify(this.state.tagStringList);
+        request.send(JSON.stringify({
+            listname: this.state.listNameList,
+            taglist: this.state.tagStringListAll
+        }));
+        request.onload = () => {
+            console.log('post tagStringList success');
+            console.log(request.response);
+        }
     }
 
     loadTagList = () => {
-        const that = this
-        $.ajax({
-            url: `${this.props.defaultURL}loadtag?usrname=${this.props.userName}&taskname=${this.props.taskName}`,
-            type: 'GET',
-            dataType: 'json',
-            success: function(data) {
-                console.log('getTagList success')
-                if(data.taglist) {
-                    that.setState({
-                        tagStringList: data.taglist
-                    }, function() {
-                        that.props.onChangeTagString();
-                    })
-                }
-            },
-            error: function(data) {
-                console.log('getTagList failed');
-            }
-        })
+        const request = new XMLHttpRequest();
+        request.open('GET', `${this.props.defaultURL}loadtag?usrname=${this.props.userName}&taskname=${this.props.taskName}`);
+        request.send();
+        request.onload = () => {
+            console.log('getTagStringList success');
+            console.log(request.response);
+            const data = JSON.parse(request.response);
+            const listNameList = data.listname;
+            const tagStringListAll = data.taglist;
+            const tagStringList = data.taglist[listNameList[0]];
+            this.setState({listNameList, tagStringList, tagStringListAll}, () => {
+                this.props.onChangeTagString();
+            })
+        }
     }
 
     onDeleteBox = (index) => {
@@ -106,22 +134,102 @@ class TagView extends Component {
         }
     }
 
+    handleNewTagString = (e) => {
+        this.setState({newTagString: e.target.value})
+    }
+
+    editTagString = () => {
+        if(this.state.newTagString.trim() !== '') {
+            const oldTagString = document.getElementById('mySelect').value;
+            const newTagString = this.state.newTagString;
+            this.setState((state) => {
+                const newTagStringList = state.tagStringList.reduce((newTagStringList, tagString) => {
+                    if(tagString === oldTagString) {
+                        return newTagStringList.concat([newTagString]);
+                    } else {
+                        return newTagStringList.concat([tagString]);
+                    }
+                }, []);
+                state.tagStringList = newTagStringList;
+            }, () => {
+                this.saveTagList();
+                this.props.editTagString(oldTagString, newTagString);
+                this.shouldShowTagEditView();
+            });
+        } else {
+            window.alert('新标签名不能为空');
+        }
+    }
+
+    changeTagStringList = () => {
+        const listName = document.getElementById('mySelectForListName').value;
+        this.setState({tagStringList: this.state.tagStringListAll[listName]}, () => {
+            this.props.onChangeTagString();
+        });
+    }
+
     render() {
         return (
             <div className="flex-box flex-column" style={{justifyContent: 'center', height: '100%'}}>
-                <select onChange={this.props.onChangeTagString} id="mySelect" className="w3-select">
-                {
-                    this.state.tagStringList.map((tagString, index) => (
-                        <option key={tagString} value={tagString}>{tagString}</option>
-                    ))
-                }
-                </select>
+                <div className="flex-box">
+                    <select onChange={this.changeTagStringList} id="mySelectForListName" className="w3-select" style={{width: '50%'}}>
+                    {
+                        this.state.listNameList.map((listName, index) => (
+                            <option key={listName + index}>{listName}</option>
+                        ))
+                    }
+                    </select>
+                    <div style={{backgroundColor: 'rgb(211, 204, 204)', width: '2px'}}></div>
+                    <select onChange={this.props.onChangeTagString} id="mySelect" className="w3-select" style={{width: '50%'}}>
+                    {
+                        this.state.tagStringList.map((tagString, index) => (
+                            <option key={tagString + index}>{tagString}</option>
+                        ))
+                    }
+                    </select>
+                </div>
                 {
                     this.props.userLevel === 3 || this.props.userLevel === 2 ?
                     <div className="flex-box w3-card margin-top-5">
                         <input placeholder="请输入要查找的标签名" onChange={this.handleTargetTag} value={this.state.targetTag} className="w3-input" type="text"/>
-                        <button onClick={this.getImageListByTag} className="w3-button w3-green" style={{width: '30%'}}>查找</button>
+                        <button onClick={this.getImageListByTag} className="w3-button w3-green" style={{width: '60%'}}>查找</button>
                     </div>
+                    : null
+                }
+                {
+                    this.props.userLevel === 3 || this.props.userLevel === 2 ?
+                        this.state.showTagEditView ?
+                        <div className="flex-box w3-card margin-top-5">
+                            <input onChange={this.handleNewTagString} value={this.state.newTagString} placeholder="请输入新的标签名" className="w3-input" type="text"/>
+                            <button onClick={this.editTagString} className="w3-button w3-green" style={{width: '26%'}}>确定</button>
+                            <div style={{backgroundColor: 'rgb(211, 204, 204)', width: '2px'}}></div>
+                            <button onClick={this.shouldShowTagEditView} className="w3-button w3-green" style={{width: '26%'}}>取消</button>
+                        </div>
+                        : <button onClick={this.shouldShowTagEditView} className="w3-card w3-button w3-green margin-top-5">修改当前标签</button>
+                    : null
+                }
+                {
+                    this.props.userLevel !==0 ?
+                        this.state.showAddNewListNameView ?
+                        <div className="w3-card margin-top-5 flex-box">
+                            <input placeholder="请输入新的标签组名" id="new-list-name" className="w3-input" type="text"/>
+                            <button className="w3-button w3-green" onClick={this.addListName} style={{width: '26%'}}>确定</button>
+                            <div style={{backgroundColor: 'rgb(211, 204, 204)', width: '2px'}}></div>
+                            <button className="w3-button w3-green" onClick={this.shouldShowAddNewListNameView} style={{width: '26%'}}>取消</button>
+                        </div>
+                        : <button onClick={this.shouldShowAddNewListNameView} className="w3-button w3-green w3-card margin-top-5">添加新标签组</button>
+                    : null
+                }
+                {
+                    this.props.userLevel !==0 ?
+                        this.state.showAddNewTagStringView ?
+                        <div className="w3-card margin-top-5 flex-box">
+                            <input placeholder="请输入新的标签名" id="new-tag-string" className="w3-input" type="text"/>
+                            <button className="w3-button w3-green" onClick={this.addTagString} style={{width: '26%'}}>确定</button>
+                            <div style={{backgroundColor: 'rgb(211, 204, 204)', width: '2px'}}></div>
+                            <button className="w3-button w3-green" onClick={this.shouldShowAddNewTagStringView} style={{width: '26%'}}>取消</button>
+                        </div>
+                        : <button onClick={this.shouldShowAddNewTagStringView} className="w3-button w3-green w3-card margin-top-5">添加新标签</button>
                     : null
                 }
                 {
@@ -131,22 +239,27 @@ class TagView extends Component {
                 }
                 {
                     this.props.userLevel !== 0 ?
-                    <div className="w3-card margin-top-5 flex-box" style={{alignItems: 'center'}}>
-                        <input id="new-tag-string" className="w3-input" type="text" style={{flex: '1', border: 'none', width: '50%'}}/>
-                        <button className="w3-button w3-green" onClick={this.addTagString} style={{width: '15%'}}>
-                            <i className="fa fa-plus" aria-hidden="true"></i>
-                        </button>
-                        <div style={{backgroundColor: 'rgb(211, 204, 204)', width: '2px'}}></div>
-                        <button onClick={this.saveTagList} className="w3-button w3-green" style={{width: '35%'}}>保存标签列表</button>
-                    </div>
+                    <button onClick={this.saveTagList} className="w3-button w3-green w3-card margin-top-5">保存标签列表</button>
                     : null
                 }
                 <ul className="w3-ul w3-hoverable margin-top-5"  style={{overflowY: 'auto', flex: '1'}}>{
                     this.props.boxList.map((box, index) => (
                         <li className="w3-hover-green" key={box.x_start + box.y_end}>
-                            <span>序号:{index + 1}  标签:{box.tag}</span>
-                            <i onClick={this.onDeleteBox.bind(this, index)} className="fa fa-times delete-button w3-right" aria-hidden="true"></i>
-                            <div>额外信息:<input type="text" onChange={this.onChangeBoxInfo.bind(this, index)} value={this.props.boxList[index].info}/></div>
+                            <div>
+                                <span>序号: {index + 1}</span>
+                                <i onClick={this.onDeleteBox.bind(this, index)} className="fa fa-times et-tag-button w3-right"></i>
+                            </div>
+                            <div>
+                                <div className="flex-box" style={{alignItems: 'center', padding: '5px 0px'}}>
+                                    <span>标签: </span>
+                                    <i className="fa fa-plus-circle et-tag-button"></i>
+                                    <i className="fa fa-minus-circle et-tag-button"></i>
+                                </div>
+                                <select className="w3-select">{
+                                    box.tag.map((tag, index) => (<option key={tag + index}>{tag}</option>))
+                                }</select>
+                            </div>
+                            <div>额外信息:<input className="w3-input" type="text" onChange={this.onChangeBoxInfo.bind(this, index)} value={this.props.boxList[index].info}/></div>
                         </li>
                     ))
                 }</ul>

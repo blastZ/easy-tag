@@ -26,7 +26,7 @@ class App extends Component {
             //{url: 'http://demo.codvision.com:16831/static/user/fj/task1/data/zhong1_12.jpg', name: 'ding1_6.jpg', labeled: 0}
         ],
         tagList: [
-            // {x_start: 0, y_start: 0, x_end: 10, y_end: 20, tag: 'car', info: '浙F1234567'} result format
+            // {x_start: 0, y_start: 0, x_end: 10, y_end: 20, tag: ['car', 'white'], info: '浙F1234567'} result format
         ],
         currentTagString: '1',
         selectedImageNum: 0,
@@ -498,6 +498,7 @@ class App extends Component {
             tagListRequest.onload = function() {
                 console.log('getBoxList success.');
                 const jsonResponse = JSON.parse(tagListRequest.response);
+                console.log(jsonResponse);
                 if(jsonResponse.length > 0) {
                     tagList = jsonResponse.objects;
                 }
@@ -534,7 +535,7 @@ class App extends Component {
                                 "y_start": ${tag.y_start},
                                 "x_end": ${tag.x_end},
                                 "y_end": ${tag.y_end},
-                                "tag": "${tag.tag}",
+                                "tag": ${JSON.stringify(tag.tag)},
                                 "info": "${tag.info ? tag.info : ''}"
                             }`
                         ))}
@@ -730,6 +731,23 @@ class App extends Component {
         this.setState({start: 1, num: 10})
     }
 
+    editTagString = (oldTagString, newTagString) => {
+        try {
+            const request = new XMLHttpRequest();
+            request.open('POST', `${this.state.defaultURL}changetag?usrname=${this.state.userName}&taskname=${this.state.taskName}`);
+            const data = JSON.stringify({
+                oldtag: oldTagString,
+                newtag: newTagString
+            })
+            request.send(data);
+            request.onload = () => {
+                console.log('edit tagstring success');
+            }
+        } catch(error) {
+            console.log(error);
+        }
+    }
+
     render() {
         return (
             <div className="App full-height">
@@ -775,6 +793,7 @@ class App extends Component {
                         <div className="flex-box flex-column" style={{width: '20%', backgroundColor: '#F0F0F0'}}>
                             <TagView onHandleNumChange={this.handleNumChange}
                                      getImageListByTag={this.getImageListByTag}
+                                     editTagString={this.editTagString}
                                      onHandleStartChange={this.handleStartChange}
                                      start={this.state.start}
                                      num={this.state.num}

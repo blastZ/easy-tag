@@ -209,3 +209,13 @@
     background-color: #f1f1f1 !important;
     color: black !important;
 }
+
+.et-tag-button {
+    margin-left: 5px !important;
+    font-size: 1.2em !important;
+}
+
+.et-tag-button:hover {
+    cursor: pointer !important;
+    color: black !important;
+}

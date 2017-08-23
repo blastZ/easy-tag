@@ -177,7 +177,7 @@ class SelectedImage extends Component {
                         const relative_y_start = ((y_start_int - theImage_top) / img_natural_height).toFixed(3)
                         const relative_x_end = ((x_end - theImage_left) / img_natural_width).toFixed(3)
                         const relative_y_end = ((y_end - theImage_top) / img_natural_height).toFixed(3)
-                        const tag = {x_start: relative_x_start, y_start: relative_y_start, x_end: relative_x_end, y_end: relative_y_end, tag: that.props.currentTagString, info: that.props.info}
+                        const tag = {x_start: relative_x_start, y_start: relative_y_start, x_end: relative_x_end, y_end: relative_y_end, tag: [that.props.currentTagString], info: that.props.info}
                         //console.log(tag)
                         that.props.onAddTag(tag)
                         $('#move-rect').remove()
@@ -272,7 +272,7 @@ class SelectedImage extends Component {
             this.props.boxList.map((box, index) => (
                 <div className="black-white-border" key={box.x_start + box.y_end} style={{width: `${this.getBoxWidth(box.x_start, box.x_end)}px`, height: `${this.getBoxHeight(box.y_start, box.y_end)}px`,
                              position: 'absolute', left: `${this.getBoxX(box.x_start)}px`, top: `${this.getBoxY(box.y_start)}px`}}>
-                             <span className="tag-title"><b>No.{index + 1}<br/>{box.tag}</b></span>
+                             <span className="tag-title"><b>No.{index + 1}<br/>{box.tag[0]}</b></span>
                 </div>
             )) : null
         );
