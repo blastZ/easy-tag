@@ -4,6 +4,7 @@ import $ from 'jquery'
 class TagView extends Component {
     state = {
         tagStringList: ['1', '2', '3'],
+        targetTag: ''
     }
 
     componentWillUnmount() {
@@ -94,6 +95,17 @@ class TagView extends Component {
         this.props.onChangeBoxInfo(index, e.target.value);
     }
 
+    handleTargetTag = (e) => {
+        this.setState({targetTag: e.target.value});
+    }
+
+    getImageListByTag = () => {
+        if(this.state.targetTag.trim() !== '') {
+            this.props.getImageListByTag(this.state.targetTag);
+            this.setState({targetTag: ''})
+        }
+    }
+
     render() {
         return (
             <div className="flex-box flex-column" style={{justifyContent: 'center', height: '100%'}}>
@@ -104,6 +116,14 @@ class TagView extends Component {
                     ))
                 }
                 </select>
+                {
+                    this.props.userLevel === 3 || this.props.userLevel === 2 ?
+                    <div className="flex-box w3-card margin-top-5">
+                        <input placeholder="请输入要查找的标签名" onChange={this.handleTargetTag} value={this.state.targetTag} className="w3-input" type="text"/>
+                        <button onClick={this.getImageListByTag} className="w3-button w3-green" style={{width: '30%'}}>查找</button>
+                    </div>
+                    : null
+                }
                 {
                     this.props.userLevel !== 0 ?
                     <button onClick={this.deleteCurrentTag} className="w3-card w3-button w3-green margin-top-5">删除当前标签</button>

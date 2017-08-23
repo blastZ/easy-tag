@@ -67,6 +67,36 @@ class App extends Component {
 
     }
 
+    getImageListByTag = (tagName) => {
+        this.setState({selectedImageNum: 0, tagList: []});
+        const that = this;
+        //load imageList from server
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=1&num=10`);
+        const data = JSON.stringify({
+            tag: tagName
+        })
+        xhr.send(data);
+        xhr.onload = function() {
+            console.log('getImageList by tag success');
+            const newImageList = [];
+            if(xhr.response) {
+                console.log(xhr.response);
+                const jsonResponse = JSON.parse(xhr.response);
+                jsonResponse.map((image) => {
+                    newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
+                })
+            }
+            that.setState({imageList: newImageList}, () => {
+                that.getTagList(0)
+            });
+        }
+        xhr.onerror = function() {
+            console.log('get imageList by tag failed');
+            that.getTagList(0);
+        }
+    }
+
     getImageList = () => {
         this.setState({selectedImageNum: 0, tagList: []});
         const that = this;
@@ -82,8 +112,9 @@ class App extends Component {
                     newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
                 })
             }
-            that.setState({imageList: newImageList});
-            that.getTagList(0)
+            that.setState({imageList: newImageList}, () => {
+                that.getTagList(0)
+            });
         }
         xhr.onerror = function() {
             console.log('get imageList failed');
@@ -737,10 +768,13 @@ class App extends Component {
                                            userName={this.state.userName}
                                            userLevel={this.state.userLevel}
                                            taskName={this.state.taskName}/>
-                            <SelectBar onClickItem={this.clickItem} selectedImageNum={this.state.selectedImageNum} imageList={this.state.imageList}/>
+                            <SelectBar onClickItem={this.clickItem}
+                                       selectedImageNum={this.state.selectedImageNum}
+                                       imageList={this.state.imageList}/>
                         </div>
                         <div className="flex-box flex-column" style={{width: '20%', backgroundColor: '#F0F0F0'}}>
                             <TagView onHandleNumChange={this.handleNumChange}
+                                     getImageListByTag={this.getImageListByTag}
                                      onHandleStartChange={this.handleStartChange}
                                      start={this.state.start}
                                      num={this.state.num}

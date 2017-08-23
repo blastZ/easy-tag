@@ -982,7 +982,8 @@ class TaskPage extends Component {
         if(this.props.userLevel === 3) {
             this.getUserManageList();
             this.getUserGroupList();
-            this.refs.trainTaskList.updateTrainTaskList();
+            if(this.refs.trainTaskList)
+                this.refs.trainTaskList.updateTrainTaskList();
         }
     }
 
