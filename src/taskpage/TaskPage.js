@@ -395,7 +395,6 @@ class TaskPage extends Component {
                 getNewTask.send();
                 getNewTask.onload = function() {
                     const arrayData = that.getArrayData(getNewTask.response);
-                    console.log(arrayData);
                     that.addTask(arrayData);
                     that.setState({
                         newTaskName: ''
