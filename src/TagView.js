@@ -5,11 +5,31 @@ class TagView extends Component {
         listNameList: [], // 'tagname','tagname2'
         tagStringList: [], // '1','2','3'
         tagStringListAll: {}, // {tagname: ['1','2','3'], tagname2: ['4','5','6']}
-        targetTag: '',
         newTagString: '',
+        newListName: '',
+        showEditView: false,
         showTagEditView: false,
+        showListNameEditView: false,
         showAddNewTagStringView: false,
-        showAddNewListNameView: false
+        showAddNewListNameView: false,
+        showFindModeView: false
+    }
+
+    shouldShowFindModeView = () => {
+        if(this.state.showFindModeView) {
+            this.props.onChangeBrowserMode('normal');
+        } else {
+            this.props.onChangeBrowserMode('find');
+        }
+        this.setState({showFindModeView: !this.state.showFindModeView});
+    }
+
+    shouldShowEditView = () => {
+        this.setState({showEditView: !this.state.showEditView});
+    }
+
+    shouldShowListNameEditView = () => {
+        this.setState({showListNameEditView: !this.state.showListNameEditView});
     }
 
     shouldShowTagEditView = () => {
@@ -49,7 +69,7 @@ class TagView extends Component {
             this.setState((state) => {
                 state.tagStringList = state.tagStringList.concat([tagString]);
                 state.tagStringListAll[document.getElementById('mySelectForListName').value] = state.tagStringList;
-            })
+            }, () => this.saveTagList())
             this.shouldShowAddNewTagStringView();
         } else {
             window.alert('标签名不能为空');
@@ -63,7 +83,7 @@ class TagView extends Component {
             this.setState((state) => {
                 state.listNameList = state.listNameList.concat([listName]);
                 state.tagStringListAll[listName] = ['None'];
-            })
+            }, () => this.saveTagList())
             this.shouldShowAddNewListNameView();
         } else {
             window.alert('标签组名不能为空');
@@ -79,9 +99,36 @@ class TagView extends Component {
                 const index = this.state.tagStringList.indexOf(this.props.currentTagString);
                 this.setState((state) => {
                     state.tagStringList.splice(index, 1);
-                }, () => this.props.onChangeTagString())
+                }, () => {
+                    this.saveTagList();
+                    this.props.onChangeTagString();
+                })
             }
         }
+    }
+
+    deleteCurrentListName = () => {
+        const result = window.confirm('确定删除当前标签组吗?');
+        if(result) {
+            if(this.state.listNameList.length === 1) {
+                window.alert('不能删除最后一个标签组');
+            }else {
+                const listName = document.getElementById('mySelectForListName').value;
+                const index = this.state.listNameList.indexOf(listName);
+                this.setState((state) => {
+                    state.listNameList.splice(index, 1);
+                    delete state.tagStringListAll[listName];
+                }, () => {
+                    this.saveTagList();
+                    this.updateTagStringList();
+                })
+            }
+        }
+    }
+
+    updateTagStringList = () => {
+        const listName = document.getElementById('mySelectForListName').value;
+        this.setState({tagStringList: this.state.tagStringListAll[listName]}, () => {this.props.onChangeTagString()});
     }
 
     saveTagList = () => {
@@ -94,7 +141,6 @@ class TagView extends Component {
         }));
         request.onload = () => {
             console.log('post tagStringList success');
-            console.log(request.response);
         }
     }
 
@@ -104,7 +150,6 @@ class TagView extends Component {
         request.send();
         request.onload = () => {
             console.log('getTagStringList success');
-            console.log(request.response);
             const data = JSON.parse(request.response);
             const listNameList = data.listname;
             const tagStringListAll = data.taglist;
@@ -123,10 +168,6 @@ class TagView extends Component {
         this.props.onChangeBoxInfo(index, e.target.value);
     }
 
-    handleTargetTag = (e) => {
-        this.setState({targetTag: e.target.value});
-    }
-
     getImageListByTag = () => {
         if(this.state.targetTag.trim() !== '') {
             this.props.getImageListByTag(this.state.targetTag);
@@ -135,7 +176,11 @@ class TagView extends Component {
     }
 
     handleNewTagString = (e) => {
-        this.setState({newTagString: e.target.value})
+        this.setState({newTagString: e.target.value});
+    }
+
+    handleNewListName = (e) => {
+        this.setState({newListName: e.target.value});
     }
 
     editTagString = () => {
@@ -151,13 +196,40 @@ class TagView extends Component {
                     }
                 }, []);
                 state.tagStringList = newTagStringList;
+                state.tagStringListAll[document.getElementById('mySelectForListName').value] = newTagStringList;
+                state.newTagString = '';
             }, () => {
                 this.saveTagList();
                 this.props.editTagString(oldTagString, newTagString);
+                this.props.onChangeTagString();
                 this.shouldShowTagEditView();
             });
         } else {
             window.alert('新标签名不能为空');
+        }
+    }
+
+    editListName = () => {
+        const theNewListName = this.state.newListName;
+        if(this.state.newListName.trim() !== '') {
+            const oldListName = document.getElementById('mySelectForListName').value;
+            const newListName = this.state.newListName;
+            this.setState((state) => {
+                const index = state.listNameList.indexOf(oldListName);
+                state.listNameList[index] = newListName;
+                state.tagStringListAll = {
+                    ...state.tagStringListAll,
+                    [newListName]: state.tagStringListAll[oldListName]
+                }
+                delete state.tagStringListAll[oldListName];
+                state.newListName = '';
+            }, () => {
+                document.getElementById('mySelectForListName').value = theNewListName;
+                this.saveTagList();
+                this.shouldShowListNameEditView();
+            });
+        } else {
+            window.alert('新标签组名不能为空');
         }
     }
 
@@ -190,57 +262,88 @@ class TagView extends Component {
                 </div>
                 {
                     this.props.userLevel === 3 || this.props.userLevel === 2 ?
-                    <div className="flex-box w3-card margin-top-5">
-                        <input placeholder="请输入要查找的标签名" onChange={this.handleTargetTag} value={this.state.targetTag} className="w3-input" type="text"/>
-                        <button onClick={this.getImageListByTag} className="w3-button w3-green" style={{width: '60%'}}>查找</button>
-                    </div>
-                    : null
-                }
-                {
-                    this.props.userLevel === 3 || this.props.userLevel === 2 ?
-                        this.state.showTagEditView ?
-                        <div className="flex-box w3-card margin-top-5">
-                            <input onChange={this.handleNewTagString} value={this.state.newTagString} placeholder="请输入新的标签名" className="w3-input" type="text"/>
-                            <button onClick={this.editTagString} className="w3-button w3-green" style={{width: '26%'}}>确定</button>
-                            <div style={{backgroundColor: 'rgb(211, 204, 204)', width: '2px'}}></div>
-                            <button onClick={this.shouldShowTagEditView} className="w3-button w3-green" style={{width: '26%'}}>取消</button>
-                        </div>
-                        : <button onClick={this.shouldShowTagEditView} className="w3-card w3-button w3-green margin-top-5">修改当前标签</button>
-                    : null
-                }
-                {
-                    this.props.userLevel !==0 ?
-                        this.state.showAddNewListNameView ?
-                        <div className="w3-card margin-top-5 flex-box">
-                            <input placeholder="请输入新的标签组名" id="new-list-name" className="w3-input" type="text"/>
-                            <button className="w3-button w3-green" onClick={this.addListName} style={{width: '26%'}}>确定</button>
-                            <div style={{backgroundColor: 'rgb(211, 204, 204)', width: '2px'}}></div>
-                            <button className="w3-button w3-green" onClick={this.shouldShowAddNewListNameView} style={{width: '26%'}}>取消</button>
-                        </div>
-                        : <button onClick={this.shouldShowAddNewListNameView} className="w3-button w3-green w3-card margin-top-5">添加新标签组</button>
-                    : null
-                }
-                {
-                    this.props.userLevel !==0 ?
-                        this.state.showAddNewTagStringView ?
-                        <div className="w3-card margin-top-5 flex-box">
-                            <input placeholder="请输入新的标签名" id="new-tag-string" className="w3-input" type="text"/>
-                            <button className="w3-button w3-green" onClick={this.addTagString} style={{width: '26%'}}>确定</button>
-                            <div style={{backgroundColor: 'rgb(211, 204, 204)', width: '2px'}}></div>
-                            <button className="w3-button w3-green" onClick={this.shouldShowAddNewTagStringView} style={{width: '26%'}}>取消</button>
-                        </div>
-                        : <button onClick={this.shouldShowAddNewTagStringView} className="w3-button w3-green w3-card margin-top-5">添加新标签</button>
+                        this.state.showFindModeView ?
+                        <button onClick={this.shouldShowFindModeView} className="w3-button w3-card w3-green margin-top-5">退出查找模式</button>
+                        : <button onClick={this.shouldShowFindModeView} className="w3-button w3-card w3-green margin-top-5">查找当前标签</button>
                     : null
                 }
                 {
                     this.props.userLevel !== 0 ?
-                    <button onClick={this.deleteCurrentTag} className="w3-card w3-button w3-green margin-top-5">删除当前标签</button>
-                    : null
+                        this.state.showEditView ?
+                            this.props.userLevel === 3 || this.props.userLevel === 2 ?
+                                this.state.showListNameEditView ?
+                                <div className="flex-box w3-card margin-top-5">
+                                    <input onChange={this.handleNewListName} value={this.state.newListName} placeholder="请输入新的标签组名" className="w3-input" type="text"/>
+                                    <button onClick={this.editListName} className="w3-button w3-green" style={{width: '26%'}}>确定</button>
+                                    <div style={{backgroundColor: 'rgb(211, 204, 204)', width: '2px'}}></div>
+                                    <button onClick={this.shouldShowListNameEditView} className="w3-button w3-green" style={{width: '26%'}}>取消</button>
+                                </div>
+                                : <button onClick={this.shouldShowListNameEditView} className="w3-card w3-button w3-green margin-top-5">修改当前标签组名</button>
+                            : null
+                        :null
+                    :null
                 }
                 {
                     this.props.userLevel !== 0 ?
-                    <button onClick={this.saveTagList} className="w3-button w3-green w3-card margin-top-5">保存标签列表</button>
-                    : null
+                        this.state.showEditView ?
+                            this.props.userLevel === 3 || this.props.userLevel === 2 ?
+                                this.state.showTagEditView ?
+                                <div className="flex-box w3-card margin-top-5">
+                                    <input onChange={this.handleNewTagString} value={this.state.newTagString} placeholder="请输入新的标签名" className="w3-input" type="text"/>
+                                    <button onClick={this.editTagString} className="w3-button w3-green" style={{width: '26%'}}>确定</button>
+                                    <div style={{backgroundColor: 'rgb(211, 204, 204)', width: '2px'}}></div>
+                                    <button onClick={this.shouldShowTagEditView} className="w3-button w3-green" style={{width: '26%'}}>取消</button>
+                                </div>
+                                : <button onClick={this.shouldShowTagEditView} className="w3-card w3-button w3-green margin-top-5">修改当前标签名</button>
+                            : null
+                        :null
+                    :null
+                }
+                {
+                    this.props.userLevel !== 0 ?
+                        this.state.showEditView ?
+                            this.state.showAddNewListNameView ?
+                                <div className="w3-card margin-top-5 flex-box">
+                                    <input placeholder="请输入新的标签组名" id="new-list-name" className="w3-input" type="text"/>
+                                    <button className="w3-button w3-green" onClick={this.addListName} style={{width: '26%'}}>确定</button>
+                                    <div style={{backgroundColor: 'rgb(211, 204, 204)', width: '2px'}}></div>
+                                    <button className="w3-button w3-green" onClick={this.shouldShowAddNewListNameView} style={{width: '26%'}}>取消</button>
+                                </div>
+                                : <button onClick={this.shouldShowAddNewListNameView} className="w3-button w3-green w3-card margin-top-5">添加新标签组</button>
+                        : null
+                    :null
+                }
+                {
+                    this.props.userLevel !== 0 ?
+                        this.state.showEditView ?
+                            this.state.showAddNewTagStringView ?
+                                <div className="w3-card margin-top-5 flex-box">
+                                    <input placeholder="请输入新的标签名" id="new-tag-string" className="w3-input" type="text"/>
+                                    <button className="w3-button w3-green" onClick={this.addTagString} style={{width: '26%'}}>确定</button>
+                                    <div style={{backgroundColor: 'rgb(211, 204, 204)', width: '2px'}}></div>
+                                    <button className="w3-button w3-green" onClick={this.shouldShowAddNewTagStringView} style={{width: '26%'}}>取消</button>
+                                </div>
+                                : <button onClick={this.shouldShowAddNewTagStringView} className="w3-button w3-green w3-card margin-top-5">添加新标签</button>
+                        : null
+                    :null
+                }
+                {
+                    this.props.userLevel !== 0 ?
+                        this.state.showEditView ?
+                            <div className="flex-box flex-column">
+                                <button onClick={this.deleteCurrentListName} className="w3-card w3-button w3-green margin-top-5">删除当前标签组</button>
+                                <button onClick={this.deleteCurrentTag} className="w3-card w3-button w3-green margin-top-5">删除当前标签</button>
+                                <button onClick={this.shouldShowEditView} className="w3-button w3-green w3-card margin-top-5">退出编辑</button>
+                            </div>
+                        :null
+                    :null
+                }
+                {
+                    this.props.userLevel !== 0 ?
+                        this.state.showEditView ?
+                        null
+                        : <button onClick={this.shouldShowEditView} className="w3-button w3-green w3-card margin-top-5">编辑标签</button>
+                    :null
                 }
                 <ul className="w3-ul w3-hoverable margin-top-5"  style={{overflowY: 'auto', flex: '1'}}>{
                     this.props.boxList.map((box, index) => (
@@ -252,12 +355,16 @@ class TagView extends Component {
                             <div>
                                 <div className="flex-box" style={{alignItems: 'center', padding: '5px 0px'}}>
                                     <span>标签: </span>
-                                    <i className="fa fa-plus-circle et-tag-button"></i>
-                                    <i className="fa fa-minus-circle et-tag-button"></i>
+                                    <i onClick={this.props.addNewTagToBox.bind(this, index)} className="fa fa-plus-circle et-tag-button"></i>
                                 </div>
-                                <select className="w3-select">{
-                                    box.tag.map((tag, index) => (<option key={tag + index}>{tag}</option>))
-                                }</select>
+                                <div className="flex-box" style={{overflowX: 'auto'}}>{
+                                    box.tag.map((tag, index2) => (
+                                        <div key={tag + index2} className="flex-box" style={{border: '2px solid black', alignItems: 'center', marginLeft: '2px', paddingLeft: '3px', paddingRight: '3px', whiteSpace: 'nowrap'}}>
+                                            {tag}
+                                            <i onClick={this.props.removeTagFromBox.bind(this, index, index2)} className="fa fa-times et-tag-button"></i>
+                                        </div>
+                                    ))
+                                }</div>
                             </div>
                             <div>额外信息:<input className="w3-input" type="text" onChange={this.onChangeBoxInfo.bind(this, index)} value={this.props.boxList[index].info}/></div>
                         </li>

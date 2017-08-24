@@ -35,7 +35,8 @@ class App extends Component {
         complete: 0,
         login: false,
         shouldPostTagList: false,
-        shouldPostObjectTagList: false
+        shouldPostObjectTagList: false,
+        currentBrowserMode: 'normal' //'normal', 'find'
     }
 
     uploadImageFiles = (files) => {
@@ -67,21 +68,20 @@ class App extends Component {
 
     }
 
-    getImageListByTag = (tagName) => {
+    getImageListByTag = () => {
         this.setState({selectedImageNum: 0, tagList: []});
         const that = this;
         //load imageList from server
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=1&num=10`);
+        xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start}&num=${this.state.num}`);
         const data = JSON.stringify({
-            tag: tagName
+            tag: this.state.currentTagString
         })
         xhr.send(data);
         xhr.onload = function() {
             console.log('getImageList by tag success');
             const newImageList = [];
             if(xhr.response) {
-                console.log(xhr.response);
                 const jsonResponse = JSON.parse(xhr.response);
                 jsonResponse.map((image) => {
                     newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
@@ -130,34 +130,61 @@ class App extends Component {
         if(that.refs.tagRoute && that.refs.tagRoute.refs.selectedImage) {
             maxValue = that.refs.tagRoute.refs.selectedImage.state.fileCount;
         }
-        //load imageList from server
-        const xhr = new XMLHttpRequest();
-        //it is doesn't matter send a number larger than the maxValue, server side will detect it
-        xhr.open('GET', `${that.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start + this.state.num}&num=${this.state.num}`);
-        xhr.onload = function() {
-            console.log('getNextList success');
-            const newImageList = [];
-            if(xhr.response) {
-                const jsonResponse = JSON.parse(xhr.response);
-                jsonResponse.map((image) => {
-                    newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
+        if(this.state.currentBrowserMode === 'normal') {
+            //load imageList from server
+            const xhr = new XMLHttpRequest();
+            //it is doesn't matter send a number larger than the maxValue, server side will detect it
+            xhr.open('GET', `${that.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start + this.state.num}&num=${this.state.num}`);
+            xhr.onload = function() {
+                console.log('getNextList success');
+                const newImageList = [];
+                if(xhr.response) {
+                    const jsonResponse = JSON.parse(xhr.response);
+                    jsonResponse.map((image) => {
+                        newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
+                    })
+                }
+                that.setState((state) => {
+                    state.start = state.start + state.num > maxValue ? maxValue : state.start + state.num;
+                    state.selectedImageNum = 0;
+                    state.tagList = [];
+                    state.imageList = newImageList;
+                }, function() {
+                    that.refs.tagRoute.refs.selectedImage.initSelectedImage();
                 })
+                that.getTagList(0);
             }
-            that.setState((state) => {
-                state.start = state.start + state.num > maxValue ? maxValue : state.start + state.num;
-                state.selectedImageNum = 0;
-                state.tagList = [];
-                state.imageList = newImageList;
-            }, function() {
-                that.refs.tagRoute.refs.selectedImage.initSelectedImage();
+            xhr.onerror = function() {
+                console.log('getNextList failed');
+                that.getTagList(0);
+            }
+            xhr.send();
+        } else if(this.state.currentBrowserMode === 'find') {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start + this.state.num}&num=${this.state.num}`);
+            const data = JSON.stringify({
+                tag: this.state.currentTagString
             })
-            that.getTagList(0);
+            xhr.send(data);
+            xhr.onload = function() {
+                const newImageList = [];
+                if(xhr.response) {
+                    const jsonResponse = JSON.parse(xhr.response);
+                    jsonResponse.map((image) => {
+                        newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
+                    })
+                }
+                that.setState((state) => {
+                    state.start = state.start + state.num > maxValue ? maxValue : state.start + state.num;
+                    state.selectedImageNum = 0;
+                    state.tagList = [];
+                    state.imageList = newImageList;
+                }, function() {
+                    that.refs.tagRoute.refs.selectedImage.initSelectedImage();
+                })
+                that.getTagList(0);
+            }
         }
-        xhr.onerror = function() {
-            console.log('getNextList failed');
-            that.getTagList(0);
-        }
-        xhr.send();
 
     }
 
@@ -197,35 +224,62 @@ class App extends Component {
     }
 
     previousImageList = () => {
-        this.saveTagList(this.state.selectedImageNum);
         const that = this;
-        //load imageList from server
-        const xhr = new XMLHttpRequest();
-        xhr.open('GET', `${that.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
-        xhr.onload = function() {
-            console.log('getNextList success');
-            const newImageList = [];
-            if(xhr.response) {
-                const jsonResponse = JSON.parse(xhr.response);
-                jsonResponse.map((image) => {
-                    newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
+        this.saveTagList(this.state.selectedImageNum);
+        if(this.state.currentBrowserMode === 'normal') {
+            //load imageList from server
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', `${that.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
+            xhr.onload = function() {
+                console.log('getNextList success');
+                const newImageList = [];
+                if(xhr.response) {
+                    const jsonResponse = JSON.parse(xhr.response);
+                    jsonResponse.map((image) => {
+                        newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
+                    })
+                }
+                that.setState((state) => {
+                    state.start = state.start - state.num > 0 ? state.start - state.num : 1;
+                    state.selectedImageNum = 0;
+                    state.tagList = [];
+                    state.imageList = newImageList;
+                }, function() {
+                    that.refs.tagRoute.refs.selectedImage.initSelectedImage();
                 })
+                that.getTagList(0);
             }
-            that.setState((state) => {
-                state.start = state.start - state.num > 0 ? state.start - state.num : 1;
-                state.selectedImageNum = 0;
-                state.tagList = [];
-                state.imageList = newImageList;
-            }, function() {
-                that.refs.tagRoute.refs.selectedImage.initSelectedImage();
+            xhr.onerror = function() {
+                console.log('getNextList failed');
+                that.getTagList(0);
+            }
+            xhr.send();
+        } else if(this.state.currentBrowserMode === 'find') {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
+            const data = JSON.stringify({
+                tag: this.state.currentTagString
             })
-            that.getTagList(0);
+            xhr.send(data);
+            xhr.onload = function() {
+                const newImageList = [];
+                if(xhr.response) {
+                    const jsonResponse = JSON.parse(xhr.response);
+                    jsonResponse.map((image) => {
+                        newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
+                    })
+                }
+                that.setState((state) => {
+                    state.start = state.start - state.num > 0 ? state.start - state.num : 1;
+                    state.selectedImageNum = 0;
+                    state.tagList = [];
+                    state.imageList = newImageList;
+                }, function() {
+                    that.refs.tagRoute.refs.selectedImage.initSelectedImage();
+                })
+                that.getTagList(0);
+            }
         }
-        xhr.onerror = function() {
-            console.log('getNextList failed');
-            that.getTagList(0);
-        }
-        xhr.send();
     }
 
     previousImageListForObject = () => {
@@ -265,35 +319,67 @@ class App extends Component {
         if(this.state.start === 1 && this.state.selectedImageNum === 0) {
 
         } else {
-            try {
-                const xhr = new XMLHttpRequest();
-                xhr.open('GET', `${that.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
-                const newImageList = [];
-                xhr.onload = function() {
-                    console.log('getNextList success');
-                    if(xhr.response) {
-                        const jsonResponse = JSON.parse(xhr.response);
-                        jsonResponse.map((image) => {
-                            newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
+            if(this.state.currentBrowserMode === 'normal') {
+                try {
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('GET', `${that.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
+                    const newImageList = [];
+                    xhr.onload = function() {
+                        console.log('getNextList success');
+                        if(xhr.response) {
+                            const jsonResponse = JSON.parse(xhr.response);
+                            jsonResponse.map((image) => {
+                                newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
+                            })
+                        }
+                        that.setState((state) => {
+                            state.start = state.start - state.num > 0 ? state.start - state.num : 1;
+                            state.selectedImageNum = newImageList.length - 1;
+                            state.tagList = [];
+                            state.imageList = newImageList;
+                        }, function() {
+                            that.refs.tagRoute.refs.selectedImage.initSelectedImage();
                         })
+                        that.getTagList(newImageList.length - 1);
                     }
-                    that.setState((state) => {
-                        state.start = state.start - state.num > 0 ? state.start - state.num : 1;
-                        state.selectedImageNum = newImageList.length - 1;
-                        state.tagList = [];
-                        state.imageList = newImageList;
-                    }, function() {
-                        that.refs.tagRoute.refs.selectedImage.initSelectedImage();
+                    xhr.onerror = function() {
+                        console.log('getNextList failed');
+                        that.getTagList(newImageList.length - 1);
+                    }
+                    xhr.send();
+                } catch(error) {
+                    console.log(error);
+                }
+            } else if(this.state.currentBrowserMode === 'find') {
+                try {
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
+                    const data = JSON.stringify({
+                        tag: this.state.currentTagString
                     })
-                    that.getTagList(newImageList.length - 1);
+                    xhr.send(data);
+                    const newImageList = [];
+                    xhr.onload = function() {
+                        console.log('getNextList success');
+                        if(xhr.response) {
+                            const jsonResponse = JSON.parse(xhr.response);
+                            jsonResponse.map((image) => {
+                                newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
+                            })
+                        }
+                        that.setState((state) => {
+                            state.start = state.start - state.num > 0 ? state.start - state.num : 1;
+                            state.selectedImageNum = newImageList.length - 1;
+                            state.tagList = [];
+                            state.imageList = newImageList;
+                        }, function() {
+                            that.refs.tagRoute.refs.selectedImage.initSelectedImage();
+                        })
+                        that.getTagList(newImageList.length - 1);
+                    }
+                } catch(error) {
+                    console.log(error);
                 }
-                xhr.onerror = function() {
-                    console.log('getNextList failed');
-                    that.getTagList(newImageList.length - 1);
-                }
-                xhr.send();
-            } catch(error) {
-                console.log(error);
             }
         }
     }
@@ -498,7 +584,6 @@ class App extends Component {
             tagListRequest.onload = function() {
                 console.log('getBoxList success.');
                 const jsonResponse = JSON.parse(tagListRequest.response);
-                console.log(jsonResponse);
                 if(jsonResponse.length > 0) {
                     tagList = jsonResponse.objects;
                 }
@@ -748,6 +833,46 @@ class App extends Component {
         }
     }
 
+    addNewTagToBox = (index) => {
+        const newTag = document.getElementById('mySelect').value;
+        if(this.state.tagList[index].tag.indexOf(newTag) < 0) {
+            const listName = document.getElementById('mySelectForListName').value;
+            let flag = true;
+            this.state.tagList[index].tag.map((tag, index2) => {
+                if(this.refs.tagRoute.refs.tagView.state.tagStringListAll[listName].indexOf(tag) >= 0) {
+                    this.setState((state) => {
+                        state.tagList[index].tag[index2] = newTag;
+                        state.shouldPostTagList = true;
+                    })
+                    flag = false;
+                }
+            })
+            if(flag) {
+                this.setState((state) => {
+                    state.tagList[index].tag = state.tagList[index].tag.concat([newTag]);
+                    state.shouldPostTagList = true;
+                });
+            }
+        }
+    }
+
+    removeTagFromBox = (index, index2) => {
+        this.setState((state) => {
+            state.tagList[index].tag.splice(index2, 1);
+            state.shouldPostTagList = true;
+        });
+    }
+
+    changeBrowserMode = (mode) => {
+        this.setState({currentBrowserMode: mode}, () => {
+            if(this.state.currentBrowserMode === 'normal') {
+                this.setState({start: 1, num: 10}, () => {this.getImageList()})
+            } else if(this.state.currentBrowserMode === 'find') {
+                this.setState({start: 1, num: 10}, () => {this.getImageListByTag()})
+            }
+        });
+    }
+
     render() {
         return (
             <div className="App full-height">
@@ -791,15 +916,18 @@ class App extends Component {
                                        imageList={this.state.imageList}/>
                         </div>
                         <div className="flex-box flex-column" style={{width: '20%', backgroundColor: '#F0F0F0'}}>
-                            <TagView onHandleNumChange={this.handleNumChange}
+                            <TagView ref="tagView" onHandleNumChange={this.handleNumChange}
                                      getImageListByTag={this.getImageListByTag}
                                      editTagString={this.editTagString}
+                                     addNewTagToBox={this.addNewTagToBox}
+                                     removeTagFromBox={this.removeTagFromBox}
                                      onHandleStartChange={this.handleStartChange}
                                      start={this.state.start}
                                      num={this.state.num}
                                      info={this.state.info}
                                      currentTagString={this.state.currentTagString}
                                      onChangeTagString={this.changeTagString}
+                                     onChangeBrowserMode={this.changeBrowserMode}
                                      onGetImageList={this.getImageList}
                                      onNextImageList={this.nextImageList}
                                      onPreviousImageList={this.previousImageList}
