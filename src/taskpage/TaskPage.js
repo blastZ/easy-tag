@@ -63,7 +63,8 @@ class TaskPage extends Component {
             momentum: 0.9
         },
         structureList : [],
-        structureListForObject: []
+        structureListForObject: [],
+        theRefreshInterval: null
     }
 
     shouldShowTrainSettingView = () => {
@@ -272,7 +273,8 @@ class TaskPage extends Component {
             console.log(error);
         }
 
-        window.setInterval(this.refreshInterval, 60000);
+        const theRefreshInterval = window.setInterval(this.refreshInterval, 60000);
+        this.setState({theRefreshInterval});
     }
 
     refreshInterval = () => {
@@ -280,7 +282,7 @@ class TaskPage extends Component {
     }
 
     componentWillUnmount() {
-        window.clearInterval(this.refreshInterval);
+        window.clearInterval(this.state.theRefreshInterval);
     }
 
     getManagerData = () => {

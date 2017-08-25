@@ -674,7 +674,6 @@ class App extends Component {
             tagListRequest.open('GET', `${that.state.defaultURL}loadlabel?usrname=${this.state.userName}&taskname=${this.state.taskName}&filename=${this.state.imageList[index].name}`);
             tagListRequest.send();
             tagListRequest.onload = function() {
-                console.log('getBoxList success.');
                 const jsonResponse = JSON.parse(tagListRequest.response);
                 if(jsonResponse.length > 0) {
                     tagList = jsonResponse.objects;
@@ -869,7 +868,12 @@ class App extends Component {
     handleStartChange = (e) => {
         const value = e.target.value;
         const that = this;
-        const maxValue = that.refs.tagRoute.refs.selectedImage.state.fileCount;
+        let maxValue = 0;
+        if(that.refs.tagRoute.refs.selectedImage) {
+            maxValue = that.refs.tagRoute.refs.selectedImage.state.fileCount;
+        } else if(that.refs.tagObjectRoute.refs.selectedObjectImage) {
+            maxValue = that.refs.tagObjectRoute.refs.selectedObjectImage.state.fileCount;
+        }
         this.setState((state) => {
             if(value.trim() === '' || parseInt(value, 10) <= 0) {
                 state.start = 1;
