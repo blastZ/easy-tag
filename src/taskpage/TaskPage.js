@@ -64,6 +64,8 @@ class TaskPage extends Component {
         },
         structureList : [],
         structureListForObject: [],
+        optimizerList: [],
+        optimizerListForObject: [],
         theRefreshInterval: null
     }
 
@@ -71,12 +73,17 @@ class TaskPage extends Component {
         this.setState({showTrainSettingView: !this.state.showTrainSettingView}, () => {
             if(this.state.showTrainSettingView === true) {
                 const select = document.getElementById('structureSelect');
+                const optimizerSelect = document.getElementById('optimizerSelect');
                 if(this.state.currentTaskType === 0) {
-                    if(this.state.trainParams.structure !== '')
+                    if(this.state.trainParams.structure !== '') {
                         select.value = this.state.trainParams.structure;
+                        optimizerSelect.value = this.state.trainParams.optimizer;
+                    }
                 } else if(this.state.currentTaskType === 1) {
-                    if(this.state.trainParamsForObject.structure !== '')
+                    if(this.state.trainParamsForObject.structure !== '') {
                         select.value = this.state.trainParamsForObject.structure;
+                        optimizerSelect.value = this.state.trainParamsForObject.optimizer;
+                    }
                 }
             }
         });
@@ -563,6 +570,7 @@ class TaskPage extends Component {
             } else {
                 try {
                     const theValue = document.getElementById('structureSelect').value;
+                    const theOptimizerValue = document.getElementById('optimizerSelect').value;
                     that.shouldShowTrainSettingView();
                     const startTask = new XMLHttpRequest();
                     startTask.open('GET', `${that.props.defaultURL}starttask?usrname=${that.props.username}&taskname=${that.state.currentTaskName}`);
@@ -576,10 +584,12 @@ class TaskPage extends Component {
                         if(that.state.currentTaskType === 1) {
                             const structureList = that.state.trainParamsForObject;
                             structureList.structure = theValue;
+                            structureList.optimizer = theOptimizerValue;
                             data = JSON.stringify(structureList);
                         } else if(that.state.currentTaskType === 0) {
                             const structureList = that.state.trainParams;
                             structureList.structure = theValue;
+                            structureList.optimizer = theOptimizerValue;
                             data = JSON.stringify(structureList);
                         }
                         request.send(data);
@@ -698,7 +708,7 @@ class TaskPage extends Component {
             this.setState({
                 trainParamsForObject: {
                     ...this.state.trainParamsForObject,
-                    learningrate: value
+                    learningrate: parseFloat(value)
                 }
             })
         }
@@ -800,11 +810,19 @@ class TaskPage extends Component {
                         request2.onload = () => {
                             let structureList = [];
                             structureList = JSON.parse(request2.response);
-                            this.setState({
-                                structureList
-                            }, () => {
-                                this.shouldShowTrainSettingView();
-                            })
+                            const request3 = new XMLHttpRequest();
+                            request3.open('GET', `${this.props.defaultURL}getoptmethod`);
+                            request3.send();
+                            request3.onload = () => {
+                                let optimizerList = [];
+                                optimizerList = JSON.parse(request3.response);
+                                this.setState({
+                                    structureList,
+                                    optimizerList
+                                }, () => {
+                                    this.shouldShowTrainSettingView();
+                                })
+                            }
                         }
                     } else if(parseInt(this.state.currentTaskType, 10) === 1) {
                         if(request.response !== '{}') {
@@ -828,11 +846,19 @@ class TaskPage extends Component {
                         request2.onload = () => {
                             let structureListForObject = [];
                             structureListForObject = JSON.parse(request2.response);
-                            this.setState({
-                                structureListForObject
-                            }, () => {
-                                this.shouldShowTrainSettingView();
-                            })
+                            const request3 = new XMLHttpRequest();
+                            request3.open('GET', `${this.props.defaultURL}getoptmethod`);
+                            request3.send();
+                            request3.onload = () => {
+                                let optimizerListForObject = [];
+                                optimizerListForObject = JSON.parse(request3.response);
+                                this.setState({
+                                    structureListForObject,
+                                    optimizerListForObject
+                                }, () => {
+                                    this.shouldShowTrainSettingView();
+                                })
+                            }
                         }
                     }
                 })
@@ -1398,6 +1424,20 @@ class TaskPage extends Component {
                                 <div className="w3-container">
                                     <p>迭代次数:</p>
                                     <input onChange={this.handleTrainSetEpoch} value={this.state.currentTaskType === 1 ? this.state.trainParamsForObject.epoch : this.state.trainParams.epoch} className="w3-input" type="number"/>
+                                </div>
+                                <div className="w3-container">
+                                    <p>optimizer:</p>
+                                    <select id="optimizerSelect" className="w3-select">{
+                                        this.state.currentTaskType === 1 ?
+                                        this.state.optimizerListForObject.map((item, index) => (
+                                            <option key={item + index}>{item}</option>
+                                        ))
+                                        :
+                                        this.state.optimizerList.map((item, index) => (
+                                            <option key={item + index}>{item}</option>
+                                        ))
+
+                                    }</select>
                                 </div>
                                 <div className="w3-container">
                                     <p>batch size:</p>
