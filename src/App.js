@@ -671,7 +671,8 @@ class App extends Component {
         let tagList = [];
         try {
             const tagListRequest = new XMLHttpRequest();
-            tagListRequest.open('GET', `${that.state.defaultURL}loadlabel?usrname=${this.state.userName}&taskname=${this.state.taskName}&filename=${this.state.imageList[index].name}`);
+            tagListRequest.open('GET',
+            encodeURI(`${that.state.defaultURL}loadlabel?usrname=${this.state.userName}&taskname=${this.state.taskName}&filename=${this.state.imageList[index].name}`));
             tagListRequest.send();
             tagListRequest.onload = function() {
                 const jsonResponse = JSON.parse(tagListRequest.response);

@@ -74,7 +74,7 @@ class SelectedObjectImage extends Component {
             const files = this.files;
             let result = true;
             for(const file of files) {
-                if((/^[a-zA-Z0-9\-\_\.]+$/).test(file.name) === false) {
+                if((/^[a-zA-Z0-9\-\_\.\u4e00-\u9fa5]+$/).test(file.name) === false) {
                     result = false;
                 }
             }

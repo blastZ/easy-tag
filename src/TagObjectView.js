@@ -244,7 +244,14 @@ class TagObjectView extends Component {
     render() {
         return (
             <div className="flex-box flex-column" style={{justifyContent: 'center', height: '100%'}}>
-                <div className="flex-box">
+                {
+                    this.props.userLevel === 3 || this.props.userLevel === 2 ?
+                        this.state.showFindModeView ?
+                        <button onClick={this.shouldShowFindModeView} className="w3-button w3-card w3-green">退出查找模式</button>
+                        : <button onClick={this.shouldShowFindModeView} className="w3-button w3-card w3-green">查找当前标签</button>
+                    : null
+                }
+                <div className="flex-box margin-top-5">
                     <select onChange={this.changeTagStringList} id="mySelectForListName" className="w3-select" style={{width: '50%'}}>
                     {
                         this.state.listNameList.map((listName, index) => (
@@ -261,13 +268,6 @@ class TagObjectView extends Component {
                     }
                     </select>
                 </div>
-                {
-                    this.props.userLevel === 3 || this.props.userLevel === 2 ?
-                        this.state.showFindModeView ?
-                        <button onClick={this.shouldShowFindModeView} className="w3-button w3-card w3-green margin-top-5">退出查找模式</button>
-                        : <button onClick={this.shouldShowFindModeView} className="w3-button w3-card w3-green margin-top-5">查找当前标签</button>
-                    : null
-                }
                 {
                     this.props.userLevel !== 0 ?
                         this.state.showEditView ?
@@ -357,15 +357,15 @@ class TagObjectView extends Component {
                                 <div className="flex-box" style={{alignItems: 'center', padding: '5px 0px'}}>
                                     <span>标签: </span>
                                     <i onClick={this.props.addNewTagToBox.bind(this, index)} className="fa fa-plus-circle et-tag-button"></i>
+                                    <div className="flex-box" style={{overflowX: 'auto', marginLeft: '4px'}}>{
+                                        box.tag.map((tag, index2) => (
+                                            <div key={tag + index2} className="flex-box" style={{border: '2px solid black', alignItems: 'center', marginLeft: '2px', paddingLeft: '3px', paddingRight: '3px', whiteSpace: 'nowrap'}}>
+                                                {tag}
+                                                <i onClick={this.props.removeTagFromBox.bind(this, index, index2)} className="fa fa-times et-tag-button"></i>
+                                            </div>
+                                        ))
+                                    }</div>
                                 </div>
-                                <div className="flex-box" style={{overflowX: 'auto'}}>{
-                                    box.tag.map((tag, index2) => (
-                                        <div key={tag + index2} className="flex-box" style={{border: '2px solid black', alignItems: 'center', marginLeft: '2px', paddingLeft: '3px', paddingRight: '3px', whiteSpace: 'nowrap'}}>
-                                            {tag}
-                                            <i onClick={this.props.removeTagFromBox.bind(this, index, index2)} className="fa fa-times et-tag-button"></i>
-                                        </div>
-                                    ))
-                                }</div>
                             </div>
                             <div>额外信息:<input className="w3-input" type="text" onChange={this.onChangeBoxInfo.bind(this, index)} value={this.props.boxList[index].info}/></div>
                         </li>
