@@ -12,6 +12,7 @@ import TaskPage from './taskpage/TaskPage'
 import { Route } from 'react-router-dom'
 import Demo from './test_page/Demo';
 import Login from './login_page/Login';
+import SegmentView from './segment_page/SegmentView';
 //import { saveAs } from 'file-saver' when you want to save as txt on the localhost
 
 class App extends Component {
@@ -1111,6 +1112,9 @@ class App extends Component {
                 )}/>
                 <Route exact path="/test" render={() => (
                     this.state.login ? <Demo userName={this.state.userName} taskName={this.state.taskName}/> : null
+                )}/>
+                <Route exact path="/segment" render={() => (
+                    <SegmentView/>
                 )}/>
             </div>
         )

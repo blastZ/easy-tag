@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, withRouter } from 'react-router-dom'
 import TopBar from './TopBar'
 import { getTaskStateName, getTaskTypeName, getUserLevelCode, getTaskTypeCode } from '../utils/Task';
 import TrainTaskTable from './tables/TrainTaskTable';
@@ -955,6 +955,11 @@ class TaskPage extends Component {
         this.props.onInitStartAndNum();
     }
 
+    onLinkToSegment = (index) => {
+        this.props.onChangeUserAndTask(this.props.username, this.state.taskList[index].taskName);
+        this.props.history.push('/segment');
+    }
+
     onLinkToTest = (index) => {
         if(this.state.taskList[index].taskState === '3') {
             this.props.onChangeUserAndTask(this.props.username, this.state.taskList[index].taskName);
@@ -1471,6 +1476,7 @@ class TaskPage extends Component {
                                 <select id="newTaskType">
                                     <option>物体检测</option>
                                     <option>图片分类</option>
+                                    <option>语义分割</option>
                                 </select>
                                 <input placeholder="输入新的任务名称" onChange={this.handleInputChange} value={this.state.newTaskName} className="w3-input" type="text"/>
                                 <button onClick={this.onAddTask} className="w3-button w3-orange">添加</button>
@@ -1686,6 +1692,11 @@ class TaskPage extends Component {
                                             <Link onClick={this.onLinkToTag.bind(this, index)} to="/tagobject"><i className="fa fa-tags table-item-button" aria-hidden="true"> 标注</i></Link>
                                             : null
                                         }
+                                        {
+                                            parseInt(task.taskType) === 2 ?
+                                            <i onClick={this.onLinkToSegment.bind(this, index)} className="fa fa-tags table-item-button" aria-hidden="true"> 标注</i>
+                                            : null
+                                        }
                                         <i onClick={this.showLabelStatistics.bind(this, index)} className="fa fa-area-chart table-item-button w3-margin-left"> 标注统计</i>
                                         {
                                             (this.props.userLevel === 2 || this.props.userLevel === 3) ?
@@ -1864,4 +1875,4 @@ class TaskPage extends Component {
     }
 }
 
-export default TaskPage
+export default withRouter(TaskPage);

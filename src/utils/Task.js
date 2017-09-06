@@ -24,7 +24,7 @@ export function getTaskTypeName(taskTypeID) {
         case 1:
             return ('图片分类');
         case 2:
-            return ('视频分类');
+            return ('语义分割');
     }
 }
 
@@ -32,6 +32,7 @@ export function getTaskTypeCode(str) {
     switch (str) {
         case '物体检测': return 0;
         case '图片分类': return 1;
+        case '语义分割': return 2;
         default: return 0;
     }
 }
