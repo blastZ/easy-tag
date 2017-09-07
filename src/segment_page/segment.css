@@ -1,5 +1,6 @@
   .legend {
     display: inline-block;
+    width: 100%;
   }
   .legend-item {
     display: inline-block;
@@ -31,14 +32,8 @@
     vertical-align: middle;
   }
   .toggle-button {
-    display: inline-block;
-    padding: .3em .5em;
-    min-width: 6em;
-    background-color: #eee;
-    cursor: pointer;
-  }
-  .toggle-button:hover {
-    background-color: #999;
+      margin-left: 5px;
+      width: 98px;
   }
   .toggle-button-disabled {
     background-color: #ccc;

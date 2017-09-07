@@ -445,12 +445,22 @@
 
   // When image is loaded.
   function onSuccessImageLoad(image, options) {
+    let flag = false;
+    if(image.width > 600) {
+        image.height = image.height * 600 / image.width;
+        image.width = 600;
+        flag = true;
+    }
     var canvas = document.createElement('canvas');
     canvas.width = image.width;
     canvas.height = image.height;
     var context = canvas.getContext('2d');
-    context.drawImage(image, 0, 0);
-    console.log('hey');
+    if(flag) {
+        context.drawImage(image, 0, 0, 600, image.height);
+    } else {
+        context.drawImage(image, 0, 0);
+    }
+
     const container = document.getElementById('annotator-container');
     container.style.width = `${canvas.width}px`;
     container.style.height = `${canvas.height}px`;

@@ -10,8 +10,8 @@ class SelectBar extends Component {
     }
 
     onClickItem = (index) => {
-        this.props.initImageCanvas(this.props.imageList[index].url);
         this.props.onClickItem(index);
+        this.props.initImageCanvas(this.props.imageList[index].url);
     }
 
     render() {
@@ -49,7 +49,8 @@ class SelectedBarItem extends Component {
 
 const mapStateToProps = ({ appReducer }) => ({
     imageList: appReducer.imageList,
-    selectedImageNum: appReducer.selectedImageNum
+    selectedImageNum: appReducer.selectedImageNum,
+    segmentAnnotatorList: appReducer.segmentAnnotatorList
 })
 
 const mapDispatchToProps = (dispatch) => ({

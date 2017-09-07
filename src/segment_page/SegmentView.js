@@ -3,28 +3,37 @@ import './segment.css';
 import SelectedImage from './components/SelectedImage';
 import SelectBar from './components/SelectBar';
 import TagView from './components/TagView';
+import { connect } from 'react-redux';
+import { addNewSegmentAnnotator } from '../actions/app_action';
+
+var count = 1;
 
 class SegmentView extends Component {
     componentDidMount() {
     }
 
     initImageCanvas = (imgURL) => {
+        const that = this;
         new window.SLICSegmentAnnotator(imgURL, {
-        regionSize: 40,
-        container: document.getElementById('annotator-container'),
-        // annotation: 'annotation.png' // optional existing annotation data.
-        labels: [
-          {name: 'background', color: [255, 255, 255]},
-          'skin',
-          'skirt',
-          'belt'
-          ],
-        onload: function() {
-          initializeLegend(this);
-          initializeLegendAdd(this);
-          initializeButtons(this);
-        }
-      });
+            regionSize: 40,
+            container: document.getElementById('annotator-container'),
+            // annotation: 'annotation.png' // optional existing annotation data.
+            labels: [
+                {name: 'background', color: [255, 255, 255]},
+                'skin',
+                'skirt',
+                'belt'
+            ],
+            onload: function() {
+              if(count === 1) {
+                  count++;
+                  initializeLegend(this);
+                  initializeLegendAdd(this);
+                  initializeButtons(this);
+              } else {
+              }
+            }
+        });
       // Create a legend.
       function initializeLegend(annotator) {
         // Attach a click event to a legend item.
@@ -159,7 +168,9 @@ class SegmentView extends Component {
         });
         // Set up json importer.
         createFileInput(document.getElementById('import-button'), function(file) {
-          if (file.type === 'application/json') {
+            console.log(file);
+            console.log(file.type);
+          {
             var reader = new FileReader();
             reader.onload = function(event) {
               var data = JSON.parse(event.target.result);
@@ -187,7 +198,9 @@ class SegmentView extends Component {
             <div className="flex-box full-height">
                 <div className="flex-box flex-column full-height" style={{flex: '1 1 auto', width: '80%'}}>
                     <SelectedImage/>
-                    <SelectBar initImageCanvas={this.initImageCanvas}/>
+                    <SelectBar
+                        initImageCanvas={this.initImageCanvas}
+                        saveSegmentAnnotator={this.saveSegmentAnnotator}/>
                 </div>
                 <div className="flex-box flex-column" style={{width: '20%', backgroundColor: '#F0F0F0'}}>
                     <TagView initImageCanvas={this.initImageCanvas}/>
@@ -197,4 +210,13 @@ class SegmentView extends Component {
     }
 }
 
-export default SegmentView;
+const mapStateToProps = ({ appReducer }) => ({
+    segmentAnnotatorList: appReducer.segmentAnnotatorList,
+    selectedImageNum: appReducer.selectedImageNum
+})
+
+const mapDispatchToProps = (dispatch) => ({
+    addNewSegmentAnnotator: (segmentAnnotator) => dispatch(addNewSegmentAnnotator(segmentAnnotator))
+})
+
+export default connect(mapStateToProps, mapDispatchToProps)(SegmentView);
