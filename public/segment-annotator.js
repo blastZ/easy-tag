@@ -28,10 +28,10 @@ SegmentAnnotator = function(segmentation, options) {
   this._initializePixelsIndex();
   this._initializeBackgroundLayer();
   this._initializeColorMap(options.labels);
-  
+
   // otherwise the closure won't capture the right this
   var self = this;
-  
+
   this._initializeAnnotations(options.annotation, function() {
   self._initializeImageLayer();
   self._initializeAnnotationLayer();

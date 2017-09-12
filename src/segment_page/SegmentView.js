@@ -4,20 +4,17 @@ import SelectedImage from './components/SelectedImage';
 import SelectBar from './components/SelectBar';
 import TagView from './components/TagView';
 import { connect } from 'react-redux';
-import { addNewSegmentAnnotator } from '../actions/app_action';
+import { addNewSegmentAnnotator, getImageList, saveImageAnnotation, saveSegmentAnnotatorLabels, getSegmentAnnotatorLabels } from '../actions/app_action';
 
 let segmentAnnotator = null;
 
 class SegmentView extends Component {
     componentDidMount() {
+        this.props.getImageList();
     }
 
     saveSegmentAnnotator = (index) => {
-        this.props.addNewSegmentAnnotator({
-            index,
-            labels: segmentAnnotator.getLabels(),
-            annotation: segmentAnnotator.getAnnotation()
-        })
+        this.props.saveImageAnnotation({index, annotation: segmentAnnotator.getAnnotation()});
     }
 
     initImageCanvas = (imgURL) => {
@@ -33,10 +30,16 @@ class SegmentView extends Component {
                 'tag3'
             ],
             onload: function() {
-                if(that.props.segmentAnnotatorList[that.props.selectedImageNum]) {
-                    this.setLabels(that.props.segmentAnnotatorList[that.props.selectedImageNum].labels);
-                    this.setAnnotation(that.props.segmentAnnotatorList[that.props.selectedImageNum].annotation);
-                }
+                console.log(that.props.segmentAnnotatorLabels)
+                this.setLabels(that.props.segmentAnnotatorLabels);
+                setTimeout(() => {
+                    this.setAnnotation(that.props.imageAnnotation);
+                }, 50);
+                // if(that.props.segmentAnnotatorList[that.props.selectedImageNum]) {
+                //     console.log(that.props.segmentAnnotatorList[that.props.selectedImageNum].annotation);
+                //     this.setLabels(that.props.segmentAnnotatorList[that.props.selectedImageNum].labels);
+                //     this.setAnnotation(that.props.imageAnnotation);
+                // }
                 initializeLegend(this);
                 initializeLegendAdd(this);
                 initializeButtons(this);
@@ -99,7 +102,6 @@ class SegmentView extends Component {
               // Drop colors except the first.
               for (var i = 1; i < newLabels.length; ++i)
                 newLabels[i] = newLabels[i].name;
-              console.log(event.target.value);
               newLabels.push(event.target.value);
               annotator.setLabels(newLabels);
               initializeLegend(annotator);
@@ -230,11 +232,17 @@ class SegmentView extends Component {
 
 const mapStateToProps = ({ appReducer }) => ({
     segmentAnnotatorList: appReducer.segmentAnnotatorList,
-    selectedImageNum: appReducer.selectedImageNum
+    selectedImageNum: appReducer.selectedImageNum,
+    imageAnnotation: appReducer.imageAnnotation,
+    segmentAnnotatorLabels: appReducer.segmentAnnotatorLabels
 })
 
 const mapDispatchToProps = (dispatch) => ({
-    addNewSegmentAnnotator: (segmentAnnotator) => dispatch(addNewSegmentAnnotator(segmentAnnotator))
+    addNewSegmentAnnotator: (segmentAnnotator) => dispatch(addNewSegmentAnnotator(segmentAnnotator)),
+    getImageList: () => dispatch(getImageList()),
+    saveImageAnnotation: (index) => dispatch(saveImageAnnotation(index)),
+    saveSegmentAnnotatorLabels: (labels) => dispatch(saveSegmentAnnotatorLabels(labels)),
+    getSegmentAnnotatorLabels: () => dispatch(getSegmentAnnotatorLabels())
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(SegmentView);

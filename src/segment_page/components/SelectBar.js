@@ -1,16 +1,22 @@
 import React, {Component} from 'react';
 import { connect } from 'react-redux';
-import { onClickItem } from '../../actions/app_action';
+import { onClickItem, getImageAnnotation, getSegmentAnnotatorLabels } from '../../actions/app_action';
+
+let count = 0;
 
 class SelectBar extends Component {
     componentWillUpdate(nextProps) {
-        if(nextProps.imageList.length === 1) {
+        if(nextProps.imageList && nextProps.selectedImageNum === 0 && count === 0) {
+            this.props.getImageAnnotation(0);
+            this.props.getSegmentAnnotatorLabels();
             this.props.initImageCanvas(nextProps.imageList[0].url);
+            count++;
         }
     }
 
     onClickItem = (index) => {
         this.props.saveSegmentAnnotator(this.props.selectedImageNum);
+        this.props.getImageAnnotation(index);
         this.props.onClickItem(index);
         this.props.initImageCanvas(this.props.imageList[index].url);
     }
@@ -18,7 +24,7 @@ class SelectBar extends Component {
     render() {
         return (
             <ul style={{width:'100%', backgroundColor:'rgb(196, 245, 142)', paddingTop: '20px', paddingBottom: '20px'}} id="select-bar">
-                {this.props.imageList.map((image, index) => (
+                {this.props.imageList && this.props.imageList.map((image, index) => (
                     index !== this.props.selectedImageNum ?
                     <BarItem labeled={image.labeled} key={image.url.toString() + index.toString()} onClickItem={this.onClickItem.bind(this, index)} dataKey={image.url.toString()} imageURL={image.url}/> :
                     <SelectedBarItem labeled={image.labeled} key={image.url.toString() + index.toString()} onClickItem={this.onClickItem.bind(this, index)} dataKey={image.url.toString()} imageURL={image.url}/>
@@ -55,7 +61,9 @@ const mapStateToProps = ({ appReducer }) => ({
 })
 
 const mapDispatchToProps = (dispatch) => ({
-    onClickItem: (index) => dispatch(onClickItem(index))
+    onClickItem: (index) => dispatch(onClickItem(index)),
+    getImageAnnotation: (index) => dispatch(getImageAnnotation(index)),
+    getSegmentAnnotatorLabels: () => dispatch(getSegmentAnnotatorLabels())
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(SelectBar);

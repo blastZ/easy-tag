@@ -482,8 +482,8 @@
     if (options.minRegionSize === undefined)
       options.minRegionSize = options.regionSize * options.regionSize / 4;
     var image = new Image();
+    image.crossOrigin = "Anonymous";
     image.src = imageURL;
-    image.crossOrigin = null;
     image.onerror = function() { onErrorImageLoad(image); };
     image.onload = function() { onSuccessImageLoad(image, options); };
   };

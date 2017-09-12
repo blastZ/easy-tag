@@ -956,7 +956,7 @@ class TaskPage extends Component {
     }
 
     onLinkToSegment = (index) => {
-        this.props.onChangeUserAndTask(this.props.username, this.state.taskList[index].taskName);
+        //this.props.onChangeUserAndTask(this.props.username, this.state.taskList[index].taskName);
         this.props.history.push('/segment');
     }
 
