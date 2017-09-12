@@ -6,12 +6,12 @@ import registerServiceWorker from './registerServiceWorker';
 import { BrowserRouter } from 'react-router-dom';
 import rootReducer from './reducers/rootReducer';
 import { Provider } from 'react-redux';
-import { createStore } from 'redux';
+import { createStore, applyMiddleware } from 'redux';
+import appMiddleware from './middlewares/app_middleware';
 
 const store = createStore(
     rootReducer,
-    window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
-)
+    applyMiddleware(appMiddleware))
 
 ReactDOM.render(
     <Provider store={store}>

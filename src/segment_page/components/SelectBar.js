@@ -10,6 +10,7 @@ class SelectBar extends Component {
     }
 
     onClickItem = (index) => {
+        this.props.saveSegmentAnnotator(this.props.selectedImageNum);
         this.props.onClickItem(index);
         this.props.initImageCanvas(this.props.imageList[index].url);
     }

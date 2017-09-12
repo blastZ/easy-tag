@@ -6,32 +6,40 @@ import TagView from './components/TagView';
 import { connect } from 'react-redux';
 import { addNewSegmentAnnotator } from '../actions/app_action';
 
-var count = 1;
+let segmentAnnotator = null;
 
 class SegmentView extends Component {
     componentDidMount() {
     }
 
+    saveSegmentAnnotator = (index) => {
+        this.props.addNewSegmentAnnotator({
+            index,
+            labels: segmentAnnotator.getLabels(),
+            annotation: segmentAnnotator.getAnnotation()
+        })
+    }
+
     initImageCanvas = (imgURL) => {
         const that = this;
-        new window.SLICSegmentAnnotator(imgURL, {
+        segmentAnnotator = new window.SLICSegmentAnnotator(imgURL, {
             regionSize: 40,
             container: document.getElementById('annotator-container'),
             // annotation: 'annotation.png' // optional existing annotation data.
             labels: [
                 {name: 'background', color: [255, 255, 255]},
-                'skin',
-                'skirt',
-                'belt'
+                'tag1',
+                'tag2',
+                'tag3'
             ],
             onload: function() {
-              if(count === 1) {
-                  count++;
-                  initializeLegend(this);
-                  initializeLegendAdd(this);
-                  initializeButtons(this);
-              } else {
-              }
+                if(that.props.segmentAnnotatorList[that.props.selectedImageNum]) {
+                    this.setLabels(that.props.segmentAnnotatorList[that.props.selectedImageNum].labels);
+                    this.setAnnotation(that.props.segmentAnnotatorList[that.props.selectedImageNum].annotation);
+                }
+                initializeLegend(this);
+                initializeLegendAdd(this);
+                initializeButtons(this);
             }
         });
       // Create a legend.
@@ -82,23 +90,32 @@ class SegmentView extends Component {
           initializeLegend(annotator);
         });
       }
+
       // Add an item to the legend.
       function initializeLegendAdd(annotator) {
-        var input = document.getElementById('add-label-input');
-        input.addEventListener('keyup', function(event) {
-          if (event.keyCode === 13) {
-            var newLabels = annotator.getLabels();
-            // Drop colors except the first.
-            for (var i = 1; i < newLabels.length; ++i)
-              newLabels[i] = newLabels[i].name;
-            newLabels.push(event.target.value);
-            annotator.setLabels(newLabels);
-            initializeLegend(annotator);
-            event.target.value = '';
-            var index = newLabels.length - 1;
-            document.getElementsByClassName('legend-item')[index].click();
-          }
-        });
+          const keyupFunction = function(event) {
+            if (event.keyCode === 13) {
+              var newLabels = annotator.getLabels();
+              // Drop colors except the first.
+              for (var i = 1; i < newLabels.length; ++i)
+                newLabels[i] = newLabels[i].name;
+              console.log(event.target.value);
+              newLabels.push(event.target.value);
+              annotator.setLabels(newLabels);
+              initializeLegend(annotator);
+              event.target.value = '';
+              var index = newLabels.length - 1;
+              document.getElementsByClassName('legend-item')[index].click();
+            }
+          };
+          const input = document.getElementById('add-label-input');
+          const parent = input.parentNode;
+          parent.removeChild(input);
+          const newInput = document.createElement('input');
+          newInput.id = 'add-label-input';
+          newInput.classList.add('w3-input', 'margin-top-5');
+          parent.appendChild(newInput);
+          newInput.addEventListener('keyup', keyupFunction);
       }
       // Create a slide radio input.
       function createToggleButton(button, disableCallback, enableCallback) {
@@ -200,7 +217,8 @@ class SegmentView extends Component {
                     <SelectedImage/>
                     <SelectBar
                         initImageCanvas={this.initImageCanvas}
-                        saveSegmentAnnotator={this.saveSegmentAnnotator}/>
+                        saveSegmentAnnotator={this.saveSegmentAnnotator}
+                        getSegmentAnnotatorLabels={this.getSegmentAnnotatorLabels}/>
                 </div>
                 <div className="flex-box flex-column" style={{width: '20%', backgroundColor: '#F0F0F0'}}>
                     <TagView initImageCanvas={this.initImageCanvas}/>

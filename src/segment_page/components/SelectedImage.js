@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import { connect } from 'react-redux';
-import { addNewImage } from '../../actions/app_action';
+import { addNewImage, uploadImageFiles } from '../../actions/app_action';
 import $ from 'jquery';
 
 class SelectedImage extends Component {
@@ -27,6 +27,7 @@ class SelectedImage extends Component {
                         reader.readAsDataURL(file);
                     }
                 }
+                that.props.uploadImageFiles(files);
             } else {
                 window.alert('图片命名不符合规则');
             }
@@ -73,7 +74,8 @@ const mapStateToProps = ({ appReducer }) => ({
 })
 
 const mapDispatchToProps = (dispatch) => ({
-    addNewImage: (url, name) => dispatch(addNewImage(url, name))
+    addNewImage: (url, name) => dispatch(addNewImage(url, name)),
+    uploadImageFiles: (files) => dispatch(uploadImageFiles(files))
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(SelectedImage);
