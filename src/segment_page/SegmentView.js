@@ -4,13 +4,24 @@ import SelectedImage from './components/SelectedImage';
 import SelectBar from './components/SelectBar';
 import TagView from './components/TagView';
 import { connect } from 'react-redux';
-import { addNewSegmentAnnotator, getImageList, saveImageAnnotation, saveSegmentAnnotatorLabels, getSegmentAnnotatorLabels } from '../actions/app_action';
+import { addNewSegmentAnnotator, getImageList,
+         saveImageAnnotation, saveSegmentAnnotatorLabels,
+         getSegmentAnnotatorLabels, setSegmentAnnotatorLabels,
+         initAppReducerState, getFileCount, getTaggedFileCount} from '../actions/app_action';
 
-let segmentAnnotator = null;
+export let segmentAnnotator = null;
+let count = 1;
 
 class SegmentView extends Component {
     componentDidMount() {
         this.props.getImageList();
+        this.props.getFileCount();
+        this.props.getTaggedFileCount();
+    }
+
+    componentWillUnmount() {
+        this.props.initAppReducerState();
+        count = 1;
     }
 
     saveSegmentAnnotator = (index) => {
@@ -23,26 +34,22 @@ class SegmentView extends Component {
             regionSize: 40,
             container: document.getElementById('annotator-container'),
             // annotation: 'annotation.png' // optional existing annotation data.
-            labels: [
-                {name: 'background', color: [255, 255, 255]},
-                'tag1',
-                'tag2',
-                'tag3'
-            ],
+            labels: count === 1 ? [
+                {name: 'background', color: [255, 255, 255]}
+            ] : this.props.segmentAnnotatorLabels,
             onload: function() {
-                console.log(that.props.segmentAnnotatorLabels)
-                this.setLabels(that.props.segmentAnnotatorLabels);
+                if(count === 1) {
+                    that.props.getSegmentAnnotatorLabels();
+                    count ++;
+                }
                 setTimeout(() => {
                     this.setAnnotation(that.props.imageAnnotation);
                 }, 50);
-                // if(that.props.segmentAnnotatorList[that.props.selectedImageNum]) {
-                //     console.log(that.props.segmentAnnotatorList[that.props.selectedImageNum].annotation);
-                //     this.setLabels(that.props.segmentAnnotatorList[that.props.selectedImageNum].labels);
-                //     this.setAnnotation(that.props.imageAnnotation);
-                // }
-                initializeLegend(this);
-                initializeLegendAdd(this);
-                initializeButtons(this);
+                setTimeout(() => {
+                    initializeLegend(this);
+                    initializeLegendAdd(this);
+                    initializeButtons(this);
+                }, 1000);
             }
         });
       // Create a legend.
@@ -80,17 +87,30 @@ class SegmentView extends Component {
             deleteButton.classList.add('legend-delete-button');
             legend.appendChild(deleteButton);
             attachDeleteEvent(annotator, deleteButton, i);
+            if(that.props.segmentAnnotatorLabels[i].deleted) {
+                deleteButton.style.display = 'none';
+            }
           }
-          legend.appendChild(document.createElement('br'));
+          if(that.props.segmentAnnotatorLabels && !that.props.segmentAnnotatorLabels[i].deleted) {
+              legend.appendChild(document.createElement('br'));
+          }
+          if(that.props.segmentAnnotatorLabels[i].deleted) {
+              item.style.display = 'none';
+          }
         }
         var currentIndex = Math.min(1, labels.length - 1);
         document.getElementsByClassName('legend-item')[currentIndex].click();
+
       }
       // Attach a click event to a delete button.
       function attachDeleteEvent(annotator, button, index) {
         button.addEventListener('click', function() {
-          annotator.removeLabel(index);
-          initializeLegend(annotator);
+            const newLabels = that.props.segmentAnnotatorLabels;
+            newLabels[index].deleted = true;
+            that.props.setSegmentAnnotatorLabels(newLabels);
+            that.props.saveSegmentAnnotatorLabels(newLabels);
+          //annotator.removeLabel(index);
+            initializeLegend(annotator);
         });
       }
 
@@ -100,10 +120,20 @@ class SegmentView extends Component {
             if (event.keyCode === 13) {
               var newLabels = annotator.getLabels();
               // Drop colors except the first.
-              for (var i = 1; i < newLabels.length; ++i)
+              for (var i = 1; i < newLabels.length; ++i) {
                 newLabels[i] = newLabels[i].name;
+              }
               newLabels.push(event.target.value);
               annotator.setLabels(newLabels);
+              const theLabels = annotator.getLabels();
+              const oldLabels = that.props.segmentAnnotatorLabels;
+              for(let i=0; i<oldLabels.length; i++) {
+                  if(oldLabels[i].deleted) {
+                      theLabels[i].deleted = true;
+                  }
+              }
+              that.props.setSegmentAnnotatorLabels(theLabels);
+              that.props.saveSegmentAnnotatorLabels(theLabels);
               initializeLegend(annotator);
               event.target.value = '';
               var index = newLabels.length - 1;
@@ -148,16 +178,6 @@ class SegmentView extends Component {
           input.click();
         });
       }
-      // Download as a file.
-      function downloadAsFile(url, filename) {
-        var anchor = document.createElement('a');
-        anchor.style.display = 'none';
-        document.body.appendChild(anchor);
-        anchor.setAttribute('href', url);
-        anchor.setAttribute('download', filename);
-        anchor.click();
-        document.body.removeChild(anchor);
-      };
       // Attach button events.
       function initializeButtons(annotator) {
         var fillAlpha = 128;
@@ -184,30 +204,6 @@ class SegmentView extends Component {
             annotator.setBoundaryAlpha(192);
           else
             annotator.setBoundaryAlpha(fillAlpha);
-        });
-        // Set up json importer.
-        createFileInput(document.getElementById('import-button'), function(file) {
-            console.log(file);
-            console.log(file.type);
-          {
-            var reader = new FileReader();
-            reader.onload = function(event) {
-              var data = JSON.parse(event.target.result);
-              annotator.setLabels(data.labels);
-              annotator.setAnnotation(data.annotation);
-              initializeLegend(annotator);
-            };
-            reader.readAsText(file);
-          }
-        });
-        document.getElementById('export-button').addEventListener('click', function() {
-          var data = {
-            labels: annotator.getLabels(),
-            annotation: annotator.getAnnotation()
-          };
-          var dataURL = 'data:application/json;charset=utf-8,' +
-                        encodeURIComponent(JSON.stringify(data));
-          downloadAsFile(dataURL, 'export.json');
         });
       }
     }
@@ -240,9 +236,13 @@ const mapStateToProps = ({ appReducer }) => ({
 const mapDispatchToProps = (dispatch) => ({
     addNewSegmentAnnotator: (segmentAnnotator) => dispatch(addNewSegmentAnnotator(segmentAnnotator)),
     getImageList: () => dispatch(getImageList()),
+    getFileCount: () => dispatch(getFileCount()),
+    getTaggedFileCount: () => dispatch(getTaggedFileCount()),
     saveImageAnnotation: (index) => dispatch(saveImageAnnotation(index)),
     saveSegmentAnnotatorLabels: (labels) => dispatch(saveSegmentAnnotatorLabels(labels)),
-    getSegmentAnnotatorLabels: () => dispatch(getSegmentAnnotatorLabels())
+    getSegmentAnnotatorLabels: () => dispatch(getSegmentAnnotatorLabels()),
+    setSegmentAnnotatorLabels: (newLabels) => dispatch(setSegmentAnnotatorLabels(newLabels)),
+    initAppReducerState: () => dispatch(initAppReducerState())
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(SegmentView);

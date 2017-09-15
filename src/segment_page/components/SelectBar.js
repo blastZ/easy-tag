@@ -1,16 +1,28 @@
 import React, {Component} from 'react';
 import { connect } from 'react-redux';
-import { onClickItem, getImageAnnotation, getSegmentAnnotatorLabels } from '../../actions/app_action';
+import { onClickItem, getImageAnnotation, getSegmentAnnotatorLabels,
+         shouldUpdateImage} from '../../actions/app_action';
 
 let count = 0;
 
 class SelectBar extends Component {
+    componentWillUnmount() {
+        count = 0;
+    }
+
     componentWillUpdate(nextProps) {
-        if(nextProps.imageList && nextProps.selectedImageNum === 0 && count === 0) {
+        if(nextProps.imageList && nextProps.imageList.length > 0 && nextProps.selectedImageNum === 0 && count === 0) {
             this.props.getImageAnnotation(0);
-            this.props.getSegmentAnnotatorLabels();
             this.props.initImageCanvas(nextProps.imageList[0].url);
             count++;
+        }
+    }
+
+    componentDidUpdate() {
+        if(this.props.updateImage) {
+            this.props.getImageAnnotation(this.props.selectedImageNum);
+            this.props.initImageCanvas(this.props.imageList[this.props.selectedImageNum].url);
+            this.props.shouldUpdateImage();
         }
     }
 
@@ -57,13 +69,15 @@ class SelectedBarItem extends Component {
 const mapStateToProps = ({ appReducer }) => ({
     imageList: appReducer.imageList,
     selectedImageNum: appReducer.selectedImageNum,
-    segmentAnnotatorList: appReducer.segmentAnnotatorList
+    segmentAnnotatorList: appReducer.segmentAnnotatorList,
+    updateImage: appReducer.updateImage
 })
 
 const mapDispatchToProps = (dispatch) => ({
     onClickItem: (index) => dispatch(onClickItem(index)),
     getImageAnnotation: (index) => dispatch(getImageAnnotation(index)),
-    getSegmentAnnotatorLabels: () => dispatch(getSegmentAnnotatorLabels())
+    getSegmentAnnotatorLabels: () => dispatch(getSegmentAnnotatorLabels()),
+    shouldUpdateImage: () => dispatch(shouldUpdateImage())
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(SelectBar);

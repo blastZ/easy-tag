@@ -9,10 +9,12 @@ import TagView from './TagView.js'
 import SelectedObjectImage from './SelectedObjectImage';
 import TagObjectView from './TagObjectView';
 import TaskPage from './taskpage/TaskPage'
-import { Route } from 'react-router-dom'
+import { Route, withRouter } from 'react-router-dom'
 import Demo from './test_page/Demo';
 import Login from './login_page/Login';
 import SegmentView from './segment_page/SegmentView';
+import { changeUserName, changeUserLevel, changeTaskName } from './actions/app_action';
+import { connect } from 'react-redux';
 //import { saveAs } from 'file-saver' when you want to save as txt on the localhost
 
 class App extends Component {
@@ -889,6 +891,7 @@ class App extends Component {
 
     changeUserAndTask = (userName, taskName) => {
         const that = this;
+        this.props.dispatch(changeTaskName(taskName));
         this.setState({userName: userName, taskName: taskName}, function() {
             that.getImageList();
         });
@@ -899,6 +902,8 @@ class App extends Component {
     }
 
     login = (userName, userLevel, userGroup, password) => {
+        this.props.dispatch(changeUserName(userName));
+        this.props.dispatch(changeUserLevel(userLevel));
         this.setState({login: true, userName, userLevel, userGroup, password});
     }
 
@@ -1114,11 +1119,13 @@ class App extends Component {
                     this.state.login ? <Demo userName={this.state.userName} taskName={this.state.taskName}/> : null
                 )}/>
                 <Route exact path="/segment" render={() => (
+                    
                     <SegmentView/>
+
                 )}/>
             </div>
         )
   }
 }
 
-export default App
+export default withRouter(connect()(App));

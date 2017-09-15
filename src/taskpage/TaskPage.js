@@ -3,6 +3,8 @@ import { Link, withRouter } from 'react-router-dom'
 import TopBar from './TopBar'
 import { getTaskStateName, getTaskTypeName, getUserLevelCode, getTaskTypeCode } from '../utils/Task';
 import TrainTaskTable from './tables/TrainTaskTable';
+import { connect } from 'react-redux';
+import { changeTaskName } from '../actions/app_action';
 
 class TaskPage extends Component {
     state = {
@@ -956,7 +958,7 @@ class TaskPage extends Component {
     }
 
     onLinkToSegment = (index) => {
-        //this.props.onChangeUserAndTask(this.props.username, this.state.taskList[index].taskName);
+        this.props.dispatch(changeTaskName(this.state.taskList[index].taskName));
         this.props.history.push('/segment');
     }
 
@@ -1875,4 +1877,4 @@ class TaskPage extends Component {
     }
 }
 
-export default withRouter(TaskPage);
+export default withRouter(connect()(TaskPage));

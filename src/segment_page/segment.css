@@ -1,13 +1,14 @@
   .legend {
     display: inline-block;
     width: 100%;
+    background: #f1f1f1;
   }
   .legend-item {
     display: inline-block;
     padding: .2em .5em;
     min-width: 8em;
     cursor: pointer;
-    background-color: #eee;
+    background-color: #f1f1f1;
   }
   .legend-item:hover {
     background-color: #999;
@@ -19,7 +20,7 @@
     display: inline-block;
     padding: .2em .3em;
     cursor: pointer;
-    background-color: #eee;
+    background-color: #f1f1f1;
   }
   .legend-delete-button:hover {
     background-color: #999;

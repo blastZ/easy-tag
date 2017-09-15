@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import { connect } from 'react-redux';
-import { addNewImage, uploadImageFiles } from '../../actions/app_action';
+import { addNewImage, uploadImageFiles, deleteImage } from '../../actions/app_action';
 import $ from 'jquery';
 
 class SelectedImage extends Component {
@@ -35,18 +35,19 @@ class SelectedImage extends Component {
     }
 
     render() {
+        const { imageList, selectedImageNum } = this.props;
         return (
             <div className="w3-center w3-padding-24 flex-box full-width" style={{position: 'relative', justifyContent: 'center', alignItems: 'center', backgroundColor: '#303030', flex: '1'}}>
                 <div>
                     <div style={{position: 'absolute', top: '0', left: '10px'}}>
-                        <p className="w3-text-white">{`标注进度: 1/1`}</p>
+                        <p className="w3-text-white">{`标注进度: ${this.props.taggedFileCount}/${this.props.fileCount}`}</p>
                     </div>
                     <div style={{position: 'absolute', top: '0', left: '45%'}}>
-                        <p className="w3-text-white">{`第 1 张 图片名称:example.jpg`}</p>
+                        <p className="w3-text-white">{`第 1 张 图片名称:${imageList && imageList.length > 0 ? imageList[selectedImageNum].name : 'None'}`}</p>
                     </div>
                     {
                         this.props.userLevel !== 0 ?
-                        <i className="fa fa-times delete-button-white" aria-hidden="true" style={{position: 'absolute', top: '10px', right: '20px'}}></i>
+                        <i onClick={this.props.deleteImage} className="fa fa-times delete-button-white" aria-hidden="true" style={{position: 'absolute', top: '10px', right: '20px'}}></i>
                         : null
                     }
                 </div>
@@ -70,12 +71,17 @@ class SelectedImage extends Component {
 }
 
 const mapStateToProps = ({ appReducer }) => ({
-    userLevel: appReducer.userLevel
+    userLevel: appReducer.userLevel,
+    imageList: appReducer.imageList,
+    selectedImageNum: appReducer.selectedImageNum,
+    fileCount: appReducer.fileCount,
+    taggedFileCount: appReducer.taggedFileCount
 })
 
 const mapDispatchToProps = (dispatch) => ({
     addNewImage: (url, name) => dispatch(addNewImage(url, name)),
-    uploadImageFiles: (files) => dispatch(uploadImageFiles(files))
+    uploadImageFiles: (files) => dispatch(uploadImageFiles(files)),
+    deleteImage: () => dispatch(deleteImage())
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(SelectedImage);

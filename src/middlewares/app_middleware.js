@@ -1,3 +1,5 @@
+import { segmentAnnotator } from '../segment_page/SegmentView';
+
 const appMiddleware = store => next => action => {
     if(action.type === 'UPLOAD_IMAGE_FILES') {
         const state = store.getState().appReducer;
@@ -12,14 +14,16 @@ const appMiddleware = store => next => action => {
             fileRequest.open('POST', `${state.defaultURL}uploadfile?usrname=${state.userName}&taskname=${state.taskName}&filename=${file.name}`);
             fileRequest.send(formData);
             fileRequest.onload = function() {
-                console.log('post images success')
+                store.dispatch({
+                    type: 'GET_FILE_COUNT'
+                })
             }
             fileRequest.onerror = function() {
                 console.log('post images failed.');
             }
         }
     }
-    if(action.type === 'GET_IMAGE_LIST') {
+    else if(action.type === 'GET_IMAGE_LIST') {
         const state = store.getState().appReducer;
         const xhr = new XMLHttpRequest();
         xhr.open('GET', `${state.defaultURL}getdir?usrname=${state.userName}&taskname=${state.taskName}&start=${state.start}&num=${state.num}`);
@@ -36,8 +40,7 @@ const appMiddleware = store => next => action => {
         }
         xhr.send();
     }
-
-    if(action.type === 'SAVE_IMAGE_ANNOTATION') {
+    else if(action.type === 'SAVE_IMAGE_ANNOTATION') {
         const state = store.getState().appReducer;
         const { index, annotation } = action;
         const xhr = new XMLHttpRequest();
@@ -50,7 +53,7 @@ const appMiddleware = store => next => action => {
         formData.append("file", annotation);
         xhr.send(formData);
     }
-    if(action.type === 'GET_IMAGE_ANNOTATION') {
+    else if(action.type === 'GET_IMAGE_ANNOTATION') {
         const state = store.getState().appReducer;
         const { index } = action;
         const xhr = new XMLHttpRequest();
@@ -63,31 +66,82 @@ const appMiddleware = store => next => action => {
         }
         xhr.send();
     }
-    if(action.type === 'SAVE_SEGMENT_ANNOTATOR_LABELS') {
+    else if(action.type === 'SAVE_SEGMENT_ANNOTATOR_LABELS') {
         const { labels } = action;
         const state = store.getState().appReducer;
         const xhr = new XMLHttpRequest();
         xhr.open('POST', `${state.defaultURL}savetag?usrname=${state.userName}&taskname=${state.taskName}`);
         xhr.onload = function() {
-            
+
         }
         xhr.setRequestHeader("Content-Type", "text/plain");
         const data = JSON.stringify(labels);
         xhr.send(data);
     }
-    if(action.type === 'GET_SEGMENT_ANNOTATOR_LABELS') {
+    else if(action.type === 'GET_SEGMENT_ANNOTATOR_LABELS') {
         const state = store.getState().appReducer;
         const xhr = new XMLHttpRequest();
         xhr.open('GET', `${state.defaultURL}loadtag?usrname=${state.userName}&taskname=${state.taskName}`);
         xhr.onload = function() {
-            next({
-                type: 'GET_SEGMENT_ANNOTATOR_LABELS',
-                segmentAnnotatorLabels: JSON.parse(xhr.response)
-            })
+            const labels = JSON.parse(xhr.response);
+            if(labels.length > 0) {
+                segmentAnnotator.setLabels(labels);
+                next({
+                    type: 'GET_SEGMENT_ANNOTATOR_LABELS',
+                    segmentAnnotatorLabels: labels
+                })
+            } else {
+                next({
+                    type: 'GET_SEGMENT_ANNOTATOR_LABELS',
+                    segmentAnnotatorLabels: [
+                        {name: 'background', color: [255, 255, 255]}
+                    ]
+                })
+            }
         }
         xhr.send();
     }
-    next(action);
+    else if(action.type === 'GET_FILE_COUNT') {
+        const state = store.getState().appReducer;
+        const getFileCount = new XMLHttpRequest();
+        getFileCount.open('GET', `${state.defaultURL}filecount?usrname=${state.userName}&taskname=${state.taskName}`);
+        getFileCount.send();
+        getFileCount.onload = function() {
+            const theFileCount = getFileCount.response;
+            next({
+                type: 'GET_FILE_COUNT',
+                fileCount: theFileCount
+            })
+        }
+    }
+    else if(action.type === 'GET_TAGGED_FILE_COUNT') {
+        const state = store.getState().appReducer;
+        const getTagedFileCount = new XMLHttpRequest();
+        getTagedFileCount.open('GET', `${state.defaultURL}labeledfilecount?usrname=${state.userName}&taskname=${state.taskName}`);
+        getTagedFileCount.send();
+        getTagedFileCount.onload = function() {
+            const theTaggedFileCount = getTagedFileCount.response;
+            next({
+                type: 'GET_TAGGED_FILE_COUNT',
+                taggedFileCount: theTaggedFileCount
+            })
+        }
+    }
+    else if(action.type === 'DELETE_IMAGE') {
+        const state = store.getState().appReducer;
+        const deleteRequest = new XMLHttpRequest();
+        deleteRequest.open('GET', `${state.defaultURL}delfile?usrname=${state.userName}&taskname=${state.taskName}&filename=${state.imageList[state.selectedImageNum].name}`);
+        deleteRequest.send();
+        next({
+            type: 'DELETE_IMAGE'
+        })
+        store.dispatch({
+            type: 'GET_FILE_COUNT'
+        })
+    }
+    else {
+        next(action);
+    }
 }
 
 export default appMiddleware;
