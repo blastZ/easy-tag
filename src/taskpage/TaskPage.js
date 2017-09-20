@@ -70,7 +70,21 @@ class TaskPage extends Component {
         structureListForObject: [],
         optimizerList: [],
         optimizerListForObject: [],
-        theRefreshInterval: null
+        theRefreshInterval: null,
+        tabIndex: 0
+    }
+
+    handleTabChange = (tabIndex) => {
+        this.setState({tabIndex});
+        if(tabIndex === 0) {
+            this.getTaskList();
+        }else if(tabIndex === 2) {
+            this.getWorkerList();
+        }else if(tabIndex === 3) {
+            this.getUserManageList();
+        }else if(tabIndex === 4) {
+            this.getUserGroupList();
+        }
     }
 
     shouldShowTrainSettingView = () => {
@@ -252,14 +266,9 @@ class TaskPage extends Component {
         }})
     }
 
-    componentDidMount() {
+    getTaskList = () => {
         const that = this;
         const getTaskList = new XMLHttpRequest();
-        const getWorkerList = new XMLHttpRequest();
-        if(this.props.userLevel === 3) {
-            this.getUserManageList();
-            this.getUserGroupList();
-        }
         try {
             getTaskList.open('GET', `${this.props.defaultURL}gettasklist?usrname=${this.props.username}`);
             getTaskList.send();
@@ -270,7 +279,11 @@ class TaskPage extends Component {
         } catch(error) {
             console.log(error);
         }
+    }
 
+    getWorkerList = () => {
+        const that = this;
+        const getWorkerList = new XMLHttpRequest();
         try {
             getWorkerList.open('GET', `${this.props.defaultURL}getworkerlist?usrname=${this.props.username}`);
             getWorkerList.send();
@@ -283,7 +296,11 @@ class TaskPage extends Component {
         } catch(error) {
             console.log(error);
         }
+    }
 
+    componentDidMount() {
+        const that = this;
+        this.getTaskList();
         const theRefreshInterval = window.setInterval(this.refreshInterval, 60000);
         this.setState({theRefreshInterval});
     }
@@ -992,34 +1009,19 @@ class TaskPage extends Component {
 
     refreshTaskPage = () => {
         const that = this;
-        const getTaskList = new XMLHttpRequest();
-        const getWorkerList = new XMLHttpRequest();
-        try {
-            getTaskList.open('GET', `${this.props.defaultURL}gettasklist?usrname=${this.props.username}`);
-            getTaskList.send();
-            getTaskList.onload = function() {
-                const arrayData = that.getArrayData(getTaskList.response);
-                that.addTask(arrayData);
-            }
-        } catch(error) {
-            console.log(error);
-        }
-
-        try {
-            getWorkerList.open('GET', `${this.props.defaultURL}getworkerlist?usrname=${this.props.username}`);
-            getWorkerList.send();
-            getWorkerList.onload = function() {
-                const arrayData = that.getArrayData(getWorkerList.response);
-                that.addWorker(arrayData);
-            }
-        } catch(error) {
-            console.log(error);
-        }
-        if(this.props.userLevel === 3) {
-            this.getUserManageList();
-            this.getUserGroupList();
-            if(this.refs.trainTaskList)
+        const { tabIndex } = this.state;
+        if(tabIndex === 0) {
+            this.getTaskList();
+        }else if(tabIndex === 1) {
+            if(this.refs.trainTaskList) {
                 this.refs.trainTaskList.updateTrainTaskList();
+            }
+        }else if(tabIndex === 2) {
+            this.getWorkerList();
+        }else if(tabIndex === 3) {
+            this.getUserManageList();
+        }else if(tabIndex === 4) {
+            this.getUserGroupList();
         }
     }
 
@@ -1652,7 +1654,7 @@ class TaskPage extends Component {
                     ) : null
                 }
                 <div className={`et-content ${this.props.userLevel === 3 ? 'et-padding-128' : 'w3-padding-64'}`}>
-                    <Tabs>
+                    <Tabs selectedIndex={this.state.tabIndex} onSelect={(tabIndex) => this.handleTabChange(tabIndex)}>
                         <TabList>
                             <Tab>任务列表</Tab>
                             {
