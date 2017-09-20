@@ -1119,9 +1119,9 @@ class App extends Component {
                     this.state.login ? <Demo userName={this.state.userName} taskName={this.state.taskName}/> : null
                 )}/>
                 <Route exact path="/segment" render={() => (
-                    
+                    this.state.login ?
                     <SegmentView/>
-
+                    : null
                 )}/>
             </div>
         )

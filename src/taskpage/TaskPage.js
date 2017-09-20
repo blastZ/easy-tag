@@ -5,6 +5,8 @@ import { getTaskStateName, getTaskTypeName, getUserLevelCode, getTaskTypeCode } 
 import TrainTaskTable from './tables/TrainTaskTable';
 import { connect } from 'react-redux';
 import { changeTaskName } from '../actions/app_action';
+import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
+import 'react-tabs/style/react-tabs.css';
 
 class TaskPage extends Component {
     state = {
@@ -1650,227 +1652,243 @@ class TaskPage extends Component {
                     ) : null
                 }
                 <div className={`et-content ${this.props.userLevel === 3 ? 'et-padding-128' : 'w3-padding-64'}`}>
-                    <div style={{position: 'relative'}}>
-                        <h3 className="et-margin-top-32 et-table-title">任务列表</h3>
-                        {
-                            (this.props.userLevel === 2 || this.props.userLevel === 3) ?
-                            <div onClick={this.popupInputView} style={{position: 'absolute', right: '5px', top: '0px'}}>
-                                <i className="fa fa-plus-circle add-task-button w3-text-black" aria-hidden="true"></i>
+                    <Tabs>
+                        <TabList>
+                            <Tab>任务列表</Tab>
+                            {
+                                this.props.userLevel === 3 &&
+                                <Tab>训练任务列表</Tab>
+                            }
+                            {
+                                (this.props.userLevel === 2 || this.props.userLevel === 3) &&
+                                <Tab>Worker列表</Tab>
+                            }
+                            {
+                                this.props.userLevel === 3 &&
+                                <Tab>用户管理列表</Tab>
+                            }
+                            {
+                                this.props.userLevel === 3 &&
+                                <Tab>用户组列表</Tab>
+                            }
+                        </TabList>
+                        <TabPanel>
+                            <div style={{position: 'relative'}}>
+                                <h3 className="et-margin-top-32 et-table-title">任务列表</h3>
+                                {
+                                    (this.props.userLevel === 2 || this.props.userLevel === 3) ?
+                                    <div onClick={this.popupInputView} style={{position: 'absolute', right: '5px', top: '0px'}}>
+                                        <i className="fa fa-plus-circle add-task-button w3-text-black" aria-hidden="true"></i>
+                                    </div>
+                                    : null
+                                }
                             </div>
-                            : null
-                        }
-                    </div>
-                    <table ref="theTaskTable" className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered">
-                        <thead className="w3-green">
-                            <tr>
-                                <th>编号</th>
-                                <th>任务名称</th>
-                                <th>创建时间</th>
-                                <th>任务状态</th>
-                                <th>任务类型</th>
-                                <th>操作</th>
-                            </tr>
-                        </thead>
-                        <tbody>{
-                            this.state.taskList.map((task, index) => (
-                                <tr key={task.taskName + index}>
-                                    <td>{index + 1}</td>
-                                    {
-                                        (this.props.userLevel === 2 || this.props.userLevel === 3) ?
-                                        <td className="et-taskname-button" onClick={this.showDistributeTaskView.bind(this, index)}>{task.taskName}</td>
-                                        : <td>{task.taskName}</td>
-                                    }
-                                    <td>{task.time}</td>
-                                    <td>{getTaskStateName(task.taskState)}</td>
-                                    <td>{getTaskTypeName(task.taskType)}</td>
-                                    <td>
-                                        {
-                                            parseInt(task.taskType) === 0 ?
-                                            <Link onClick={this.onLinkToTag.bind(this, index)} to="/tag"><i className="fa fa-tags table-item-button" aria-hidden="true"> 标注</i></Link>
-                                            : null
-                                        }
-                                        {
-                                            parseInt(task.taskType) === 1 ?
-                                            <Link onClick={this.onLinkToTag.bind(this, index)} to="/tagobject"><i className="fa fa-tags table-item-button" aria-hidden="true"> 标注</i></Link>
-                                            : null
-                                        }
-                                        {
-                                            parseInt(task.taskType) === 2 ?
-                                            <i onClick={this.onLinkToSegment.bind(this, index)} className="fa fa-tags table-item-button" aria-hidden="true"> 标注</i>
-                                            : null
-                                        }
-                                        <i onClick={this.showLabelStatistics.bind(this, index)} className="fa fa-area-chart table-item-button w3-margin-left"> 标注统计</i>
-                                        {
-                                            (this.props.userLevel === 2 || this.props.userLevel === 3) ?
-                                            <i onClick={this.onStartTask.bind(this, index)} className={`fa fa-play-circle ${task.taskState === '0' ? 'table-item-button' : 'et-silence-button'} ${task.taskState === '3' ? 'table-item-button' : 'et-silence-button'} w3-margin-left`} aria-hidden="true">{task.taskState === '3' ? ' 重新训练' : ' 开启训练'}</i>
-                                            : null
-                                        }
-                                        {
-                                            (this.props.userLevel === 2 || this.props.userLevel === 3) ?
-                                            <i onClick={this.onStopTask.bind(this, index)} className={`fa fa-stop-circle ${task.taskState === '2' ? 'table-item-button' : 'et-silence-button'} ${task.taskState === '1' ? 'table-item-button' : 'et-silence-button'} w3-margin-left`} aria-hidden="true"> 停止训练</i>
-                                            : null
-                                        }
-                                        {
-                                            (this.props.userLevel === 2 || this.props.userLevel === 3) ?
-                                            <i onClick={this.onLookTrainState.bind(this, index)} className={`fa fa-search ${task.taskState === '2' ? 'table-item-button' : 'et-silence-button'} ${task.taskState === '3' ? 'table-item-button' : 'et-silence-button'} w3-margin-left`} aria-hidden="true"> 查看训练状态</i>
-                                            : null
-                                        }
-                                        {
-                                            (this.props.userLevel === 2 || this.props.userLevel === 3) ?
-                                            <Link style={{cursor: 'context-menu'}} onClick={this.onLinkToTest.bind(this, index)} to={task.taskState === '3' ? "/test" : "/"}><i className={`fa fa-cog ${task.taskState === '3' ? 'table-item-button' : 'et-silence-button'} w3-margin-left`} aria-hidden="true"> 测试</i></Link>
-                                            : null
-                                        }
-                                        {
-                                            (this.props.userLevel === 2 || this.props.userLevel === 3) ?
-                                            <i onClick={this.onDeleteTask.bind(this, index)} className="fa fa-trash table-item-button w3-margin-left" aria-hidden="true"> 删除</i>
-                                            : null
-                                        }
-                                    </td>
-                                </tr>
-                            ))
-                        }</tbody>
-                        <tfoot></tfoot>
-                    </table>
-                    {
-                        this.props.userLevel === 3 ?
-                        <TrainTaskTable ref="trainTaskList"
-                                        getManagerData={this.getManagerData}
-                                        showLabelStatistics={this.showLabelStatisticsForTrainTask}
-                                        onStopTask={this.onStopTaskForTrainTask}
-                                        onLookTrainState={this.onLookTrainStateForTrainTask}
-                                        onDeleteTask={this.onDeleteTaskForTrainTask}/>
-                        : null
-                    }
-                    {
-                        (this.props.userLevel === 2 || this.props.userLevel === 3) ?
-                        <h3 className="et-margin-top-64 et-table-title">Worker列表</h3>
-                        : null
-                    }
-                    {
-                        (this.props.userLevel === 2 || this.props.userLevel === 3) ?
-                        <table ref="theWorkerTable" className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered">
-                            <thead className="w3-green">
-                                <tr>
-                                    <th>编号</th>
-                                    <th>worker名称</th>
-                                    <th>worker状态</th>
-                                    <th>显卡使用情况</th>
-                                    <th style={{width: '9%'}}>正在服务的任务名称</th>
-                                    <th>更新时间</th>
-                                    <th>拥有者</th>
-                                    {
-                                        this.props.userLevel === 3 ?
+                            <table ref="theTaskTable" className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered">
+                                <thead className="w3-green">
+                                    <tr>
+                                        <th>编号</th>
+                                        <th>任务名称</th>
+                                        <th>创建时间</th>
+                                        <th>任务状态</th>
+                                        <th>任务类型</th>
                                         <th>操作</th>
-                                        : null
-                                    }
-                                </tr>
-                            </thead>
-                            <tbody>{
-                                this.state.workerList.map((worker, index) => (
-                                    <tr key={worker.workerName + index}>
-                                        <td>{index + 1}</td>
-                                        <td>{worker.workerName}</td>
-                                        <td>{this.getWorkerStateName(worker.workerState)}</td>
-                                        <td>{worker.GPU}</td>
-                                        <td>{worker.taskName}</td>
-                                        <td>{worker.updateTime}</td>
-                                        <td>{
-                                            this.state.editWorkerIndex === index && this.state.showEditWorkerOwner ?
-                                                <select id="workerOwnerSelect">{
-                                                    this.state.workerOwnerList.map((owner, index) => (
-                                                        <option key={owner + index}>{owner}</option>
-                                                    ))
-                                                }</select>
-                                                : worker.owner
-                                        }</td>
-                                        {
-                                            this.props.userLevel === 3 ?
-                                            <td>{
-                                                !this.state.showEditWorkerOwner ?
-                                                <i onClick={this.shouldShowEditWorkerOwner.bind(this, index)} className="fa fa-address-book table-item-button"> 修改拥有者</i>
-                                                :<div>
-                                                <i onClick={this.saveWorkerOwnerChange.bind(this, index)} className="fa fa-minus-square table-item-button"> 保存</i>
-                                                <i onClick={this.shouldShowEditWorkerOwner.bind(this, index)} className="fa fa-minus-square table-item-button w3-margin-left"> 取消</i>
-                                                </div>
-                                            }</td>
-                                            : null
-                                        }
                                     </tr>
-                                ))
-                            }</tbody>
-                            <tfoot></tfoot>
-                        </table>
-                        : null
-                    }
-                    {
-                        this.props.userLevel === 3 ?
-                        <h3 className="et-margin-top-64 et-table-title">用户管理列表</h3>
-                        : null
-                    }
-                    {
-                        this.props.userLevel === 3 ?
-                        <table className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered">
-                            <thead className="w3-green">
-                                <tr>
-                                    <th>用户名</th>
-                                    <th>邮箱</th>
-                                    <th>激活状态</th>
-                                    <th>用户权限</th>
-                                    <th>所在组别</th>
-                                    <th>操作</th>
-                                </tr>
-                            </thead>
-                            <tbody>{
-                                this.state.userManageList.map((user, index) => (
-                                    <tr key={user.userName + user.email}>
-                                        <td>{user.userName}</td>
-                                        <td>{user.email}</td>
-                                        <td>{user.activeState === '0' ? '未激活' : '已激活'}</td>
-                                        <td>{this.getUserLevelName(user.userLevel)}</td>
-                                        <td>{user.userGroup}</td>
-                                        <td>
-                                            <i onClick={this.deleteUser.bind(this, index)} className="fa fa-minus-square table-item-button"> 删除用户</i>
-                                            <i onClick={this.shouldShowUserManageEditView.bind(this, index)} className="fa fa-cog table-item-button w3-margin-left"> 编辑用户</i>
-                                        </td>
-                                    </tr>
-                                ))
-                            }</tbody>
-                            <tfoot></tfoot>
-                        </table>
-                        : null
-                    }
-                    {
-                        this.props.userLevel === 3 ?
-                        <div style={{position: 'relative'}}>
-                            <h3 className="et-margin-top-64 et-table-title">用户组列表</h3>
-                            <div style={{position: 'absolute', right: '5px', top: '0px'}}>
-                                <i onClick={this.addUserGroup} className="fa fa-plus-circle add-task-button w3-text-black" aria-hidden="true"></i>
-                            </div>
-                        </div>
-                        : null
-                    }
-                    {
-                        this.props.userLevel === 3 ?
-                        <table ref="theTaskTable" className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered">
-                            <thead className="w3-green">
-                                <tr>
-                                    <th>组名</th>
-                                    <th>操作</th>
-                                </tr>
-                            </thead>
-                            <tbody>{
-                                this.state.userGroupList.map((group, index) => (
-                                    <tr key={group + index}>
-                                        <td>{group}</td>
-                                        <td>
-                                            <i onClick={this.deleteUserGroup.bind(this, index)} className="fa fa-minus-circle table-item-button"> 删除</i>
-                                        </td>
-                                    </tr>
-                                ))
-                            }</tbody>
-                        </table>
-                        : null
-                    }
+                                </thead>
+                                <tbody>{
+                                    this.state.taskList.map((task, index) => (
+                                        <tr key={task.taskName + index}>
+                                            <td>{index + 1}</td>
+                                            {
+                                                (this.props.userLevel === 2 || this.props.userLevel === 3) ?
+                                                <td className="et-taskname-button" onClick={this.showDistributeTaskView.bind(this, index)}>{task.taskName}</td>
+                                                : <td>{task.taskName}</td>
+                                            }
+                                            <td>{task.time}</td>
+                                            <td>{getTaskStateName(task.taskState)}</td>
+                                            <td>{getTaskTypeName(task.taskType)}</td>
+                                            <td>
+                                                {
+                                                    parseInt(task.taskType) === 0 ?
+                                                    <Link onClick={this.onLinkToTag.bind(this, index)} to="/tag"><i className="fa fa-tags table-item-button" aria-hidden="true"> 标注</i></Link>
+                                                    : null
+                                                }
+                                                {
+                                                    parseInt(task.taskType) === 1 ?
+                                                    <Link onClick={this.onLinkToTag.bind(this, index)} to="/tagobject"><i className="fa fa-tags table-item-button" aria-hidden="true"> 标注</i></Link>
+                                                    : null
+                                                }
+                                                {
+                                                    parseInt(task.taskType) === 2 ?
+                                                    <i onClick={this.onLinkToSegment.bind(this, index)} className="fa fa-tags table-item-button" aria-hidden="true"> 标注</i>
+                                                    : null
+                                                }
+                                                <i onClick={this.showLabelStatistics.bind(this, index)} className="fa fa-area-chart table-item-button w3-margin-left"> 标注统计</i>
+                                                {
+                                                    (this.props.userLevel === 2 || this.props.userLevel === 3) ?
+                                                    <i onClick={this.onStartTask.bind(this, index)} className={`fa fa-play-circle ${task.taskState === '0' ? 'table-item-button' : 'et-silence-button'} ${task.taskState === '3' ? 'table-item-button' : 'et-silence-button'} w3-margin-left`} aria-hidden="true">{task.taskState === '3' ? ' 重新训练' : ' 开启训练'}</i>
+                                                    : null
+                                                }
+                                                {
+                                                    (this.props.userLevel === 2 || this.props.userLevel === 3) ?
+                                                    <i onClick={this.onStopTask.bind(this, index)} className={`fa fa-stop-circle ${task.taskState === '2' ? 'table-item-button' : 'et-silence-button'} ${task.taskState === '1' ? 'table-item-button' : 'et-silence-button'} w3-margin-left`} aria-hidden="true"> 停止训练</i>
+                                                    : null
+                                                }
+                                                {
+                                                    (this.props.userLevel === 2 || this.props.userLevel === 3) ?
+                                                    <i onClick={this.onLookTrainState.bind(this, index)} className={`fa fa-search ${task.taskState === '2' ? 'table-item-button' : 'et-silence-button'} ${task.taskState === '3' ? 'table-item-button' : 'et-silence-button'} w3-margin-left`} aria-hidden="true"> 查看训练状态</i>
+                                                    : null
+                                                }
+                                                {
+                                                    (this.props.userLevel === 2 || this.props.userLevel === 3) ?
+                                                    <Link style={{cursor: 'context-menu'}} onClick={this.onLinkToTest.bind(this, index)} to={task.taskState === '3' ? "/test" : "/"}><i className={`fa fa-cog ${task.taskState === '3' ? 'table-item-button' : 'et-silence-button'} w3-margin-left`} aria-hidden="true"> 测试</i></Link>
+                                                    : null
+                                                }
+                                                {
+                                                    (this.props.userLevel === 2 || this.props.userLevel === 3) ?
+                                                    <i onClick={this.onDeleteTask.bind(this, index)} className="fa fa-trash table-item-button w3-margin-left" aria-hidden="true"> 删除</i>
+                                                    : null
+                                                }
+                                            </td>
+                                        </tr>
+                                    ))
+                                }</tbody>
+                                <tfoot></tfoot>
+                            </table>
+                        </TabPanel>
+                        {
+                            this.props.userLevel === 3 &&
+                            <TabPanel>
+                                <TrainTaskTable
+                                       ref="trainTaskList"
+                                       getManagerData={this.getManagerData}
+                                       showLabelStatistics={this.showLabelStatisticsForTrainTask}
+                                       onStopTask={this.onStopTaskForTrainTask}
+                                       onLookTrainState={this.onLookTrainStateForTrainTask}
+                                       onDeleteTask={this.onDeleteTaskForTrainTask}/>
+                            </TabPanel>
+                        }
+                        {
+                            (this.props.userLevel === 2 || this.props.userLevel === 3) &&
+                            <TabPanel>
+                                <h3 className="et-margin-top-64 et-table-title">Worker列表</h3>
+                                <table ref="theWorkerTable" className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered">
+                                    <thead className="w3-green">
+                                        <tr>
+                                            <th>编号</th>
+                                            <th>worker名称</th>
+                                            <th>worker状态</th>
+                                            <th>显卡使用情况</th>
+                                            <th style={{width: '9%'}}>正在服务的任务名称</th>
+                                            <th>更新时间</th>
+                                            <th>拥有者</th>
+                                            {
+                                                this.props.userLevel === 3 ?
+                                                <th>操作</th>
+                                                : null
+                                            }
+                                        </tr>
+                                    </thead>
+                                    <tbody>{
+                                        this.state.workerList.map((worker, index) => (
+                                            <tr key={worker.workerName + index}>
+                                                <td>{index + 1}</td>
+                                                <td>{worker.workerName}</td>
+                                                <td>{this.getWorkerStateName(worker.workerState)}</td>
+                                                <td>{worker.GPU}</td>
+                                                <td>{worker.taskName}</td>
+                                                <td>{worker.updateTime}</td>
+                                                <td>{
+                                                    this.state.editWorkerIndex === index && this.state.showEditWorkerOwner ?
+                                                        <select id="workerOwnerSelect">{
+                                                            this.state.workerOwnerList.map((owner, index) => (
+                                                                <option key={owner + index}>{owner}</option>
+                                                            ))
+                                                        }</select>
+                                                        : worker.owner
+                                                }</td>
+                                                {
+                                                    this.props.userLevel === 3 ?
+                                                    <td>{
+                                                        !this.state.showEditWorkerOwner ?
+                                                        <i onClick={this.shouldShowEditWorkerOwner.bind(this, index)} className="fa fa-address-book table-item-button"> 修改拥有者</i>
+                                                        :<div>
+                                                        <i onClick={this.saveWorkerOwnerChange.bind(this, index)} className="fa fa-minus-square table-item-button"> 保存</i>
+                                                        <i onClick={this.shouldShowEditWorkerOwner.bind(this, index)} className="fa fa-minus-square table-item-button w3-margin-left"> 取消</i>
+                                                        </div>
+                                                    }</td>
+                                                    : null
+                                                }
+                                            </tr>
+                                        ))
+                                    }</tbody>
+                                    <tfoot></tfoot>
+                                </table>
+                            </TabPanel>
+                        }
+                        {
+                            this.props.userLevel === 3 &&
+                            <TabPanel>
+                                <h3 className="et-margin-top-64 et-table-title">用户管理列表</h3>
+                                <table className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered">
+                                    <thead className="w3-green">
+                                        <tr>
+                                            <th>用户名</th>
+                                            <th>邮箱</th>
+                                            <th>激活状态</th>
+                                            <th>用户权限</th>
+                                            <th>所在组别</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>{
+                                        this.state.userManageList.map((user, index) => (
+                                            <tr key={user.userName + user.email}>
+                                                <td>{user.userName}</td>
+                                                <td>{user.email}</td>
+                                                <td>{user.activeState === '0' ? '未激活' : '已激活'}</td>
+                                                <td>{this.getUserLevelName(user.userLevel)}</td>
+                                                <td>{user.userGroup}</td>
+                                                <td>
+                                                    <i onClick={this.deleteUser.bind(this, index)} className="fa fa-minus-square table-item-button"> 删除用户</i>
+                                                    <i onClick={this.shouldShowUserManageEditView.bind(this, index)} className="fa fa-cog table-item-button w3-margin-left"> 编辑用户</i>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    }</tbody>
+                                    <tfoot></tfoot>
+                                </table>
+                            </TabPanel>
+                        }
+                        {
+                            this.props.userLevel === 3 &&
+                            <TabPanel>
+                                <div style={{position: 'relative'}}>
+                                    <h3 className="et-margin-top-64 et-table-title">用户组列表</h3>
+                                    <div style={{position: 'absolute', right: '5px', top: '0px'}}>
+                                        <i onClick={this.addUserGroup} className="fa fa-plus-circle add-task-button w3-text-black" aria-hidden="true"></i>
+                                    </div>
+                                </div>
+                                <table ref="theTaskTable" className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered">
+                                    <thead className="w3-green">
+                                        <tr>
+                                            <th>组名</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>{
+                                        this.state.userGroupList.map((group, index) => (
+                                            <tr key={group + index}>
+                                                <td>{group}</td>
+                                                <td>
+                                                    <i onClick={this.deleteUserGroup.bind(this, index)} className="fa fa-minus-circle table-item-button"> 删除</i>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    }</tbody>
+                                </table>
+                            </TabPanel>
+                        }
+                    </Tabs>
                 </div>
             </div>
         )

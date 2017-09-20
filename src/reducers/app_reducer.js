@@ -10,13 +10,13 @@ import { ADD_NEW_IMAGE, CLICK_SELECT_BAR_ITEM,
 
 const initState = {
     defaultURL: 'http://demo.codvision.com:16831/api/',
-    userName: 'fj',
-    taskName: 'ttt',
+    userName: '',
+    taskName: '',
     start: 1,
     num: 10,
     fileCount: 0,
     taggedFileCount: 0,
-    userLevel: 3,
+    userLevel: -1,
     imageList: [], //{url: image.url, name: image.name, labeled: image.labeled}
     selectedImageNum: 0,
     segmentAnnotatorList: [], // {labels: [{name: 'bacground', color: [255, 255, 255]}], annotation: "string"}

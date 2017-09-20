@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { changeStartValue, changeNumValue, getImageList } from '../../actions/app_action';
+import { changeStartValue, changeNumValue, getImageList, onClickItem } from '../../actions/app_action';
 
 class TagView extends Component {
     handleStartChange = (e) => {
@@ -31,18 +31,22 @@ class TagView extends Component {
     }
 
     nextImageList = () => {
-        /////////////////////save annotation
+        this.props.saveSegmentAnnotator(this.props.selectedImageNum);
+        this.props.onClickItem(0);
         const maxValue = this.props.fileCount;
         const start = this.props.start + this.props.num > maxValue ? maxValue : this.props.start + this.props.num;
         this.props.changeStartValue(start);
         this.props.getImageList();
-        ////////////////////get first image annotation
+        // this.setTimeout(() => {
+        //     this.props.getImageAnnotation(0);
+        //     this.props.initImageCanvas(this.props.imageList[0]);
+        // }, 50);
     }
 
     previousImageList = () => {
-        //!!!!!!!!!!!!!!!!!!!!!!!!!error
-        /////////////////////save annotation
-        const start = this.props.start - this.props.num < 0 ? 0 : this.props.start - this.props.num;
+        this.props.saveSegmentAnnotator(this.props.selectedImageNum);
+        this.props.onClickItem(0);
+        const start = this.props.start - this.props.num < 1 ? 1 : this.props.start - this.props.num;
         this.props.changeStartValue(start);
         this.props.getImageList();
         ////////////////////get first image annotation
@@ -87,13 +91,15 @@ class TagView extends Component {
 const mapStateToProps = ({ appReducer }) => ({
     fileCount: appReducer.fileCount,
     start: appReducer.start,
-    num: appReducer.num
+    num: appReducer.num,
+    selectedImageNum: appReducer.selectedImageNum
 })
 
 const mapDispatchToProps = (dispatch) => ({
     changeStartValue: (start) => dispatch(changeStartValue(start)),
     changeNumValue: (num) => dispatch(changeNumValue(num)),
-    getImageList: () => dispatch(getImageList())
+    getImageList: () => dispatch(getImageList()),
+    onClickItem: (index) => dispatch(onClickItem(index))
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(TagView);

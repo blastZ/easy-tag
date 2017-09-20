@@ -219,7 +219,9 @@ class SegmentView extends Component {
                         getSegmentAnnotatorLabels={this.getSegmentAnnotatorLabels}/>
                 </div>
                 <div className="flex-box flex-column" style={{width: '20%', backgroundColor: '#F0F0F0'}}>
-                    <TagView initImageCanvas={this.initImageCanvas}/>
+                    <TagView
+                        initImageCanvas={this.initImageCanvas}
+                        saveSegmentAnnotator={this.saveSegmentAnnotator}/>
                 </div>
             </div>
         )
