@@ -219,3 +219,23 @@
     cursor: pointer !important;
     color: black !important;
 }
+
+.helper-icon:hover {
+  color: black !important;
+  cursor: pointer;
+}
+
+.helper-nav-item:hover {
+  color: #008cff !important;
+  cursor: pointer;
+}
+
+.et-helper-left-page-icon:hover {
+  cursor: pointer;
+  color: black !important;
+}
+
+.et-helper-right-page-icon:hover {
+  cursor: pointer;
+  color: black !important;
+}

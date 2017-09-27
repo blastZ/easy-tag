@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
 
 class TopBar extends Component {
     render() {
@@ -19,6 +20,11 @@ class TopBar extends Component {
                         </div>
                         : null
                     }
+                </div>
+                <div style={{position: 'absolute', right: '15px'}}>
+                  <Link to="/helper/0" target="_blank">
+                    <i className="fa fa-question-circle-o w3-text-white w3-xxlarge helper-icon" />
+                  </Link>
                 </div>
             </div>
         )
