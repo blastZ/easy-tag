@@ -1,3 +1,12 @@
+a {
+  margin-bottom: 20px;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #008cff !important;
+}
+
 .flex-box {
     display: flex;
 }

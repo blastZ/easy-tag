@@ -15,7 +15,7 @@ import Login from './login_page/Login';
 import SegmentView from './segment_page/SegmentView';
 import { changeUserName, changeUserLevel, changeTaskName } from './actions/app_action';
 import { connect } from 'react-redux';
-import Helper from './Helper';
+import Helper from './helper_page/Helper';
 //import { saveAs } from 'file-saver' when you want to save as txt on the localhost
 
 class App extends Component {

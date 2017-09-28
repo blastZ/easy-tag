@@ -76,14 +76,19 @@ class TaskPage extends Component {
 
     handleTabChange = (tabIndex) => {
         this.setState({tabIndex});
-        if(tabIndex === 0) {
-            this.getTaskList();
-        }else if(tabIndex === 2) {
-            this.getWorkerList();
-        }else if(tabIndex === 3) {
-            this.getUserManageList();
-        }else if(tabIndex === 4) {
-            this.getUserGroupList();
+        if(this.props.userLevel === 2) {
+          switch(tabIndex) {
+            case 0: this.getTaskList(); break;
+            case 1: this.getWorkerList(); break;
+          }
+        }
+        if(this.props.userLevel === 3) {
+          switch(tabIndex) {
+            case 0: this.getTaskList(); break;
+            case 2: this.getWorkerList(); break;
+            case 3: this.getUserManageList(); break;
+            case 4: this.getUserGroupList(); break;
+          }
         }
     }
 
