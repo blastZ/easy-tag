@@ -239,12 +239,7 @@ a:hover {
   cursor: pointer;
 }
 
-.et-helper-left-page-icon:hover {
-  cursor: pointer;
-  color: black !important;
-}
-
-.et-helper-right-page-icon:hover {
+.et-helper-icon:hover {
   cursor: pointer;
   color: black !important;
 }
