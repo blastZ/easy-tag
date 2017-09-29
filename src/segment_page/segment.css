@@ -1,0 +1,41 @@
+  .legend {
+    display: inline-block;
+    width: 100%;
+    background: #f1f1f1;
+  }
+  .legend-item {
+    display: inline-block;
+    padding: .2em .5em;
+    min-width: 8em;
+    cursor: pointer;
+    background-color: #f1f1f1;
+  }
+  .legend-item:hover {
+    background-color: #999;
+  }
+  .legend-selected {
+    background-color: #ccc;
+  }
+  .legend-delete-button {
+    display: inline-block;
+    padding: .2em .3em;
+    cursor: pointer;
+    background-color: #f1f1f1;
+  }
+  .legend-delete-button:hover {
+    background-color: #999;
+  }
+  .legend-color-box {
+    display: inline-block;
+    border: #000 solid 1px;
+    width: .8em;
+    height: .8em;
+    vertical-align: middle;
+  }
+  .toggle-button {
+      margin-left: 5px;
+      width: 98px;
+  }
+  .toggle-button-disabled {
+    background-color: #ccc;
+  }
