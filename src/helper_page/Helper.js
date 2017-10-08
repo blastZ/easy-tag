@@ -7,6 +7,8 @@ import ImgContainer from './ImgContainer';
 import EditIcon from 'react-icons/lib/md/edit';
 import MenuIcon from 'react-icons/lib/go/three-bars';
 import EditView from './EditView';
+import { saveHelperDoc, getHelperDoc } from '../actions/app_action';
+import { connect } from 'react-redux';
 
 const Container = styled.div`
   position: relative;
@@ -751,6 +753,10 @@ class Helper extends Component {
     showEditView: false
   }
 
+  componentWillMount() {
+    this.props.dispatch(getHelperDoc());
+  }
+
   shouldShowEditView = () => {
     this.setState({
       showEditView: !this.state.showEditView
@@ -765,6 +771,8 @@ class Helper extends Component {
     this.setState((state) => {
       state.navList[state.partIndex].partList[state.itemIndex].contentList = contentList;
       state.showEditView = false;
+    }, () => {
+      this.props.dispatch(saveHelperDoc(this.state.navList));
     })
   }
 
@@ -857,11 +865,11 @@ class Helper extends Component {
   render() {
     return (
       <Container>
-        {this.state.showEditView && <EditView saveEditResult={this.saveEditResult} navList={this.state.navList} partIndex={this.state.partIndex} itemIndex={this.state.itemIndex}/>}
+        {this.state.showEditView && <EditView saveEditResult={this.saveEditResult} partIndex={this.state.partIndex} itemIndex={this.state.itemIndex}/>}
         <LeftContainer id="helper-menu">
           <div style={{borderBottom: '1px solid #e3e3e3', padding: '0px 20px'}}><h5>码全智能视频图像服务器系统软件使用手册(v1.10)</h5></div>
           <NavUl>
-            {this.state.navList.map((item, index) => (
+            {this.props.navList.map((item, index) => (
               <Item
                 changeIndex={this.changeIndex}
                 changePartIndex={this.changePartIndex}
@@ -884,7 +892,7 @@ class Helper extends Component {
           <Content>
             <Switch>
               {
-                this.state.navList.map((nav, index) => (
+                this.props.navList.map((nav, index) => (
                   <Route key={nav.name + index} exact path={`/helper/${index}`} render={() => (
                     <div>
                       <h1>{nav.name}</h1>
@@ -901,7 +909,7 @@ class Helper extends Component {
                 ))
               }
               {
-                this.state.navList.map((nav, index1) => (
+                this.props.navList.map((nav, index1) => (
                   nav.partList.map((part, index2) => (
                     <Route key={part.name + index2} exact path={`/helper/${index1}/${index2}`} render={() => (
                       <div>
@@ -927,4 +935,8 @@ class Helper extends Component {
   }
 }
 
-export default withRouter(Helper);
+const mapStateToProps = ({ appReducer }) => ({
+  navList: appReducer.navList
+})
+
+export default withRouter(connect(mapStateToProps)(Helper));

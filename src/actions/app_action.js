@@ -20,6 +20,8 @@ export const DELETE_IMAGE = 'DELETE_IMAGE';
 export const SHOULD_UPDATE_IMAGE = 'SHOULD_UPDATE_IMAGE';
 export const CHANGE_START_VALUE = 'CHANGE_START_VALUE';
 export const CHANGE_NUM_VALUE = 'CHANGE_NUM_VALUE';
+export const SAVE_HELPER_DOC = 'SAVE_HELPER_DOC';
+export const GET_HELPER_DOC = 'GET_HELPER_DOC';
 
 export function addNewImage(imageUrl, imageName) {
     return {
@@ -136,4 +138,13 @@ export const changeStartValue = (start) => ({
 export const changeNumValue = (num) => ({
     type: CHANGE_NUM_VALUE,
     num
+})
+
+export const saveHelperDoc = (navList) => ({
+  type: SAVE_HELPER_DOC,
+  navList
+})
+
+export const getHelperDoc = () => ({
+  type: GET_HELPER_DOC
 })

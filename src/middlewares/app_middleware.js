@@ -138,8 +138,30 @@ const appMiddleware = store => next => action => {
         store.dispatch({
             type: 'GET_FILE_COUNT'
         })
-    }
-    else {
+    } else if(action.type === 'SAVE_HELPER_DOC') {
+      const state = store.getState().appReducer;
+      const { navList } = action;
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', `${state.defaultURL}savedoc`);
+      const data = JSON.stringify({
+        request: {
+          data: navList
+        }
+      });
+      xhr.send(data);
+    } else if(action.type === 'GET_HELPER_DOC') {
+      const state = store.getState().appReducer;
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', `${state.defaultURL}loaddoc`);
+      xhr.send();
+      xhr.onload = () => {
+        const data = JSON.parse(xhr.response);
+        next({
+          type: 'GET_HELPER_DOC',
+          navList: data.request.data
+        })
+      }
+    } else {
         next(action);
     }
 }

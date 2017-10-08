@@ -6,7 +6,7 @@ import { ADD_NEW_IMAGE, CLICK_SELECT_BAR_ITEM,
          INIT_APP_REDUCER_STATE, GET_FILE_COUNT,
          GET_TAGGED_FILE_COUNT, DELETE_IMAGE,
          SHOULD_UPDATE_IMAGE, CHANGE_START_VALUE,
-         CHANGE_NUM_VALUE} from '../actions/app_action';
+         CHANGE_NUM_VALUE, GET_HELPER_DOC} from '../actions/app_action';
 
 const initState = {
     defaultURL: 'http://demo.codvision.com:16831/api/',
@@ -22,7 +22,8 @@ const initState = {
     segmentAnnotatorList: [], // {labels: [{name: 'bacground', color: [255, 255, 255]}], annotation: "string"}
     imageAnnotation: null,
     segmentAnnotatorLabels: [],
-    updateImage: false
+    updateImage: false,
+    navList: []
 }
 
 function appReducer(state=initState, action) {
@@ -30,7 +31,7 @@ function appReducer(state=initState, action) {
             index, segmentAnnotator, imageList,
             imageAnnotation, segmentAnnotatorLabels, newLabels,
             userLevel, fileCount, taggedFileCount,
-            start, num} = action;
+            start, num, navList} = action;
     switch (action.type) {
         case ADD_NEW_IMAGE: {
             return {
@@ -161,6 +162,12 @@ function appReducer(state=initState, action) {
                 ...state,
                 num
             }
+        }
+        case GET_HELPER_DOC: {
+          return {
+            ...state,
+            navList
+          }
         }
         default: return state;
     }

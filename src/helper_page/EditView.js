@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 import ImgContainer from './ImgContainer';
 import CloseIcon from 'react-icons/lib/md/clear';
+import { connect } from 'react-redux';
 
 const Container = styled.div`
   position: fixed;
@@ -33,7 +34,7 @@ const TextArea = styled.textarea`
   outline: none;
 `;
 
-export default class EditView extends Component {
+class EditView extends Component {
   state = {
     contentList: []
   }
@@ -77,3 +78,9 @@ export default class EditView extends Component {
     )
   }
 }
+
+const mapStateToProps = ({ appReducer }) => ({
+  navList: appReducer.navList
+})
+
+export default connect(mapStateToProps)(EditView);
