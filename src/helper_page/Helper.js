@@ -750,11 +750,15 @@ class Helper extends Component {
     itemIndex: -1,
     contentEditable: false,
     showMenu: true,
-    showEditView: false
+    showEditView: false,
+    userLevel: -1
   }
 
   componentWillMount() {
     this.props.dispatch(getHelperDoc());
+    const userLevel = parseInt(window.localStorage.getItem('userLevel'), 10);
+    this.setState({userLevel})
+    localStorage.removeItem('userLevel');
   }
 
   shouldShowEditView = () => {
@@ -769,7 +773,11 @@ class Helper extends Component {
 
   saveEditResult = (contentList) => {
     this.setState((state) => {
-      state.navList[state.partIndex].partList[state.itemIndex].contentList = contentList;
+      if(state.itemIndex === -1) {
+        state.navList[state.partIndex].contentList = contentList;
+      } else {
+        state.navList[state.partIndex].partList[state.itemIndex].contentList = contentList;
+      }
       state.showEditView = false;
     }, () => {
       this.props.dispatch(saveHelperDoc(this.state.navList));
@@ -887,7 +895,7 @@ class Helper extends Component {
           <RightPageIcon onClick={this.nextPage} className="et-helper-icon" style={{fontSize: '40px', position: 'fixed', right: '80px', top: '50%', color: '#ccc'}} />
           <TopBar>
             <MenuIcon onClick={this.shouldShowMenu} className="et-helper-icon" style={{fontSize: '15px', color: '#ccc'}} />
-            <EditIcon onClick={this.shouldShowEditView} className="et-helper-icon" style={{fontSize: '15px', color: '#ccc', marginLeft: '20px'}} />
+            {this.state.userLevel === 3 && <EditIcon onClick={this.shouldShowEditView} className="et-helper-icon" style={{fontSize: '15px', color: '#ccc', marginLeft: '20px'}} />}
           </TopBar>
           <Content>
             <Switch>
@@ -936,7 +944,8 @@ class Helper extends Component {
 }
 
 const mapStateToProps = ({ appReducer }) => ({
-  navList: appReducer.navList
+  navList: appReducer.navList,
+  userLevel: appReducer.userLevel
 })
 
 export default withRouter(connect(mapStateToProps)(Helper));

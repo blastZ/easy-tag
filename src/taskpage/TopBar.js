@@ -1,7 +1,12 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
+import { connect } from 'react-redux';
 
 class TopBar extends Component {
+  saveUserLevelLocal = () => {
+    window.localStorage.setItem('userLevel', this.props.userLevel);
+  }
+
     render() {
         return (
             <div className="w3-orange flex-box" style={{height: '80px', alignItems: 'center', position: 'relative'}}>
@@ -22,7 +27,7 @@ class TopBar extends Component {
                     }
                 </div>
                 <div style={{position: 'absolute', right: '15px'}}>
-                  <Link to="/helper/0" target="_blank">
+                  <Link to="/helper/0" onClick={this.saveUserLevelLocal} target="_blank">
                     <i className="fa fa-question-circle-o w3-text-white w3-xxlarge helper-icon" />
                   </Link>
                 </div>
@@ -31,4 +36,8 @@ class TopBar extends Component {
     }
 }
 
-export default TopBar;
+const mapStateToProps = ({ appReducer }) => ({
+  userLevel: appReducer.userLevel
+})
+
+export default withRouter(connect(mapStateToProps)(TopBar));
