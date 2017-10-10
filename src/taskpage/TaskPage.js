@@ -1509,7 +1509,7 @@ class TaskPage extends Component {
                 }
                 {
                     this.state.showDistributeTaskView ? (
-                        <div className="popup" style={{background: 'rgba(0, 0, 0, 0.6)', position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', zIndex: '100'}}>
+                        <div className="popup" style={{background: 'rgba(0, 0, 0, 0.6)', position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', zIndex: '100', overflowY: 'auto'}}>
                             <i onClick={this.closeDistributeTaskView} className="fa fa-times w3-text-white w3-xxlarge et-hoverable" aria-hidden="true" style={{position: 'absolute', top: '10px', right: '10px'}}></i>
                             <div className="w3-content w3-text-white et-margin-top-64" style={{width: '60%', height: '70%'}}>
                                 <h2 className="w3-center">{this.state.currentTaskName}</h2>
@@ -1536,7 +1536,7 @@ class TaskPage extends Component {
                                     <tfoot></tfoot>
                                 </table>
                                 <h3 className="et-margin-top-64">分配任务</h3>
-                                <table className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered">
+                                <table className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered" style={{marginBottom: '32px'}}>
                                     <thead className="w3-orange w3-text-white">
                                         <tr>
                                             <th>用户名</th>
@@ -1558,7 +1558,6 @@ class TaskPage extends Component {
                                     <tfoot></tfoot>
                                 </table>
                             </div>
-                            <div></div>
                         </div>
                     ) : null
                 }
