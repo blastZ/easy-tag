@@ -13,6 +13,7 @@ export const SET_SEGMENT_ANNOTATOR_LABELS = 'SET_SEGMENT_ANNOTATOR_LABELS';
 export const CHANGE_USER_NAME = 'CHANGE_USER_NAME';
 export const CHANGE_TASK_NAME = 'CHANGE_TASK_NAME';
 export const CHANGE_USER_LEVEL = 'CHANGE_USER_LEVEL';
+export const CHANGE_PASSWORD = 'CHANGE_PASSWORD';
 export const INIT_APP_REDUCER_STATE = 'INIT_APP_REDUCER_STATE';
 export const GET_FILE_COUNT = 'GET_FILE_COUNT';
 export const GET_TAGGED_FILE_COUNT = 'GET_TAGGED_FILE_COUNT';
@@ -22,6 +23,7 @@ export const CHANGE_START_VALUE = 'CHANGE_START_VALUE';
 export const CHANGE_NUM_VALUE = 'CHANGE_NUM_VALUE';
 export const SAVE_HELPER_DOC = 'SAVE_HELPER_DOC';
 export const GET_HELPER_DOC = 'GET_HELPER_DOC';
+export const GET_MANAGER_DATA = 'GET_MANAGER_DATA';
 
 export function addNewImage(imageUrl, imageName) {
     return {
@@ -147,4 +149,13 @@ export const saveHelperDoc = (navList) => ({
 
 export const getHelperDoc = () => ({
   type: GET_HELPER_DOC
+})
+
+export const changePassword = (password) => ({
+  type: CHANGE_PASSWORD,
+  password
+})
+
+export const getManagerData = () => ({
+  type: GET_MANAGER_DATA
 })

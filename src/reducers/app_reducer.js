@@ -6,11 +6,13 @@ import { ADD_NEW_IMAGE, CLICK_SELECT_BAR_ITEM,
          INIT_APP_REDUCER_STATE, GET_FILE_COUNT,
          GET_TAGGED_FILE_COUNT, DELETE_IMAGE,
          SHOULD_UPDATE_IMAGE, CHANGE_START_VALUE,
-         CHANGE_NUM_VALUE, GET_HELPER_DOC} from '../actions/app_action';
+         CHANGE_NUM_VALUE, GET_HELPER_DOC, CHANGE_PASSWORD,
+         GET_MANAGER_DATA } from '../actions/app_action';
 
 const initState = {
     defaultURL: 'http://demo.codvision.com:16831/api/',
     userName: '',
+    password: '',
     taskName: '',
     start: 1,
     num: 10,
@@ -23,7 +25,8 @@ const initState = {
     imageAnnotation: null,
     segmentAnnotatorLabels: [],
     updateImage: false,
-    navList: []
+    navList: [],
+    managerData: ''
 }
 
 function appReducer(state=initState, action) {
@@ -31,7 +34,7 @@ function appReducer(state=initState, action) {
             index, segmentAnnotator, imageList,
             imageAnnotation, segmentAnnotatorLabels, newLabels,
             userLevel, fileCount, taggedFileCount,
-            start, num, navList} = action;
+            start, num, navList, password } = action;
     switch (action.type) {
         case ADD_NEW_IMAGE: {
             return {
@@ -167,6 +170,23 @@ function appReducer(state=initState, action) {
           return {
             ...state,
             navList
+          }
+        }
+        case CHANGE_PASSWORD: {
+          return {
+            ...state,
+            password
+          }
+        }
+        case GET_MANAGER_DATA: {
+          let data = {
+              name: state.userName,
+              passwd: state.password
+          }
+          data = JSON.stringify(data);
+          return {
+            ...state,
+            managerData: data
           }
         }
         default: return state;

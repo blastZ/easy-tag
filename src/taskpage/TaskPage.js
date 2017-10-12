@@ -1019,7 +1019,7 @@ class TaskPage extends Component {
             this.getTaskList();
         }else if(tabIndex === 1) {
             if(this.refs.trainTaskList) {
-                this.refs.trainTaskList.updateTrainTaskList();
+                this.refs.trainTaskList.getWrappedInstance().updateTrainTaskList();
             }
         }else if(tabIndex === 2) {
             this.getWorkerList();

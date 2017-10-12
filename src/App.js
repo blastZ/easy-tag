@@ -13,7 +13,7 @@ import { Route, withRouter } from 'react-router-dom'
 import Demo from './test_page/Demo';
 import Login from './login_page/Login';
 import SegmentView from './segment_page/SegmentView';
-import { changeUserName, changeUserLevel, changeTaskName } from './actions/app_action';
+import { changeUserName, changeUserLevel, changeTaskName, changePassword } from './actions/app_action';
 import { connect } from 'react-redux';
 import Helper from './helper_page/Helper';
 //import { saveAs } from 'file-saver' when you want to save as txt on the localhost
@@ -905,6 +905,7 @@ class App extends Component {
     login = (userName, userLevel, userGroup, password) => {
         this.props.dispatch(changeUserName(userName));
         this.props.dispatch(changeUserLevel(userLevel));
+        this.props.dispatch(changePassword(password));
         this.setState({login: true, userName, userLevel, userGroup, password});
     }
 

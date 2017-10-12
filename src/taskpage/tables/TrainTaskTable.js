@@ -1,11 +1,10 @@
 import React, { Component } from 'react';
 import { defaultURL, getTaskStateName, getTaskTypeName } from '../../utils/Task';
+import { connect } from 'react-redux';
+import { getManagerData } from '../../actions/app_action';
+import { getTrainTaskList } from '../../actions/task_action';
 
 class TrainTaskTable extends Component {
-    state = {
-        trainTaskList: [] //userName: 'aa' taskName: 'aa' time:'2015-03-21 15:00:00' taskType: '0' taskState: '0'
-    }
-
     updateTrainTaskList = () => {
         this.getTrainTaskList();
     }
@@ -15,53 +14,28 @@ class TrainTaskTable extends Component {
     }
 
     getTrainTaskList = () => {
-        try {
-            const request = new XMLHttpRequest();
-            request.open('POST', `${defaultURL}gettrainingtaskinfo`);
-            const data = this.props.getManagerData();
-            request.send(data);
-            request.onload = () => {
-                const arrayData = request.response.split(',');
-                const trainTaskList = [];
-                for(let i=0; i<arrayData.length; i=i+6) {
-                    const userName = arrayData[i].slice(4, arrayData[i].length - 1);
-                    const taskName = arrayData[i + 1].slice(3, arrayData[i + 1].length - 1);
-                    const time = arrayData[i + 2].slice(3, arrayData[i + 2].length - 1);
-                    const taskType = arrayData[i + 3].slice(1, 2);
-                    const taskState = arrayData[i + 4].slice(1, 2);
-                    let progress = '';
-                    if(i + 5 === arrayData.length - 1) {
-                        progress = arrayData[i + 5].slice(1, arrayData[i + 5].length - 2);
-                    } else {
-                        progress = arrayData[i + 5].slice(1, arrayData[i + 5].length - 1);
-                    }
-                    trainTaskList.push({userName, taskName, time, taskType, taskState, progress});
-                }
-                this.setState({trainTaskList});
-            }
-        } catch(error) {
-            console.log(error);
-        }
+        this.props.dispatch(getManagerData());
+        this.props.dispatch(getTrainTaskList());
     }
 
     onLookTrainState = (index) => {
-        this.props.onLookTrainState(this.state.trainTaskList[index]);
+        this.props.onLookTrainState(this.props.trainTaskList[index]);
     }
 
     showLabelStatistics = (index) => {
-        this.props.showLabelStatistics(this.state.trainTaskList[index]);
+        this.props.showLabelStatistics(this.props.trainTaskList[index]);
     }
 
     onStopTask = (index) => {
-        this.props.onStopTask(this.state.trainTaskList[index]);
+        this.props.onStopTask(this.props.trainTaskList[index]);
     }
 
     onDeleteTask = (index) => {
-        this.props.onDeleteTask(this.state.trainTaskList[index]);
+        this.props.onDeleteTask(this.props.trainTaskList[index]);
     }
 
     render() {
-        const { trainTaskList } = this.state;
+        const { trainTaskList } = this.props;
         return (
             <div>
                 <h3 className="et-margin-top-64 et-table-title">训练任务列表</h3>
@@ -101,4 +75,8 @@ class TrainTaskTable extends Component {
     }
 }
 
-export default TrainTaskTable;
+const mapStateToProps = ({ taskReducer }) => ({
+  trainTaskList: taskReducer.trainTaskList
+})
+
+export default connect(mapStateToProps, null, null, { withRef: true })(TrainTaskTable);
