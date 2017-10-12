@@ -3,6 +3,7 @@ import { Link, withRouter } from 'react-router-dom'
 import TopBar from './TopBar'
 import { getTaskStateName, getTaskTypeName, getUserLevelCode, getTaskTypeCode } from '../utils/Task';
 import TrainTaskTable from './tables/TrainTaskTable';
+import TaskTable from './tables/TaskTable';
 import { connect } from 'react-redux';
 import { changeTaskName } from '../actions/app_action';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
@@ -453,9 +454,7 @@ class TaskPage extends Component {
                 const taskType = arrayData[i + 4].slice(1, 2);
                 newTaskList.push({taskName: taskName, time: time,tagProgress: '0/0', progress: progress, taskState: taskState, taskType: taskType});
             }
-            if(this.refs.theTaskTable) {
-                this.setState({taskList: newTaskList});
-            }
+            this.setState({taskList: newTaskList});
         }
     }
 
@@ -473,17 +472,15 @@ class TaskPage extends Component {
             getTagedFileCount.onload = function() {
                 const theTagedFileCount = getTagedFileCount.response;
                 const tagProgress = `${theTagedFileCount}/${theFileCount}`;
-                if(that.refs.theTaskTable) {
-                    that.setState((state) => {
-                        state.taskList.map((task) => {
-                            if(task.taskName === taskName) {
-                                task.tagProgress = tagProgress;
-                            }
-                        })
-                    }, function() {
-                        showLabelStatistics();
+                that.setState((state) => {
+                    state.taskList.map((task) => {
+                        if(task.taskName === taskName) {
+                            task.tagProgress = tagProgress;
+                        }
                     })
-                }
+                }, function() {
+                    showLabelStatistics();
+                })
             }
         }
     }
@@ -1367,6 +1364,7 @@ class TaskPage extends Component {
     }
 
     render() {
+      const { userLevel } = this.props;
         return (
             <div className="w3-light-grey full-height">
                 <TopBar onLogout={this.props.onLogout}
@@ -1374,7 +1372,7 @@ class TaskPage extends Component {
                         closePersonPanel={this.closePersonPanel}
                         userName={this.props.username}
                         userGroup={this.props.userGroup}
-                        getUserLevelName={this.getUserLevelName(this.props.userLevel)}
+                        getUserLevelName={this.getUserLevelName(userLevel)}
                         shouldShowPersonPanel={this.state.showPersonPanel}/>
                 <i onClick={this.refreshTaskPage} className="fa fa-refresh et-refresh-button" aria-hidden="true"></i>
                 {
@@ -1657,124 +1655,54 @@ class TaskPage extends Component {
                         </div>
                     ) : null
                 }
-                <div className={`et-content ${this.props.userLevel === 3 ? 'et-padding-128' : 'w3-padding-64'}`}>
+                <div className={`et-content ${userLevel === 3 ? 'et-padding-128' : 'w3-padding-64'}`}>
                     <Tabs selectedIndex={this.state.tabIndex} onSelect={(tabIndex) => this.handleTabChange(tabIndex)}>
                         <TabList>
                             <Tab>任务列表</Tab>
                             {
-                                this.props.userLevel === 3 &&
+                                userLevel === 3 &&
                                 <Tab>训练任务列表</Tab>
                             }
                             {
-                                (this.props.userLevel === 2 || this.props.userLevel === 3) &&
+                                (userLevel === 2 || userLevel === 3) &&
                                 <Tab>Worker列表</Tab>
                             }
                             {
-                                this.props.userLevel === 3 &&
+                                userLevel === 3 &&
                                 <Tab>用户管理列表</Tab>
                             }
                             {
-                                this.props.userLevel === 3 &&
+                                userLevel === 3 &&
                                 <Tab>用户组列表</Tab>
                             }
                         </TabList>
                         <TabPanel>
-                            <div style={{position: 'relative'}}>
-                                <h3 className="et-margin-top-32 et-table-title">任务列表</h3>
-                                {
-                                    (this.props.userLevel === 2 || this.props.userLevel === 3) ?
-                                    <div onClick={this.popupInputView} style={{position: 'absolute', right: '5px', top: '0px'}}>
-                                        <i className="fa fa-plus-circle add-task-button w3-text-black" aria-hidden="true"></i>
-                                    </div>
-                                    : null
-                                }
-                            </div>
-                            <table ref="theTaskTable" className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered">
-                                <thead className="w3-green">
-                                    <tr>
-                                        <th>编号</th>
-                                        <th>任务名称</th>
-                                        <th>创建时间</th>
-                                        <th>任务状态</th>
-                                        <th>任务类型</th>
-                                        <th>操作</th>
-                                    </tr>
-                                </thead>
-                                <tbody>{
-                                    this.state.taskList.map((task, index) => (
-                                        <tr key={task.taskName + index}>
-                                            <td>{index + 1}</td>
-                                            {
-                                                (this.props.userLevel === 2 || this.props.userLevel === 3) ?
-                                                <td className="et-taskname-button" onClick={this.showDistributeTaskView.bind(this, index)}>{task.taskName}</td>
-                                                : <td>{task.taskName}</td>
-                                            }
-                                            <td>{task.time}</td>
-                                            <td>{getTaskStateName(task.taskState)}</td>
-                                            <td>{getTaskTypeName(task.taskType)}</td>
-                                            <td>
-                                                {
-                                                    parseInt(task.taskType) === 0 ?
-                                                    <Link onClick={this.onLinkToTag.bind(this, index)} to="/tag"><i className="fa fa-tags table-item-button" aria-hidden="true"> 标注</i></Link>
-                                                    : null
-                                                }
-                                                {
-                                                    parseInt(task.taskType) === 1 ?
-                                                    <Link onClick={this.onLinkToTag.bind(this, index)} to="/tagobject"><i className="fa fa-tags table-item-button" aria-hidden="true"> 标注</i></Link>
-                                                    : null
-                                                }
-                                                {
-                                                    parseInt(task.taskType) === 2 ?
-                                                    <i onClick={this.onLinkToSegment.bind(this, index)} className="fa fa-tags table-item-button" aria-hidden="true"> 标注</i>
-                                                    : null
-                                                }
-                                                <i onClick={this.showLabelStatistics.bind(this, index)} className="fa fa-area-chart table-item-button w3-margin-left"> 标注统计</i>
-                                                {
-                                                    (this.props.userLevel === 2 || this.props.userLevel === 3) ?
-                                                    <i onClick={this.onStartTask.bind(this, index)} className={`fa fa-play-circle ${task.taskState === '0' ? 'table-item-button' : 'et-silence-button'} ${task.taskState === '3' ? 'table-item-button' : 'et-silence-button'} w3-margin-left`} aria-hidden="true">{task.taskState === '3' ? ' 重新训练' : ' 开启训练'}</i>
-                                                    : null
-                                                }
-                                                {
-                                                    (this.props.userLevel === 2 || this.props.userLevel === 3) ?
-                                                    <i onClick={this.onStopTask.bind(this, index)} className={`fa fa-stop-circle ${task.taskState === '2' ? 'table-item-button' : 'et-silence-button'} ${task.taskState === '1' ? 'table-item-button' : 'et-silence-button'} w3-margin-left`} aria-hidden="true"> 停止训练</i>
-                                                    : null
-                                                }
-                                                {
-                                                    (this.props.userLevel === 2 || this.props.userLevel === 3) ?
-                                                    <i onClick={this.onLookTrainState.bind(this, index)} className={`fa fa-search ${task.taskState === '2' ? 'table-item-button' : 'et-silence-button'} ${task.taskState === '3' ? 'table-item-button' : 'et-silence-button'} w3-margin-left`} aria-hidden="true"> 查看训练状态</i>
-                                                    : null
-                                                }
-                                                {
-                                                    (this.props.userLevel === 2 || this.props.userLevel === 3) ?
-                                                    <Link style={{cursor: 'context-menu'}} onClick={this.onLinkToTest.bind(this, index)} to={task.taskState === '3' ? "/test" : "/"}><i className={`fa fa-cog ${task.taskState === '3' ? 'table-item-button' : 'et-silence-button'} w3-margin-left`} aria-hidden="true"> 测试</i></Link>
-                                                    : null
-                                                }
-                                                {
-                                                    (this.props.userLevel === 2 || this.props.userLevel === 3) ?
-                                                    <i onClick={this.onDeleteTask.bind(this, index)} className="fa fa-trash table-item-button w3-margin-left" aria-hidden="true"> 删除</i>
-                                                    : null
-                                                }
-                                            </td>
-                                        </tr>
-                                    ))
-                                }</tbody>
-                                <tfoot></tfoot>
-                            </table>
+                            <TaskTable
+                              popupInputView={this.popupInputView}
+                              taskList={this.state.taskList}
+                              showDistributeTaskView={this.showDistributeTaskView}
+                              onLinkToTag={this.onLinkToTag}
+                              onLinkToSegment={this.onLinkToSegment}
+                              onLinkToTest={this.onLinkToTest}
+                              onStartTask={this.onStartTask}
+                              onStopTask={this.onStopTask}
+                              onLookTrainState={this.onLookTrainState}
+                              onDeleteTask={this.onDeleteTask}
+                              showLabelStatistics={this.showLabelStatistics} />
                         </TabPanel>
                         {
-                            this.props.userLevel === 3 &&
+                            userLevel === 3 &&
                             <TabPanel>
                                 <TrainTaskTable
-                                       ref="trainTaskList"
-                                       getManagerData={this.getManagerData}
-                                       showLabelStatistics={this.showLabelStatisticsForTrainTask}
-                                       onStopTask={this.onStopTaskForTrainTask}
-                                       onLookTrainState={this.onLookTrainStateForTrainTask}
-                                       onDeleteTask={this.onDeleteTaskForTrainTask}/>
+                                  ref="trainTaskList"
+                                  showLabelStatistics={this.showLabelStatisticsForTrainTask}
+                                  onStopTask={this.onStopTaskForTrainTask}
+                                  onLookTrainState={this.onLookTrainStateForTrainTask}
+                                  onDeleteTask={this.onDeleteTaskForTrainTask} />
                             </TabPanel>
                         }
                         {
-                            (this.props.userLevel === 2 || this.props.userLevel === 3) &&
+                            (userLevel === 2 || userLevel === 3) &&
                             <TabPanel>
                                 <h3 className="et-margin-top-64 et-table-title">Worker列表</h3>
                                 <table ref="theWorkerTable" className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered">
@@ -1788,7 +1716,7 @@ class TaskPage extends Component {
                                             <th>更新时间</th>
                                             <th>拥有者</th>
                                             {
-                                                this.props.userLevel === 3 ?
+                                                userLevel === 3 ?
                                                 <th>操作</th>
                                                 : null
                                             }
@@ -1813,7 +1741,7 @@ class TaskPage extends Component {
                                                         : worker.owner
                                                 }</td>
                                                 {
-                                                    this.props.userLevel === 3 ?
+                                                    userLevel === 3 ?
                                                     <td>{
                                                         !this.state.showEditWorkerOwner ?
                                                         <i onClick={this.shouldShowEditWorkerOwner.bind(this, index)} className="fa fa-address-book table-item-button"> 修改拥有者</i>
@@ -1832,7 +1760,7 @@ class TaskPage extends Component {
                             </TabPanel>
                         }
                         {
-                            this.props.userLevel === 3 &&
+                            userLevel === 3 &&
                             <TabPanel>
                                 <h3 className="et-margin-top-64 et-table-title">用户管理列表</h3>
                                 <table className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered">
@@ -1866,7 +1794,7 @@ class TaskPage extends Component {
                             </TabPanel>
                         }
                         {
-                            this.props.userLevel === 3 &&
+                            userLevel === 3 &&
                             <TabPanel>
                                 <div style={{position: 'relative'}}>
                                     <h3 className="et-margin-top-64 et-table-title">用户组列表</h3>
@@ -1901,4 +1829,8 @@ class TaskPage extends Component {
     }
 }
 
-export default withRouter(connect()(TaskPage));
+const mapStateToProps = ({ appReducer }) => ({
+  userLevel: appReducer.userLevel
+})
+
+export default withRouter(connect(mapStateToProps)(TaskPage));

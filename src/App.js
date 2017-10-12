@@ -1006,7 +1006,6 @@ class App extends Component {
                     <TaskPage onInitStartAndNum={this.initStartAndNum}
                               onLogout={this.logout}
                               defaultURL={this.state.defaultURL}
-                              userLevel={this.state.userLevel}
                               username={this.state.userName}
                               userGroup={this.state.userGroup}
                               password={this.state.password}
