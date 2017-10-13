@@ -4,15 +4,26 @@ import { getTaskStateName, getTaskTypeName } from '../../utils/Task';
 import { Link } from 'react-router-dom';
 
 class TaskTable extends Component {
+  state = {
+    keyword: ''
+  }
+
+  handleKeyword = (e) => {
+    this.setState({
+      keyword: e.target.value
+    })
+  }
+
   render() {
     const { userLevel } = this.props;
     return(
       <div>
-        <div style={{position: 'relative'}}>
-            <h3 className="et-margin-top-32 et-table-title">任务列表</h3>
+        <div className="et-margin-top-32" style={{position: 'relative', display: 'flex', alignItems: 'center'}}>
+            <h3 className="et-table-title">任务列表</h3>
+            <input className="w3-input" style={{width: '200px', borderRadius: '40px', outline: 'none', height: '100%', marginLeft: '13px', paddingLeft: '14px', paddingRight: '14px'}} value={this.state.keyword} onChange={this.handleKeyword} />
             {
                 (userLevel === 2 || userLevel === 3) ?
-                <div onClick={this.props.popupInputView} style={{position: 'absolute', right: '5px', top: '0px'}}>
+                <div onClick={this.props.popupInputView} style={{position: 'absolute', right: '5px'}}>
                     <i className="fa fa-plus-circle add-task-button w3-text-black" aria-hidden="true"></i>
                 </div>
                 : null
@@ -31,6 +42,7 @@ class TaskTable extends Component {
             </thead>
             <tbody>{
                 this.props.taskList.map((task, index) => (
+                    (new RegExp(this.state.keyword, 'i')).test(task.taskName) &&
                     <tr key={task.taskName + index}>
                         <td>{index + 1}</td>
                         {

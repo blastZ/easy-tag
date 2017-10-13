@@ -5,6 +5,16 @@ import { getManagerData } from '../../actions/app_action';
 import { getTrainTaskList } from '../../actions/task_action';
 
 class TrainTaskTable extends Component {
+    state = {
+      keyword: ''
+    }
+
+    handleKeyword = (e) => {
+      this.setState({
+        keyword: e.target.value
+      })
+    }
+
     updateTrainTaskList = () => {
         this.getTrainTaskList();
     }
@@ -38,7 +48,10 @@ class TrainTaskTable extends Component {
         const { trainTaskList } = this.props;
         return (
             <div>
-                <h3 className="et-margin-top-64 et-table-title">训练任务列表</h3>
+                <div className="et-margin-top-32" style={{position: 'relative', display: 'flex', alignItems: 'center'}}>
+                  <h3 className="et-table-title">训练任务列表</h3>
+                  <input className="w3-input" style={{width: '200px', borderRadius: '40px', outline: 'none', height: '100%', marginLeft: '13px', paddingLeft: '14px', paddingRight: '14px'}} value={this.state.keyword} onChange={this.handleKeyword} />
+                </div>
                 <table className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered">
                     <thead className="w3-green">
                         <tr>
@@ -53,6 +66,7 @@ class TrainTaskTable extends Component {
                     </thead>
                     <tbody>{
                         trainTaskList.map((task, index) => (
+                            (new RegExp(this.state.keyword, 'i')).test(task.userName) &&
                             <tr key={task.taskName + index}>
                                 <td>{index + 1}</td>
                                 <td>{task.userName}</td>

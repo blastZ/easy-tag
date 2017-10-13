@@ -4,6 +4,9 @@ import TopBar from './TopBar'
 import { getTaskStateName, getTaskTypeName, getUserLevelCode, getTaskTypeCode } from '../utils/Task';
 import TrainTaskTable from './tables/TrainTaskTable';
 import TaskTable from './tables/TaskTable';
+import WorkerTable from './tables/WorkerTable';
+import UserManageTable from './tables/UserManageTable';
+import UserGroupTable from './tables/UserGroupTable';
 import { connect } from 'react-redux';
 import { changeTaskName, getTrainStateLog } from '../actions/app_action';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
@@ -310,9 +313,7 @@ class TaskPage extends Component {
             getWorkerList.send();
             getWorkerList.onload = function() {
                 const arrayData = that.getArrayData(getWorkerList.response);
-                if(that.refs.theWorkerTable) {
-                    that.addWorker(arrayData);
-                }
+                that.addWorker(arrayData);
             }
         } catch(error) {
             console.log(error);
@@ -537,9 +538,7 @@ class TaskPage extends Component {
                 }
                 newWorkerList.push({workerName, workerState, GPU, taskName, updateTime, owner});
             }
-            if(this.refs.theWorkerTable) {
-                this.setState({workerList: newWorkerList});
-            }
+            this.setState({workerList: newWorkerList});
         } else {
             this.setState({workerList: []});
         }
@@ -1728,170 +1727,65 @@ class TaskPage extends Component {
                 <div className={`et-content ${userLevel === 3 ? 'et-padding-128' : 'w3-padding-64'}`}>
                     <Tabs selectedIndex={this.state.tabIndex} onSelect={(tabIndex) => this.handleTabChange(tabIndex)}>
                         <TabList>
-                            <Tab>任务列表</Tab>
-                            {
-                                userLevel === 3 &&
-                                <Tab>训练任务列表</Tab>
-                            }
-                            {
-                                (userLevel === 2 || userLevel === 3) &&
-                                <Tab>Worker列表</Tab>
-                            }
-                            {
-                                userLevel === 3 &&
-                                <Tab>用户管理列表</Tab>
-                            }
-                            {
-                                userLevel === 3 &&
-                                <Tab>用户组列表</Tab>
-                            }
+                          <Tab>任务列表</Tab>
+                          {userLevel === 3 &&
+                            <Tab>训练任务列表</Tab>}
+                          {(userLevel === 2 || userLevel === 3) &&
+                            <Tab>Worker列表</Tab>}
+                          {userLevel === 3 &&
+                            <Tab>用户管理列表</Tab>}
+                          {userLevel === 3 &&
+                            <Tab>用户组列表</Tab>}
                         </TabList>
                         <TabPanel>
-                            <TaskTable
-                              popupInputView={this.popupInputView}
-                              taskList={this.state.taskList}
-                              showDistributeTaskView={this.showDistributeTaskView}
-                              onLinkToTag={this.onLinkToTag}
-                              onLinkToSegment={this.onLinkToSegment}
-                              onLinkToTest={this.onLinkToTest}
-                              onStartTask={this.onStartTask}
-                              onStopTask={this.onStopTask}
-                              onLookTrainState={this.onLookTrainState}
-                              onDeleteTask={this.onDeleteTask}
-                              showLabelStatistics={this.showLabelStatistics} />
+                          <TaskTable
+                            popupInputView={this.popupInputView}
+                            taskList={this.state.taskList}
+                            showDistributeTaskView={this.showDistributeTaskView}
+                            onLinkToTag={this.onLinkToTag}
+                            onLinkToSegment={this.onLinkToSegment}
+                            onLinkToTest={this.onLinkToTest}
+                            onStartTask={this.onStartTask}
+                            onStopTask={this.onStopTask}
+                            onLookTrainState={this.onLookTrainState}
+                            onDeleteTask={this.onDeleteTask}
+                            showLabelStatistics={this.showLabelStatistics} />
                         </TabPanel>
-                        {
-                            userLevel === 3 &&
+                        {userLevel === 3 &&
                             <TabPanel>
-                                <TrainTaskTable
-                                  ref="trainTaskList"
-                                  showLabelStatistics={this.showLabelStatisticsForTrainTask}
-                                  onStopTask={this.onStopTaskForTrainTask}
-                                  onLookTrainState={this.onLookTrainStateForTrainTask}
-                                  onDeleteTask={this.onDeleteTaskForTrainTask} />
-                            </TabPanel>
-                        }
-                        {
-                            (userLevel === 2 || userLevel === 3) &&
+                              <TrainTaskTable
+                                ref="trainTaskList"
+                                showLabelStatistics={this.showLabelStatisticsForTrainTask}
+                                onStopTask={this.onStopTaskForTrainTask}
+                                onLookTrainState={this.onLookTrainStateForTrainTask}
+                                onDeleteTask={this.onDeleteTaskForTrainTask} />
+                            </TabPanel>}
+                        {(userLevel === 2 || userLevel === 3) &&
                             <TabPanel>
-                                <h3 className="et-margin-top-64 et-table-title">Worker列表</h3>
-                                <table ref="theWorkerTable" className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered">
-                                    <thead className="w3-green">
-                                        <tr>
-                                            <th>编号</th>
-                                            <th>worker名称</th>
-                                            <th>worker状态</th>
-                                            <th>显卡使用情况</th>
-                                            <th style={{width: '9%'}}>正在服务的任务名称</th>
-                                            <th>更新时间</th>
-                                            <th>拥有者</th>
-                                            {
-                                                userLevel === 3 ?
-                                                <th>操作</th>
-                                                : null
-                                            }
-                                        </tr>
-                                    </thead>
-                                    <tbody>{
-                                        this.state.workerList.map((worker, index) => (
-                                            <tr key={worker.workerName + index}>
-                                                <td>{index + 1}</td>
-                                                <td>{worker.workerName}</td>
-                                                <td>{this.getWorkerStateName(worker.workerState)}</td>
-                                                <td>{worker.GPU}</td>
-                                                <td>{worker.taskName}</td>
-                                                <td>{worker.updateTime}</td>
-                                                <td>{
-                                                    this.state.editWorkerIndex === index && this.state.showEditWorkerOwner ?
-                                                        <select id="workerOwnerSelect">{
-                                                            this.state.workerOwnerList.map((owner, index) => (
-                                                                <option key={owner + index}>{owner}</option>
-                                                            ))
-                                                        }</select>
-                                                        : worker.owner
-                                                }</td>
-                                                {
-                                                    userLevel === 3 ?
-                                                    <td>{
-                                                        !this.state.showEditWorkerOwner ?
-                                                        <i onClick={this.shouldShowEditWorkerOwner.bind(this, index)} className="fa fa-address-book table-item-button"> 修改拥有者</i>
-                                                        :<div>
-                                                        <i onClick={this.saveWorkerOwnerChange.bind(this, index)} className="fa fa-minus-square table-item-button"> 保存</i>
-                                                        <i onClick={this.shouldShowEditWorkerOwner.bind(this, index)} className="fa fa-minus-square table-item-button w3-margin-left"> 取消</i>
-                                                        </div>
-                                                    }</td>
-                                                    : null
-                                                }
-                                            </tr>
-                                        ))
-                                    }</tbody>
-                                    <tfoot></tfoot>
-                                </table>
-                            </TabPanel>
-                        }
-                        {
-                            userLevel === 3 &&
+                              <WorkerTable
+                                workerList={this.state.workerList}
+                                getWorkerStateName={this.getWorkerStateName}
+                                editWorkerIndex={this.state.editWorkerIndex}
+                                showEditWorkerOwner={this.state.showEditWorkerOwner}
+                                workerOwnerList={this.state.workerOwnerList}
+                                shouldShowEditWorkerOwner={this.shouldShowEditWorkerOwner}
+                                saveWorkerOwnerChange={this.saveWorkerOwnerChange} />
+                            </TabPanel>}
+                        {userLevel === 3 &&
                             <TabPanel>
-                                <h3 className="et-margin-top-64 et-table-title">用户管理列表</h3>
-                                <table className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered">
-                                    <thead className="w3-green">
-                                        <tr>
-                                            <th>用户名</th>
-                                            <th>邮箱</th>
-                                            <th>激活状态</th>
-                                            <th>用户权限</th>
-                                            <th>所在组别</th>
-                                            <th>操作</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>{
-                                        this.state.userManageList.map((user, index) => (
-                                            <tr key={user.userName + user.email}>
-                                                <td>{user.userName}</td>
-                                                <td>{user.email}</td>
-                                                <td>{user.activeState === '0' ? '未激活' : '已激活'}</td>
-                                                <td>{this.getUserLevelName(user.userLevel)}</td>
-                                                <td>{user.userGroup}</td>
-                                                <td>
-                                                    <i onClick={this.deleteUser.bind(this, index)} className="fa fa-minus-square table-item-button"> 删除用户</i>
-                                                    <i onClick={this.shouldShowUserManageEditView.bind(this, index)} className="fa fa-cog table-item-button w3-margin-left"> 编辑用户</i>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    }</tbody>
-                                    <tfoot></tfoot>
-                                </table>
-                            </TabPanel>
-                        }
-                        {
-                            userLevel === 3 &&
+                              <UserManageTable
+                                userManageList={this.state.userManageList}
+                                getUserLevelName={this.getUserLevelName}
+                                deleteUser={this.deleteUser}
+                                shouldShowUserManageEditView={this.shouldShowUserManageEditView} />
+                            </TabPanel>}
+                        {userLevel === 3 &&
                             <TabPanel>
-                                <div style={{position: 'relative'}}>
-                                    <h3 className="et-margin-top-64 et-table-title">用户组列表</h3>
-                                    <div style={{position: 'absolute', right: '5px', top: '0px'}}>
-                                        <i onClick={this.addUserGroup} className="fa fa-plus-circle add-task-button w3-text-black" aria-hidden="true"></i>
-                                    </div>
-                                </div>
-                                <table ref="theTaskTable" className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered">
-                                    <thead className="w3-green">
-                                        <tr>
-                                            <th>组名</th>
-                                            <th>操作</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>{
-                                        this.state.userGroupList.map((group, index) => (
-                                            <tr key={group + index}>
-                                                <td>{group}</td>
-                                                <td>
-                                                    <i onClick={this.deleteUserGroup.bind(this, index)} className="fa fa-minus-circle table-item-button"> 删除</i>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    }</tbody>
-                                </table>
-                            </TabPanel>
-                        }
+                              <UserGroupTable
+                                addUserGroup={this.addUserGroup}
+                                userGroupList={this.state.userGroupList}
+                                deleteUserGroup={this.deleteUserGroup} />
+                            </TabPanel>}
                     </Tabs>
                 </div>
             </div>
