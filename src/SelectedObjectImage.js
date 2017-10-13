@@ -1,6 +1,8 @@
 import React, {Component} from 'react';
 import $ from 'jquery';
 
+var mouseupListener = '';
+
 class SelectedObjectImage extends Component {
     state = {
         fileCount: 0,
@@ -16,6 +18,8 @@ class SelectedObjectImage extends Component {
     componentWillUnmount() {
         document.removeEventListener('keyup', this.deleteImageListener);
         document.removeEventListener('keyup', this.nextPreviousImageListener);
+        document.removeEventListener('wheel', this.wheelListener);
+        document.removeEventListener('mouseup', mouseupListener);
     }
 
     deleteImageListener = (e) => {
@@ -121,17 +125,19 @@ class SelectedObjectImage extends Component {
             }
         })
 
-        $(document).mouseup(function(e) {
-            if(e.which === 1) {
-                start = false;
-                that.forceUpdate();
-            }
-        })
+        mouseupListener = function(e) {
+          if(e.which === 1) {
+              start = false;
+              that.forceUpdate();
+          }
+        }
+        document.addEventListener('mouseup', mouseupListener);
+        container.addEventListener('wheel', this.wheelListener);
+    }
 
-        container.addEventListener('wheel', function(e) {
-            e.wheelDeltaY > 0 ? that.increaseImageSize() : that.decreaseImageSize();
-            that.forceUpdate();
-        });
+    wheelListener = (e) => {
+      e.wheelDeltaY > 0 ? this.increaseImageSize() : this.decreaseImageSize();
+      this.forceUpdate();
     }
 
     increaseImageSize = () => {

@@ -24,6 +24,7 @@ export const CHANGE_NUM_VALUE = 'CHANGE_NUM_VALUE';
 export const SAVE_HELPER_DOC = 'SAVE_HELPER_DOC';
 export const GET_HELPER_DOC = 'GET_HELPER_DOC';
 export const GET_MANAGER_DATA = 'GET_MANAGER_DATA';
+export const GET_TRAIN_STATE_LOG = 'GET_TRAIN_STATE_LOG';
 
 export function addNewImage(imageUrl, imageName) {
     return {
@@ -158,4 +159,8 @@ export const changePassword = (password) => ({
 
 export const getManagerData = () => ({
   type: GET_MANAGER_DATA
+})
+
+export const getTrainStateLog = () => ({
+  type: GET_TRAIN_STATE_LOG
 })

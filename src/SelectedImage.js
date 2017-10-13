@@ -1,6 +1,8 @@
 import React, {Component} from 'react';
 import $ from 'jquery';
 
+var mouseupListener;
+
 class SelectedImage extends Component {
     state = {
         fileCount: 0,
@@ -16,6 +18,8 @@ class SelectedImage extends Component {
     componentWillUnmount() {
         document.removeEventListener('keyup', this.deleteImageListener);
         document.removeEventListener('keyup', this.nextPreviousImageListener);
+        document.removeEventListener('wheel', this.wheelListener);
+        document.removeEventListener('mouseup', mouseupListener);
     }
 
     deleteImageListener = (e) => {
@@ -159,45 +163,47 @@ class SelectedImage extends Component {
             }
         })
 
-        $(document).mouseup(function(e) {
-            if(e.which === 1) {
-                if(drawing) {
-                    const img_natural_width = document.getElementById('selectedImage').width;
-                    const img_natural_height = document.getElementById('selectedImage').height;
-                    try {
-                        const theImage_left = parseInt(theImage.style.left);
-                        const theImage_top = parseInt(theImage.style.top);
-                        const x_start = $('#move-rect').css('left');
-                        const x_start_int = parseInt(x_start);
-                        const y_start = $('#move-rect').css('top');
-                        const y_start_int = parseInt(y_start);
-                        const x_end = x_start_int + rect_width
-                        const y_end = y_start_int + rect_height
-                        const relative_x_start = ((x_start_int - theImage_left) / img_natural_width).toFixed(3)
-                        const relative_y_start = ((y_start_int - theImage_top) / img_natural_height).toFixed(3)
-                        const relative_x_end = ((x_end - theImage_left) / img_natural_width).toFixed(3)
-                        const relative_y_end = ((y_end - theImage_top) / img_natural_height).toFixed(3)
-                        const tag = {x_start: relative_x_start, y_start: relative_y_start, x_end: relative_x_end, y_end: relative_y_end, tag: [that.props.currentTagString], info: that.props.info}
-                        //console.log(tag)
-                        that.props.onAddTag(tag)
-                        $('#move-rect').remove()
-                    } catch(e) {
-                        alert(e)
-                    }
-                }
-                drawing = false
-                rect_width = 0
-                rect_height = 0
-            } else if(e.which === 3) {
-                start = false;
-                that.forceUpdate();
-            }
-        })
+        mouseupListener = function(e) {
+          if(e.which === 1) {
+              if(drawing) {
+                  const img_natural_width = document.getElementById('selectedImage').width;
+                  const img_natural_height = document.getElementById('selectedImage').height;
+                  try {
+                      const theImage_left = parseInt(theImage.style.left);
+                      const theImage_top = parseInt(theImage.style.top);
+                      const x_start = $('#move-rect').css('left');
+                      const x_start_int = parseInt(x_start);
+                      const y_start = $('#move-rect').css('top');
+                      const y_start_int = parseInt(y_start);
+                      const x_end = x_start_int + rect_width
+                      const y_end = y_start_int + rect_height
+                      const relative_x_start = ((x_start_int - theImage_left) / img_natural_width).toFixed(3)
+                      const relative_y_start = ((y_start_int - theImage_top) / img_natural_height).toFixed(3)
+                      const relative_x_end = ((x_end - theImage_left) / img_natural_width).toFixed(3)
+                      const relative_y_end = ((y_end - theImage_top) / img_natural_height).toFixed(3)
+                      const tag = {x_start: relative_x_start, y_start: relative_y_start, x_end: relative_x_end, y_end: relative_y_end, tag: [that.props.currentTagString], info: that.props.info}
+                      //console.log(tag)
+                      that.props.onAddTag(tag)
+                      $('#move-rect').remove()
+                  } catch(e) {
+                      alert(e)
+                  }
+              }
+              drawing = false
+              rect_width = 0
+              rect_height = 0
+          } else if(e.which === 3) {
+              start = false;
+              that.forceUpdate();
+          }
+        }
+        document.addEventListener('mouseup', mouseupListener);
+        container.addEventListener('wheel', this.wheelListener);
+    }
 
-        container.addEventListener('wheel', function(e) {
-            e.wheelDeltaY > 0 ? that.increaseImageSize() : that.decreaseImageSize();
-            that.forceUpdate();
-        });
+    wheelListener = (e) => {
+      e.wheelDeltaY > 0 ? this.increaseImageSize() : this.decreaseImageSize();
+      this.forceUpdate();
     }
 
     increaseImageSize = () => {

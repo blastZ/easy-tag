@@ -1,6 +1,9 @@
 import { segmentAnnotator } from '../segment_page/SegmentView';
+import { GET_TRAIN_STATE_LOG } from '../actions/app_action';
 
 const appMiddleware = store => next => action => {
+    const appState = store.getState().appReducer;
+    const url = appState.defaultURL;
     if(action.type === 'UPLOAD_IMAGE_FILES') {
         const state = store.getState().appReducer;
         const { files } = action;
@@ -11,7 +14,7 @@ const appMiddleware = store => next => action => {
             const formData = new FormData();
             formData.append("file", file);
             const fileRequest = new XMLHttpRequest();
-            fileRequest.open('POST', `${state.defaultURL}uploadfile?usrname=${state.userName}&taskname=${state.taskName}&filename=${file.name}`);
+            fileRequest.open('POST', `${url}uploadfile?usrname=${state.userName}&taskname=${state.taskName}&filename=${file.name}`);
             fileRequest.send(formData);
             fileRequest.onload = function() {
                 store.dispatch({
@@ -161,6 +164,16 @@ const appMiddleware = store => next => action => {
           navList: data.request.data
         })
       }
+    } else if(action.type === GET_TRAIN_STATE_LOG) {
+      const { userName, taskName } = appState;
+      fetch(`${url}tasklog?usrname=${userName}&taskname=${taskName}`)
+        .then((response) => (response.text()))
+        .then((result) => {
+          next({
+            type: GET_TRAIN_STATE_LOG,
+            trainStateLog: result
+          })
+        })
     } else {
         next(action);
     }
