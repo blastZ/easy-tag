@@ -6,13 +6,47 @@ import { getTrainTaskList } from '../../actions/task_action';
 
 class TrainTaskTable extends Component {
     state = {
-      keyword: ''
+      keyword: '',
+      searchKey: [
+        { name: '用户名', value: 'userName' },
+        { name: '任务名称', value: 'taskName' },
+        { name: '创建时间', value: 'time' },
+        { name: '任务状态', value: 'taskState' },
+        { name: '任务类型', value: 'taskType' },
+      ],
+      currentSearchKey: 'userName'
     }
 
     handleKeyword = (e) => {
       this.setState({
         keyword: e.target.value
       })
+    }
+
+    handleSearchKeyChange = (e) => {
+      this.setState({
+        currentSearchKey: e.target.value
+      })
+    }
+
+    getTestString = (task) => {
+      switch (this.state.currentSearchKey) {
+        case 'userName': {
+          return task.userName
+        }
+        case 'taskName': {
+          return task.taskName
+        }
+        case 'time': {
+          return task.time
+        }
+        case 'taskState': {
+          return getTaskStateName(task.taskState)
+        }
+        case 'taskType': {
+          return getTaskTypeName(task.taskType)
+        }
+      }
     }
 
     updateTrainTaskList = () => {
@@ -50,7 +84,12 @@ class TrainTaskTable extends Component {
             <div>
                 <div className="et-margin-top-32" style={{position: 'relative', display: 'flex', alignItems: 'center'}}>
                   <h3 className="et-table-title">训练任务列表</h3>
-                  <input className="w3-input" style={{width: '200px', borderRadius: '40px', outline: 'none', height: '100%', marginLeft: '13px', paddingLeft: '14px', paddingRight: '14px'}} value={this.state.keyword} onChange={this.handleKeyword} />
+                  <input className="w3-input" style={{width: '236px', borderRadius: '40px', outline: 'none', height: '100%', marginLeft: '13px', paddingLeft: '110px', paddingRight: '14px'}} value={this.state.keyword} onChange={this.handleKeyword} />
+                  <select value={this.state.currentSearchKey} onChange={this.handleSearchKeyChange} style={{position: 'absolute', left: '157px', borderRadius: '40px 0 0 40px', outline: 'none', height: '34px', width: '104px', paddingLeft: '15px', border: 'none', borderRight: '1px solid #f1f1f1'}}>
+                    {this.state.searchKey.map((key, index) => (
+                      <option key={key.name + index} value={key.value}>{key.name}</option>
+                    ))}
+                  </select>
                 </div>
                 <table className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered">
                     <thead className="w3-green">
@@ -66,7 +105,7 @@ class TrainTaskTable extends Component {
                     </thead>
                     <tbody>{
                         trainTaskList.map((task, index) => (
-                            (new RegExp(this.state.keyword, 'i')).test(task.userName) &&
+                            (new RegExp(this.state.keyword, 'i')).test(this.getTestString(task)) &&
                             <tr key={task.taskName + index}>
                                 <td>{index + 1}</td>
                                 <td>{task.userName}</td>

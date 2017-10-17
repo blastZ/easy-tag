@@ -5,7 +5,14 @@ import { Link } from 'react-router-dom';
 
 class TaskTable extends Component {
   state = {
-    keyword: ''
+    keyword: '',
+    searchKey: [
+      { name: '任务名称', value: 'taskName' },
+      { name: '创建时间', value: 'time' },
+      { name: '任务状态', value: 'taskState' },
+      { name: '任务类型', value: 'taskType' },
+    ],
+    currentSearchKey: 'taskName'
   }
 
   handleKeyword = (e) => {
@@ -14,13 +21,41 @@ class TaskTable extends Component {
     })
   }
 
+  handleSearchKeyChange = (e) => {
+    this.setState({
+      currentSearchKey: e.target.value
+    })
+  }
+
+  getTestString = (task) => {
+    switch (this.state.currentSearchKey) {
+      case 'taskName': {
+        return task.taskName
+      }
+      case 'time': {
+        return task.time
+      }
+      case 'taskState': {
+        return getTaskStateName(task.taskState)
+      }
+      case 'taskType': {
+        return getTaskTypeName(task.taskType)
+      }
+    }
+  }
+
   render() {
     const { userLevel } = this.props;
     return(
       <div>
         <div className="et-margin-top-32" style={{position: 'relative', display: 'flex', alignItems: 'center'}}>
             <h3 className="et-table-title">任务列表</h3>
-            <input className="w3-input" style={{width: '200px', borderRadius: '40px', outline: 'none', height: '100%', marginLeft: '13px', paddingLeft: '14px', paddingRight: '14px'}} value={this.state.keyword} onChange={this.handleKeyword} />
+            <input className="w3-input" style={{width: '236px', borderRadius: '40px', outline: 'none', height: '100%', marginLeft: '13px', paddingLeft: '110px', paddingRight: '14px'}} value={this.state.keyword} onChange={this.handleKeyword} />
+            <select value={this.state.currentSearchKey} onChange={this.handleSearchKeyChange} style={{position: 'absolute', left: '109px', borderRadius: '40px 0 0 40px', outline: 'none', height: '34px', width: '104px', paddingLeft: '15px', border: 'none', borderRight: '1px solid #f1f1f1'}}>
+              {this.state.searchKey.map((key, index) => (
+                <option key={key.name + index} value={key.value}>{key.name}</option>
+              ))}
+            </select>
             {
                 (userLevel === 2 || userLevel === 3) ?
                 <div onClick={this.props.popupInputView} style={{position: 'absolute', right: '5px'}}>
@@ -42,7 +77,7 @@ class TaskTable extends Component {
             </thead>
             <tbody>{
                 this.props.taskList.map((task, index) => (
-                    (new RegExp(this.state.keyword, 'i')).test(task.taskName) &&
+                    (new RegExp(this.state.keyword, 'i')).test(this.getTestString(task)) &&
                     <tr key={task.taskName + index}>
                         <td>{index + 1}</td>
                         {
