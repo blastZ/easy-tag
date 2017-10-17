@@ -1,5 +1,5 @@
 import { segmentAnnotator } from '../segment_page/SegmentView';
-import { GET_TRAIN_STATE_LOG } from '../actions/app_action';
+import { GET_TRAIN_STATE_LOG, AUTO_TAG_IMAGES } from '../actions/app_action';
 
 const appMiddleware = store => next => action => {
     const appState = store.getState().appReducer;
@@ -45,7 +45,7 @@ const appMiddleware = store => next => action => {
     }
     else if(action.type === 'SAVE_IMAGE_ANNOTATION') {
         const state = store.getState().appReducer;
-        const { index, annotation } = action;
+        const { index, annotation, regionSize } = action;
         const xhr = new XMLHttpRequest();
         xhr.open('POST', `${state.defaultURL}saveseglabel?usrname=${state.userName}&taskname=${state.taskName}&filename=${state.imageList[index].name}`);
         xhr.onload = function() {
@@ -53,7 +53,8 @@ const appMiddleware = store => next => action => {
         }
         xhr.setRequestHeader("Content-Type", "text/plain");
         const formData = new FormData();
-        formData.append("file", annotation);
+        const theData = annotation.toString() + `&${regionSize}`;
+        formData.append("file", theData);
         xhr.send(formData);
     }
     else if(action.type === 'GET_IMAGE_ANNOTATION') {
@@ -64,7 +65,8 @@ const appMiddleware = store => next => action => {
         xhr.onload = function() {
             next({
                 type: 'GET_IMAGE_ANNOTATION',
-                imageAnnotation: xhr.response
+                imageAnnotation: xhr.response.split('&')[0],
+                regionSize: parseInt(xhr.response.split('&')[1] ? xhr.response.split('&')[1] : '40', 10)
             })
         }
         xhr.send();
@@ -165,7 +167,7 @@ const appMiddleware = store => next => action => {
         })
       }
     } else if(action.type === GET_TRAIN_STATE_LOG) {
-      const { userName, taskName } = appState;
+      const { userName, taskName } = action;
       fetch(`${url}tasklog?usrname=${userName}&taskname=${taskName}`)
         .then((response) => (response.text()))
         .then((result) => {
@@ -173,6 +175,13 @@ const appMiddleware = store => next => action => {
             type: GET_TRAIN_STATE_LOG,
             trainStateLog: result
           })
+        })
+    } else if(action.type === AUTO_TAG_IMAGES) {
+      const { start, num } = action;
+      fetch(`${url}autolabelimage?usrname=${appState.userName}&taskname=${appState.taskName}&start=${start}&num=${num}`)
+        .then((response) => (response.text()))
+        .then((result) => {
+          console.log(result);
         })
     } else {
         next(action);

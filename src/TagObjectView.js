@@ -13,7 +13,21 @@ class TagObjectView extends Component {
         showListNameEditView: false,
         showAddNewTagStringView: false,
         showAddNewListNameView: false,
-        showFindModeView: false
+        showFindModeView: false,
+        autoTagNum: 1,
+        autoTagStart: 1,
+    }
+
+    handleAutoTagNum = (e) => {
+      this.setState({
+        autoTagNum: e.target.value
+      })
+    }
+
+    handleAutoTagStart = (e) => {
+      this.setState({
+        autoTagStart: e.target.value
+      })
     }
 
     shouldShowFindModeView = () => {
@@ -372,18 +386,25 @@ class TagObjectView extends Component {
                     ))
                 }</ul>
                 <div>
-                    <div className="flex-box margin-top-5 w3-card">
-                        <span style={{padding: '0px 8px', display: 'flex', whiteSpace:'nowrap', alignItems: 'center'}}>起始<br/>序号</span>
-                        <input onChange={this.props.onHandleStartChange} className="w3-input" type="number" value={this.props.start} style={{width: '30%'}}/>
-                        <span style={{padding: '0px 8px', display: 'flex', whiteSpace:'nowrap', alignItems: 'center'}}>每页<br/>数量</span>
-                        <input onChange={this.props.onHandleNumChange} className="w3-input" type="number" value={this.props.num} style={{width: '30%'}}/>
-                        <button onClick={this.props.onGetImageList} className="w3-button w3-green" style={{width: '30%'}}>确定</button>
-                    </div>
-                    <div className="flex-box margin-top-5 w3-card">
-                        <button style={{width: '50%'}} onClick={this.props.onPreviousImageList} className="w3-button w3-green">上一页</button>
-                        <div style={{backgroundColor: 'rgb(211, 204, 204)', width: '2px'}}></div>
-                        <button style={{width: '50%'}} onClick={this.props.onNextImageList} className="w3-button w3-green">下一页</button>
-                    </div>
+                  <div className="flex-box margin-top-5 w3-card">
+                      <span style={{padding: '0px 8px', display: 'flex', whiteSpace:'nowrap', alignItems: 'center'}}>起始<br/>序号</span>
+                      <input onChange={this.handleAutoTagStart} className="w3-input" type="number" value={this.state.autoTagStart} style={{width: '30%'}}/>
+                      <span style={{padding: '0px 8px', display: 'flex', whiteSpace:'nowrap', alignItems: 'center'}}>标注<br/>数量</span>
+                      <input onChange={this.handleAutoTagNum} className="w3-input" type="number" value={this.state.autoTagNum} style={{width: '30%'}}/>
+                      <button onClick={() => this.props.onAutoTagImages(this.state.autoTagStart, this.state.autoTagNum)} className="w3-button w3-green" style={{width: '30%'}}>自动标注</button>
+                  </div>
+                  <div className="flex-box margin-top-5 w3-card">
+                      <span style={{padding: '0px 8px', display: 'flex', whiteSpace:'nowrap', alignItems: 'center'}}>起始<br/>序号</span>
+                      <input onChange={this.props.onHandleStartChange} className="w3-input" type="number" value={this.props.start} style={{width: '30%'}}/>
+                      <span style={{padding: '0px 8px', display: 'flex', whiteSpace:'nowrap', alignItems: 'center'}}>每页<br/>数量</span>
+                      <input onChange={this.props.onHandleNumChange} className="w3-input" type="number" value={this.props.num} style={{width: '30%'}}/>
+                      <button onClick={this.props.onGetImageList} className="w3-button w3-green" style={{width: '30%'}}>获取图片</button>
+                  </div>
+                  <div className="flex-box margin-top-5 w3-card">
+                      <button style={{width: '50%'}} onClick={this.props.onPreviousImageList} className="w3-button w3-green">上一页</button>
+                      <div style={{backgroundColor: 'rgb(211, 204, 204)', width: '2px'}}></div>
+                      <button style={{width: '50%'}} onClick={this.props.onNextImageList} className="w3-button w3-green">下一页</button>
+                  </div>
                 </div>
             </div>
         )

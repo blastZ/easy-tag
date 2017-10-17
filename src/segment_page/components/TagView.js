@@ -71,6 +71,11 @@ class TagView extends Component {
                 </div>
                 <div style={{position: 'absolute', bottom: '0px'}}>
                     <div className="flex-box margin-top-5 w3-card">
+                      <span style={{whiteSpace: 'nowrap', padding: '0px 8px', display: 'flex', alignItems: 'center'}}>区域<br />大小</span>
+                      <input className="w3-input" value={this.props.regionSize} onChange={this.props.handleRegionSize} />
+                      <button style={{width: '30%'}} className="w3-button w3-green" onClick={this.props.onChangeRegionSize}>确定</button>
+                    </div>
+                    <div className="flex-box margin-top-5 w3-card">
                         <span style={{padding: '0px 8px', display: 'flex', whiteSpace:'nowrap', alignItems: 'center'}}>起始<br/>序号</span>
                         <input onChange={this.handleStartChange} value={this.props.start} className="w3-input" type="number" style={{width: '30%'}}/>
                         <span style={{padding: '0px 8px', display: 'flex', whiteSpace:'nowrap', alignItems: 'center'}}>每页<br/>数量</span>

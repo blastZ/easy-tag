@@ -25,6 +25,7 @@ export const SAVE_HELPER_DOC = 'SAVE_HELPER_DOC';
 export const GET_HELPER_DOC = 'GET_HELPER_DOC';
 export const GET_MANAGER_DATA = 'GET_MANAGER_DATA';
 export const GET_TRAIN_STATE_LOG = 'GET_TRAIN_STATE_LOG';
+export const AUTO_TAG_IMAGES = 'AUTO_TAG_IMAGES';
 
 export function addNewImage(imageUrl, imageName) {
     return {
@@ -67,7 +68,8 @@ export function saveImageAnnotation(data) {
     return {
         type: SAVE_IMAGE_ANNOTATION,
         index: data.index,
-        annotation: data.annotation
+        annotation: data.annotation,
+        regionSize: data.regionSize
     }
 }
 
@@ -161,6 +163,14 @@ export const getManagerData = () => ({
   type: GET_MANAGER_DATA
 })
 
-export const getTrainStateLog = () => ({
-  type: GET_TRAIN_STATE_LOG
+export const getTrainStateLog = (userName, taskName) => ({
+  type: GET_TRAIN_STATE_LOG,
+  userName,
+  taskName
+})
+
+export const autoTagImages = (start, num) => ({
+  type: AUTO_TAG_IMAGES,
+  start,
+  num
 })

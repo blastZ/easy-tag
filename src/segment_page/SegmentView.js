@@ -13,6 +13,30 @@ export let segmentAnnotator = null;
 let count = 1;
 
 class SegmentView extends Component {
+    state = {
+      regionSize: 40
+    }
+
+    setRegionSize = (index) => {
+      this.setState({
+        regionSize: this.props.regionSize
+      }, () => {
+        this.initImageCanvas(this.props.imageList[index].url);
+      })
+    }
+
+    changeRegionSize = () => {
+      this.initImageCanvas(this.props.imageList[this.props.selectedImageNum].url);
+    }
+
+    handleRegionSize = (e) => {
+      this.setState({
+        regionSize: parseInt(e.target.value, 10)
+      }, () => {
+        this.forceUpdate();
+      })
+    }
+
     componentDidMount() {
         this.props.getImageList();
         this.props.getFileCount();
@@ -25,13 +49,13 @@ class SegmentView extends Component {
     }
 
     saveSegmentAnnotator = (index) => {
-        this.props.saveImageAnnotation({index, annotation: segmentAnnotator.getAnnotation()});
+        this.props.saveImageAnnotation({index, annotation: segmentAnnotator.getAnnotation(), regionSize: this.state.regionSize});
     }
 
     initImageCanvas = (imgURL) => {
         const that = this;
         segmentAnnotator = new window.SLICSegmentAnnotator(imgURL, {
-            regionSize: 40,
+            regionSize: that.state.regionSize,
             container: document.getElementById('annotator-container'),
             // annotation: 'annotation.png' // optional existing annotation data.
             labels: count === 1 ? [
@@ -214,14 +238,18 @@ class SegmentView extends Component {
                 <div className="flex-box flex-column full-height" style={{flex: '1 1 auto', width: '80%'}}>
                     <SelectedImage/>
                     <SelectBar
-                        initImageCanvas={this.initImageCanvas}
-                        saveSegmentAnnotator={this.saveSegmentAnnotator}
-                        getSegmentAnnotatorLabels={this.getSegmentAnnotatorLabels}/>
+                      onSetRegionSize={this.setRegionSize}
+                      initImageCanvas={this.initImageCanvas}
+                      saveSegmentAnnotator={this.saveSegmentAnnotator}
+                      getSegmentAnnotatorLabels={this.getSegmentAnnotatorLabels}/>
                 </div>
                 <div className="flex-box flex-column" style={{width: '20%', backgroundColor: '#F0F0F0'}}>
                     <TagView
-                        initImageCanvas={this.initImageCanvas}
-                        saveSegmentAnnotator={this.saveSegmentAnnotator}/>
+                      onChangeRegionSize={this.changeRegionSize}
+                      regionSize={this.state.regionSize}
+                      handleRegionSize={this.handleRegionSize}
+                      initImageCanvas={this.initImageCanvas}
+                      saveSegmentAnnotator={this.saveSegmentAnnotator} />
                 </div>
             </div>
         )
@@ -232,7 +260,9 @@ const mapStateToProps = ({ appReducer }) => ({
     segmentAnnotatorList: appReducer.segmentAnnotatorList,
     selectedImageNum: appReducer.selectedImageNum,
     imageAnnotation: appReducer.imageAnnotation,
-    segmentAnnotatorLabels: appReducer.segmentAnnotatorLabels
+    segmentAnnotatorLabels: appReducer.segmentAnnotatorLabels,
+    imageList: appReducer.imageList,
+    regionSize: appReducer.regionSize
 })
 
 const mapDispatchToProps = (dispatch) => ({

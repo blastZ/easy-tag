@@ -30,7 +30,9 @@ class SelectBar extends Component {
         this.props.saveSegmentAnnotator(this.props.selectedImageNum);
         this.props.getImageAnnotation(index);
         this.props.onClickItem(index);
-        this.props.initImageCanvas(this.props.imageList[index].url);
+        setTimeout(() => {
+          this.props.onSetRegionSize(index)
+        }, 100);
     }
 
     render() {

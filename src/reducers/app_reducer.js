@@ -28,6 +28,7 @@ const initState = {
     navList: [],
     managerData: '',
     trainStateLog: '', //app_middleware:172
+    regionSize: 40
 }
 
 function appReducer(state=initState, action) {
@@ -35,7 +36,8 @@ function appReducer(state=initState, action) {
             index, segmentAnnotator, imageList,
             imageAnnotation, segmentAnnotatorLabels, newLabels,
             userLevel, fileCount, taggedFileCount,
-            start, num, navList, password, trainStateLog } = action;
+            start, num, navList, password, trainStateLog,
+            regionSize } = action;
     switch (action.type) {
         case ADD_NEW_IMAGE: {
             return {
@@ -70,7 +72,8 @@ function appReducer(state=initState, action) {
         case GET_IMAGE_ANNOTATION: {
             return {
                 ...state,
-                imageAnnotation
+                imageAnnotation,
+                regionSize
             }
         }
         case GET_SEGMENT_ANNOTATOR_LABELS: {

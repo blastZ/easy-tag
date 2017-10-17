@@ -555,7 +555,7 @@ class TaskPage extends Component {
 
     onLookTrainState = (index) => {
       this.props.dispatch(changeTaskName(this.state.taskList[index].taskName));
-      this.props.dispatch(getTrainStateLog());
+      this.props.dispatch(getTrainStateLog(this.props.userName, this.state.taskList[index].taskName));
       const that = this;
       const taskState = this.state.taskList[index].taskState;
       const currentProgress = this.state.taskList[index].progress;
@@ -579,6 +579,7 @@ class TaskPage extends Component {
         const that = this;
         const taskState = task.taskState;
         const currentProgress = task.progress;
+        this.props.dispatch(getTrainStateLog(task.userName, task.taskName));
         if(taskState === '2' || taskState === '3') {
             try {
                 const lookTrainState = new XMLHttpRequest();
@@ -1630,7 +1631,7 @@ class TaskPage extends Component {
                 {
                     this.state.showImageView === true ? (
                         <div className="popup w3-center w3-padding-64" style={{background: 'rgba(0, 0, 0, 0.4)', position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', zIndex: '100', overflowY: 'auto'}}>
-                            <i onClick={this.closeImageView} className="fa fa-times w3-text-white w3-xxlarge et-hoverable" aria-hidden="true" style={{position: 'absolute', top: '10px', right: '10px'}}></i>
+                            <i onClick={this.closeImageView} className="fa fa-times w3-text-white w3-xxlarge et-hoverable" style={{position: 'absolute', top: '10px', right: '10px'}}></i>
                             <div className="w3-modal-content" style={{backgroundColor: 'rgba(0,0,0,0)'}}>
                                 <h3 className="w3-text-white">{`训练进度: ${this.state.currentProgress}%`}</h3>
                                 <img className="w3-image" id="train-state"/>
@@ -1641,15 +1642,15 @@ class TaskPage extends Component {
                                         : <i className="fa fa-spinner w3-spin w3-xxlarge w3-text-white w3-margin-top" style={{display: 'block'}}></i>
                                     : null
                                 }
-                                <p style={{color: 'white', padding: '0px 50px', textAlign: 'left', whiteSpace: 'pre-line'}}><span style={{fontWeight: 'bold', fontSize: '22px', display: 'block'}}>LOG INFO :</span>{`${this.props.trainStateLog}`}</p>
+                                <p style={{overflowY: 'auto', maxHeight: '550px', background: 'black', color: 'white', padding: '64px 50px', textAlign: 'left', whiteSpace: 'pre-line'}}><span style={{fontWeight: 'bold', fontSize: '22px', display: 'block'}}>LOG INFO :</span>{`${this.props.trainStateLog}`}</p>
                             </div>
                         </div>
                     ) : null
                 }
                 {
                     this.state.showImageViewForTrainTask === true ? (
-                        <div className="popup w3-center w3-padding-64" style={{background: 'rgba(0, 0, 0, 0.4)', position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', zIndex: '100'}}>
-                            <i onClick={this.shouldShowImageViewForTrainTask} className="fa fa-times w3-text-white w3-xxlarge et-hoverable" aria-hidden="true" style={{position: 'absolute', top: '10px', right: '10px'}}></i>
+                        <div className="popup w3-center w3-padding-64" style={{background: 'rgba(0, 0, 0, 0.4)', position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', zIndex: '100', overflowY: 'auto'}}>
+                            <i onClick={this.shouldShowImageViewForTrainTask} className="fa fa-times w3-text-white w3-xxlarge et-hoverable" style={{position: 'absolute', top: '10px', right: '10px'}}></i>
                             <div className="w3-modal-content" style={{backgroundColor: 'rgba(0,0,0,0)'}}>
                                 <h3 className="w3-text-white">{`训练进度: ${this.state.currentProgress}%`}</h3>
                                 <img className="w3-image" id="train-state"/>
@@ -1660,6 +1661,7 @@ class TaskPage extends Component {
                                         : <i className="fa fa-spinner w3-spin w3-xxlarge w3-text-white w3-margin-top" style={{display: 'block'}}></i>
                                     : null
                                 }
+                                <p style={{overflowY: 'auto', maxHeight: '550px', background: 'black', color: 'white', padding: '64px 50px', textAlign: 'left', whiteSpace: 'pre-line'}}><span style={{fontWeight: 'bold', fontSize: '22px', display: 'block'}}>LOG INFO :</span>{`${this.props.trainStateLog}`}</p>
                             </div>
                         </div>
                     ) : null
@@ -1795,7 +1797,8 @@ class TaskPage extends Component {
 
 const mapStateToProps = ({ appReducer }) => ({
   userLevel: appReducer.userLevel,
-  trainStateLog: appReducer.trainStateLog
+  trainStateLog: appReducer.trainStateLog,
+  userName: appReducer.userName
 })
 
 export default withRouter(connect(mapStateToProps)(TaskPage));

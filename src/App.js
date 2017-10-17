@@ -13,7 +13,7 @@ import { Route, withRouter } from 'react-router-dom'
 import Demo from './test_page/Demo';
 import Login from './login_page/Login';
 import SegmentView from './segment_page/SegmentView';
-import { changeUserName, changeUserLevel, changeTaskName, changePassword } from './actions/app_action';
+import { changeUserName, changeUserLevel, changeTaskName, changePassword, autoTagImages } from './actions/app_action';
 import { connect } from 'react-redux';
 import Helper from './helper_page/Helper';
 //import { saveAs } from 'file-saver' when you want to save as txt on the localhost
@@ -998,6 +998,10 @@ class App extends Component {
         });
     }
 
+    autoTagImages = (start, num) => {
+      this.props.dispatch(autoTagImages(start, num));
+    }
+
     render() {
         return (
             <div className="App full-height">
@@ -1040,28 +1044,30 @@ class App extends Component {
                                        imageList={this.state.imageList}/>
                         </div>
                         <div className="flex-box flex-column" style={{width: '20%', backgroundColor: '#F0F0F0'}}>
-                            <TagView ref="tagView" onHandleNumChange={this.handleNumChange}
-                                     getImageListByTag={this.getImageListByTag}
-                                     editTagString={this.editTagString}
-                                     addNewTagToBox={this.addNewTagToBox}
-                                     removeTagFromBox={this.removeTagFromBox}
-                                     onHandleStartChange={this.handleStartChange}
-                                     start={this.state.start}
-                                     num={this.state.num}
-                                     info={this.state.info}
-                                     currentTagString={this.state.currentTagString}
-                                     onChangeTagString={this.changeTagString}
-                                     onChangeBrowserMode={this.changeBrowserMode}
-                                     onGetImageList={this.getImageList}
-                                     onNextImageList={this.nextImageList}
-                                     onPreviousImageList={this.previousImageList}
-                                     boxList={this.state.tagList}
-                                     onDeleteBox={this.deleteBox}
-                                     onChangeBoxInfo={this.changeBoxInfo}
-                                     defaultURL={this.state.defaultURL}
-                                     userName={this.state.userName}
-                                     userLevel={this.state.userLevel}
-                                     taskName={this.state.taskName}/>
+                            <TagView ref="tagView"
+                               onHandleNumChange={this.handleNumChange}
+                               getImageListByTag={this.getImageListByTag}
+                               editTagString={this.editTagString}
+                               addNewTagToBox={this.addNewTagToBox}
+                               removeTagFromBox={this.removeTagFromBox}
+                               onHandleStartChange={this.handleStartChange}
+                               start={this.state.start}
+                               num={this.state.num}
+                               info={this.state.info}
+                               currentTagString={this.state.currentTagString}
+                               onChangeTagString={this.changeTagString}
+                               onChangeBrowserMode={this.changeBrowserMode}
+                               onGetImageList={this.getImageList}
+                               onNextImageList={this.nextImageList}
+                               onPreviousImageList={this.previousImageList}
+                               boxList={this.state.tagList}
+                               onDeleteBox={this.deleteBox}
+                               onChangeBoxInfo={this.changeBoxInfo}
+                               defaultURL={this.state.defaultURL}
+                               userName={this.state.userName}
+                               userLevel={this.state.userLevel}
+                               taskName={this.state.taskName}
+                               onAutoTagImages={this.autoTagImages} />
                         </div>
                     </div> : null
                 )}/>
@@ -1112,7 +1118,8 @@ class App extends Component {
                                      defaultURL={this.state.defaultURL}
                                      userName={this.state.userName}
                                      userLevel={this.state.userLevel}
-                                     taskName={this.state.taskName}/>
+                                     taskName={this.state.taskName}
+                                     onAutoTagImages={this.autoTagImages}/>
                         </div>
                     </div> : null
                 )}/>

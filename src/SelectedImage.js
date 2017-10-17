@@ -295,7 +295,7 @@ class SelectedImage extends Component {
                 </div>
                 {
                     this.props.userLevel !== 0 ?
-                    <i onClick={this.props.onDeleteImage} className="fa fa-times delete-button-white" aria-hidden="true" style={{position: 'absolute', top: '10px', right: '20px'}}></i>
+                    <i onClick={this.props.onDeleteImage} className="fa fa-times delete-button-white" aria-hidden="true" style={{position: 'absolute', top: '10px', right: '20px', zIndex: '100'}}></i>
                     : null
                 }
                 <div id="selectedImagePanel" style={{position: 'relative', width: '1200px', height: '600px', overflow: 'hidden'}}>
