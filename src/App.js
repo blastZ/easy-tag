@@ -16,6 +16,7 @@ import SegmentView from './segment_page/SegmentView';
 import { changeUserName, changeUserLevel, changeTaskName, changePassword, autoTagImages } from './actions/app_action';
 import { connect } from 'react-redux';
 import Helper from './helper_page/Helper';
+import VideoView from './video_page/VideoView';
 //import { saveAs } from 'file-saver' when you want to save as txt on the localhost
 
 class App extends Component {
@@ -642,6 +643,7 @@ class App extends Component {
                     }
                 }, function() {
                     that.refs.tagRoute.refs.selectedImage.initSelectedImage();
+                    that.refs.tagRoute.refs.tagView.changeAutoTagStart(that.state.selectedImageNum + that.state.start);
                 })
                 break
             }
@@ -664,6 +666,7 @@ class App extends Component {
                     }
                 }, function() {
                     that.refs.tagObjectRoute.refs.selectedObjectImage.initSelectedImage();
+                    that.refs.tagObjectRoute.refs.tagObjectView.changeAutoTagStart(that.state.selectedImageNum + that.state.start);
                 })
                 break
             }
@@ -1125,12 +1128,15 @@ class App extends Component {
                 )}/>
                 <Route exact path="/test" render={() => (
                     this.state.login ? <Demo userName={this.state.userName} taskName={this.state.taskName}/> : null
-                )}/>
+                )} />
                 <Route exact path="/segment" render={() => (
                     this.state.login ?
                     <SegmentView/>
                     : null
-                )}/>
+                )} />
+                <Route exact path="/video" render={() => (
+                    <VideoView />
+                )} />
                 <Route path="/helper" render={() => (
                   <Helper />
                 )} />

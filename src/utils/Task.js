@@ -19,12 +19,14 @@ export function getTaskStateName(taskStateID) {
 export function getTaskTypeName(taskTypeID) {
     taskTypeID = parseInt(taskTypeID);
     switch (taskTypeID) {
-        case 0:
-            return ('物体检测');
-        case 1:
-            return ('图片分类');
-        case 2:
-            return ('语义分割');
+      case 0:
+        return ('物体检测');
+      case 1:
+        return ('图片分类');
+      case 2:
+        return ('语义分割');
+      case 3:
+        return ('视频分类');
     }
 }
 
@@ -33,6 +35,7 @@ export function getTaskTypeCode(str) {
         case '物体检测': return 0;
         case '图片分类': return 1;
         case '语义分割': return 2;
+        case '视频分类': return 3;
         default: return 0;
     }
 }

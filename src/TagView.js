@@ -20,6 +20,12 @@ class TagView extends Component {
         autoTagStart: 1,
     }
 
+    changeAutoTagStart = (index) => {
+      this.setState({
+        autoTagStart: index
+      })
+    }
+
     handleAutoTagNum = (e) => {
       this.setState({
         autoTagNum: e.target.value

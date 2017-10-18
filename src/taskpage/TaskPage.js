@@ -1044,6 +1044,11 @@ class TaskPage extends Component {
         }
     }
 
+    onLinkToVideo = (index) => {
+      this.props.dispatch(changeTaskName(this.state.taskList[index].taskName));
+      this.props.history.push('/video');
+    }
+
     getWorkerStateName = (workerStateID) => {
         workerStateID = parseInt(workerStateID);
         switch (workerStateID) {
@@ -1555,6 +1560,7 @@ class TaskPage extends Component {
                                     <option>物体检测</option>
                                     <option>图片分类</option>
                                     <option>语义分割</option>
+                                    <option>视频分类</option>
                                 </select>
                                 <input placeholder="输入新的任务名称" onChange={this.handleInputChange} value={this.state.newTaskName} className="w3-input" type="text"/>
                                 <button onClick={this.onAddTask} className="w3-button w3-orange">添加</button>
@@ -1747,6 +1753,7 @@ class TaskPage extends Component {
                             onLinkToTag={this.onLinkToTag}
                             onLinkToSegment={this.onLinkToSegment}
                             onLinkToTest={this.onLinkToTest}
+                            onLinkToVideo={this.onLinkToVideo}
                             onStartTask={this.onStartTask}
                             onStopTask={this.onStopTask}
                             onLookTrainState={this.onLookTrainState}

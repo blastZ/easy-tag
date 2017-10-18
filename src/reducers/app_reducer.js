@@ -28,7 +28,7 @@ const initState = {
     navList: [],
     managerData: '',
     trainStateLog: '', //app_middleware:172
-    regionSize: 40
+    regionSize: 40,
 }
 
 function appReducer(state=initState, action) {
