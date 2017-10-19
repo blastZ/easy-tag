@@ -9,13 +9,14 @@ import { Provider } from 'react-redux';
 import { createStore, applyMiddleware, compose } from 'redux';
 import appMiddleware from './middlewares/app_middleware';
 import taskMiddleware from './middlewares/task_middleware';
+import videoMiddleware from './middlewares/video_middleware';
 
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
 const store = createStore(
     rootReducer,
     composeEnhancers(
-        applyMiddleware(appMiddleware, taskMiddleware)
+        applyMiddleware(appMiddleware, taskMiddleware, videoMiddleware)
     ));
 
 ReactDOM.render(

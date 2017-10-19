@@ -3,13 +3,31 @@ import { connect } from 'react-redux';
 import styled from 'styled-components';
 import VideoLabel from './VideoLabel';
 import ForwardIcon from 'react-icons/lib/md/arrow-forward';
-import { addNewVideoLabel, removeVideoLabel } from '../actions/video_action';
+import { addNewVideoLabel, removeVideoLabel, addNewVideo,
+         saveVideoLabel, getVideoLabel, getVideoList,
+         initState, deleteVideo } from '../actions/video_action';
+import UploadIcon from 'react-icons/lib/md/movie-filter';
+import DeleteVideoIcon from 'react-icons/lib/md/delete';
 
-const OutContainer = styled.div`
+const Container = styled.div`
   width: 100%;
   height: 100%;
   display: flex;
+`;
+
+const LeftContainer = styled.div`
+  width: 80%;
+  height: 100%;
+  display: flex;
   flex-direction: column;
+`;
+
+const RightContainer = styled.div`
+  width: 20%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 10px 15px;
 `;
 
 const Row = styled.div`
@@ -21,31 +39,33 @@ const Row = styled.div`
 const TopContainer = styled.div`
   height: 5%;
   background: #fafafa;
+  display: flex;
+  align-items: center;
+  position: relative;
 `;
 
 const ContentContainer = styled.div`
-  height: 80%;
+  height: 85%;
   display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   background: rgb(48, 48, 48);
-  padding: 32px 0px;
 `;
 
 const VideoContainer = styled.div`
-  width: 60%;
-  padding: 32px 64px;
+  display: flex;
+  justify-content: center;
 `;
 
 const Video = styled.video`
-  max-width: 100%;
+  width: 100%;
 `;
 
 const OptionsContainer = styled.div`
-  width: 40%;
   display: flex;
-  color: white;
-  padding: 32px 0px;
+  margin-bottom: 5px;
   flex-direction: column;
-  justify-content: flex-start;
 `;
 
 const Input = styled.input`
@@ -53,15 +73,50 @@ const Input = styled.input`
 `;
 
 const ListContainer = styled.div`
-  height: 15%;
+  height: 10%;
   display: flex;
   overflow-x: auto;
   background: rgb(196, 245, 142);
   padding: 10px 10px;
 `;
 
+const LabelListContainer = styled.div`
+  height: 60%;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  flex-grow: 1;
+`;
+
 const Title = styled.h6`
   margin: 0;
+`;
+
+const VideoCard = styled.div`
+  width: 139px;
+  height: 75px;
+  background: #48443c;
+  color: white;
+  opacity: 0.7;
+  margin-left: 10px;
+  padding: 5px 5px;
+  &:hover {
+    cursor: pointer;
+  }
+`;
+
+const VideoCardSelected = styled.div`
+  width: 139px;
+  height: 75px;
+  background: #48443c;
+  opacity: 1;
+  color: white;
+  margin-left: 10px;
+  box-shadow: inset 0 0 0 3px hsla(0,0%,98%,.75), 0 0 0 3px #f08f10;
+  padding: 5px 5px;
+  &:hover {
+    cursor: pointer;
+  }
 `;
 
 let video = null;
@@ -73,7 +128,22 @@ class VideoView extends Component {
     startSecond: 0,
     endMinute: 0,
     endSecond: 0,
-    tag: '马车'
+    tag: '马车',
+    currentIndex: 0,
+    firstLoad: true
+  }
+
+  componentWillMount() {
+    this.props.dispatch(getVideoList());
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if(nextProps.videoList.length > 0 && this.state.firstLoad) {
+      video.src = nextProps.videoList[0].url;
+      this.setState({
+        firstLoad: false
+      })
+    }
   }
 
   componentDidMount() {
@@ -89,6 +159,24 @@ class VideoView extends Component {
         this.setState({
           maxMinute,
           maxSecond
+        })
+      })
+      video.addEventListener('play', () => {
+        const time = video.currentTime;
+        const minute = parseInt(time / 60, 10);
+        const second = parseInt(time % 60, 10);
+        this.setState({
+          startMinute: minute,
+          startSecond: second
+        })
+      })
+      video.addEventListener('pause', () => {
+        const time = video.currentTime;
+        const minute = parseInt(time / 60, 10);
+        const second = parseInt(time % 60, 10);
+        this.setState({
+          endMinute: minute,
+          endSecond: second
         })
       })
   }
@@ -188,14 +276,83 @@ class VideoView extends Component {
     this.props.dispatch(removeVideoLabel(index));
   }
 
+  saveAndGetLabel = (index) => {
+    const { videoLabelList, videoList } = this.props;
+    this.props.dispatch(saveVideoLabel(videoList[this.state.currentIndex].name, videoLabelList));
+    this.props.dispatch(getVideoLabel(videoList[index].name));
+    this.setState({
+      currentIndex: index
+    })
+  }
+
+  uploadNewVideo = (e) => {
+    const files = e.target.files;
+    if(files) {
+      for(const file of files) {
+        const type = file.type;
+        const canPlay = video.canPlayType(type);
+        if(canPlay === '') {
+          window.alert('不支持该视频格式');
+        } else {
+          this.props.dispatch(addNewVideo(file));
+          if(this.props.videoList.length === 0) {
+            video.src = URL.createObjectURL(file);
+          }
+        }
+      }
+    }
+  }
+
+  clickVideoItem = (index) => {
+    const { videoList, videoLabelList } = this.props;
+    if(index !== this.state.currentIndex) {
+      video.src = videoList[index].url;
+      this.props.dispatch(saveVideoLabel(videoList[this.state.currentIndex].name, videoLabelList));
+      this.props.dispatch(initState());
+      this.props.dispatch(getVideoLabel(videoList[index].name));
+      this.setState({
+        currentIndex: index
+      })
+    } else {
+      this.props.dispatch(saveVideoLabel(index));
+    }
+  }
+
+  onDeleteVideo = () => {
+    //EDIT THINK THE SITUATION OF ZERO
+    //label disappear fix it
+    this.props.dispatch(deleteVideo(this.state.currentIndex));
+    video.src = this.props.videoList[this.state.currentIndex - 1].url;
+    this.setState({
+      currentIndex: this.state.currentIndex - 1
+    })
+  }
+
   render() {
     return (
-        <OutContainer>
-          <TopContainer />
-          <ContentContainer>
-            <VideoContainer>
-              <Video id='my-video' controls src={require('./test.mp4')} type="video/mp4"/>
-            </VideoContainer>
+        <Container>
+          <LeftContainer>
+            <TopContainer>
+              <DeleteVideoIcon onClick={this.onDeleteVideo} className="et-hoverable-black" style={{fontSize: '24px', position: 'absolute', right: '10px', color: '#aaa'}} />
+            </TopContainer>
+            <ContentContainer>
+              <VideoContainer>
+                <Video id='my-video' controls autoplay type="video/mp4"/>
+              </VideoContainer>
+              <label className="w3-button w3-green" htmlFor="video-file-input" style={{marginTop: '10px', width: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', }}>
+                <UploadIcon style={{fontSize: '22px'}} />&nbsp;上 传 本 地 视 频
+              </label>
+              <input multiple onChange={this.uploadNewVideo} id="video-file-input" type="file" style={{display: 'none'}}/>
+            </ContentContainer>
+            <ListContainer>
+              {this.props.videoList.map((video, index) => (
+                index === this.state.currentIndex
+                ? <VideoCardSelected key={video.name + index} onClick={() => this.clickVideoItem(index)}>{video.name}</VideoCardSelected>
+                : <VideoCard key={video.name + index} onClick={() => this.clickVideoItem(index)}>{video.name}</VideoCard>
+              ))}
+            </ListContainer>
+          </LeftContainer>
+          <RightContainer>
             <OptionsContainer>
               <Title>时间轴</Title>
               <Row>
@@ -222,19 +379,20 @@ class VideoView extends Component {
               </Row>
               <button className="w3-button w3-green" style={{width: '100px', marginTop: '5px'}} onClick={this.addNewLabel}>添加标签</button>
             </OptionsContainer>
-          </ContentContainer>
-          <ListContainer>
-            {this.props.videoLabelList.map((label, index) => (
-              <VideoLabel removeLabel={this.removeLabel} goToPoint={this.goToPoint} key={label.start + label.end + index} index={index} start={label.start} end={label.end} tag={label.tag} />
-            ))}
-          </ListContainer>
-        </OutContainer>
+            <LabelListContainer>
+              {this.props.videoLabelList.map((label, index) => (
+                <VideoLabel removeLabel={this.removeLabel} goToPoint={this.goToPoint} key={label.start + label.end + index} index={index} start={label.start} end={label.end} tag={label.tag} />
+              ))}
+            </LabelListContainer>
+          </RightContainer>
+        </Container>
     )
   }
 }
 
 const mapStateToProps = ({ videoReducer }) => ({
-  videoLabelList: videoReducer.videoLabelList
+  videoLabelList: videoReducer.videoLabelList,
+  videoList: videoReducer.videoList
 })
 
 export default connect(mapStateToProps)(VideoView);

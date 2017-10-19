@@ -170,6 +170,12 @@ a:hover {
     color: orange!important;
 }
 
+.et-hoverable-black:hover {
+    cursor: pointer;
+    color: black!important;
+}
+
+
 .et-background-white {
     background: #f9f9f9;
 }

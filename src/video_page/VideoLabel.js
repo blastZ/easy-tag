@@ -6,12 +6,12 @@ import FocusIcon from 'react-icons/lib/md/center-focus-weak';
 
 const OutContainer = styled.div`
   min-width: 200px;
-  height: 112px;
+  min-height: 112px;
   background: #fbfbfb;
   color: black;
   display: flex;
   flex-direction: column;
-  margin: 0 5px;
+  margin: 5px 0;
   border: 2px solid #676767;
   position: relative;
   padding-left: 5px;
