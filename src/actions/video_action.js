@@ -6,9 +6,20 @@ export const GET_VIDEO_LABEL = 'GET_VIDEO_LABEL';
 export const GET_VIDEO_LIST = 'GET_VIDEO_LIST';
 export const INIT_STATE = 'INIT_STATE';
 export const DELETE_VIDEO = 'DELETE_VIDEO';
+export const GET_TAG_LIST = 'GET_TAG_LIST';
+export const ADD_NEW_LIST_NAME = 'ADD_NEW_LIST_NAME';
+export const SAVE_TAG_LIST = 'SAVE_TAG_LIST';
+export const CHANGE_TAG_STRING_LIST = 'CHANGE_TAG_STRING_LIST';
+export const EDIT_LIST_NAME = 'EDIT_LIST_NAME';
+export const EDIT_TAG_STRING = 'EDIT_TAG_STRING';
+export const ADD_NEW_TAG_STRING = 'ADD_NEW_TAG_STRING';
+export const DELETE_LIST_NAME = 'DELETE_LIST_NAME';
+export const DELETE_TAG_STRING = 'DELETE_TAG_STRING';
 
-export const getVideoList = () => ({
-  type: GET_VIDEO_LIST
+export const getVideoList = (start, num) => ({
+  type: GET_VIDEO_LIST,
+  start,
+  num
 })
 
 export const addNewVideoLabel = (label) => ({
@@ -44,4 +55,52 @@ export const initState = () => ({
 export const deleteVideo = (index) => ({
   type: DELETE_VIDEO,
   index
+})
+
+export const getTagList = () => ({
+  type: GET_TAG_LIST
+})
+
+export const addNewListName = (newListName) => ({
+  type: ADD_NEW_LIST_NAME,
+  newListName
+})
+
+export const saveTagList = () => ({
+  type: SAVE_TAG_LIST
+})
+
+export const changeTagStringList = (listName) => ({
+  type: CHANGE_TAG_STRING_LIST,
+  listName
+})
+
+export const editListName = (oldListName, newListName) => ({
+  type: EDIT_LIST_NAME,
+  oldListName,
+  newListName
+})
+
+export const editTagString = (listName, oldTagString, newTagString) => ({
+  type: EDIT_TAG_STRING,
+  listName,
+  oldTagString,
+  newTagString
+})
+
+export const addNewTagString = (listName, tagString) => ({
+  type: ADD_NEW_TAG_STRING,
+  listName,
+  tagString
+})
+
+export const deleteListName = (listName) => ({
+  type: DELETE_LIST_NAME,
+  listName
+})
+
+export const deleteTagString = (listName, tagString) => ({
+  type: DELETE_TAG_STRING,
+  listName,
+  tagString
 })

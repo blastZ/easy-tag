@@ -52,7 +52,7 @@ class VideoLabel extends Component {
   }
 
   render() {
-    const { index, start, end, tag } = this.props;
+    const { index, start, end, tagList } = this.props;
     const startMinute = parseInt(start / 60, 10);
     const startSecond = start % 60;
     const endMinute = parseInt(end / 60, 10);
@@ -61,7 +61,9 @@ class VideoLabel extends Component {
         <OutContainer>
           <span style={{fontSize: '18px', paddingTop:'4px'}}>{`${startMinute}:${startSecond < 10 ? `0${startSecond}` : `${startSecond}`} - ${endMinute}:${endSecond < 10 ? `0${endSecond}` : `${endSecond}`}`}</span>
           <TagList>
-            <Tag>{tag}</Tag>
+            {tagList.map((tag, index) => (
+              <Tag key={tag + index}>{tag}</Tag>
+            ))}
           </TagList>
           <OptionList>
             <FocusIcon className="et-hoverable-orange" onClick={() => this.props.goToPoint(start)} />

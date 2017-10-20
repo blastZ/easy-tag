@@ -52,11 +52,17 @@ class TagView extends Component {
     }
 
     shouldShowListNameEditView = () => {
-        this.setState({showListNameEditView: !this.state.showListNameEditView});
+        this.setState({
+          newListName: '',
+          showListNameEditView: !this.state.showListNameEditView
+        });
     }
 
     shouldShowTagEditView = () => {
-        this.setState({showTagEditView: !this.state.showTagEditView});
+        this.setState({
+          newTagString: '',
+          showTagEditView: !this.state.showTagEditView
+        });
     }
 
     shouldShowAddNewTagStringView = () => {
