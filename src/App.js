@@ -1135,7 +1135,9 @@ class App extends Component {
                     : null
                 )} />
                 <Route exact path="/video" render={() => (
+                    this.state.login ?
                     <VideoView />
+                    : null
                 )} />
                 <Route path="/helper" render={() => (
                   <Helper />

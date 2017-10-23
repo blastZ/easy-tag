@@ -5,7 +5,8 @@ import VideoLabel from './VideoLabel';
 import ForwardIcon from 'react-icons/lib/md/arrow-forward';
 import { addNewVideoLabel, removeVideoLabel, addNewVideo,
          saveVideoLabel, getVideoLabel, getVideoList,
-         initState, deleteVideo, getTagList, changeTagStringList } from '../actions/video_action';
+         initState, deleteVideo, getTagList, changeTagStringList,
+         getFileCount, getLabeledFileCount } from '../actions/video_action';
 import UploadIcon from 'react-icons/lib/md/movie-filter';
 import DeleteVideoIcon from 'react-icons/lib/md/delete';
 import TagEditContainer from './TagEditContainer';
@@ -102,6 +103,8 @@ const VideoCard = styled.div`
   opacity: 0.7;
   margin-left: 10px;
   padding: 5px 5px;
+  word-wrap: break-word;
+  overflow-y: auto;
   &:hover {
     cursor: pointer;
   }
@@ -116,6 +119,8 @@ const VideoCardSelected = styled.div`
   margin-left: 10px;
   box-shadow: inset 0 0 0 3px hsla(0,0%,98%,.75), 0 0 0 3px #f08f10;
   padding: 5px 5px;
+  word-wrap: break-word;
+  overflow-y: auto;
   &:hover {
     cursor: pointer;
   }
@@ -147,6 +152,11 @@ class VideoView extends Component {
   handleStart = (e) => {
     let value = parseInt(e.target.value, 10);
     if(value < 1) value = 1;
+    if(this.props.fileCount) {
+      if(value > this.props.fileCount) {
+        value = this.props.fileCount
+      }
+    }
     this.setState({
       start: value
     })
@@ -163,6 +173,8 @@ class VideoView extends Component {
   componentWillMount() {
     this.props.dispatch(getVideoList(1, 10));
     this.props.dispatch(getTagList());
+    this.props.dispatch(getFileCount());
+    this.props.dispatch(getLabeledFileCount());
   }
 
   componentWillReceiveProps(nextProps) {
@@ -408,12 +420,40 @@ class VideoView extends Component {
     }, 5)
   }
 
+  previousVideoList = () => {
+    this.props.dispatch(saveVideoLabel(this.props.videoList[this.state.currentIndex].name, this.props.videoLabelList));
+    this.props.dispatch(initState());
+    this.setState((state) => {
+        state.start = state.start - state.num > 0 ? state.start - state.num : 1;
+        state.currentIndex = 0;
+    }, () => {
+        this.props.dispatch(getVideoList(this.state.start, this.state.num, function(url) {
+          video.src = url;
+        }));
+    });
+  }
+
+  nextVideoList = () => {
+    const maxValue = this.props.fileCount;
+    this.props.dispatch(saveVideoLabel(this.props.videoList[this.state.currentIndex].name, this.props.videoLabelList));
+    this.props.dispatch(initState());
+    this.setState((state) => {
+      state.start = state.start + state.num > maxValue ? maxValue : state.start + state.num;
+      state.currentIndex = 0;
+    }, () => {
+      this.props.dispatch(getVideoList(this.state.start, this.state.num, function(url) {
+        video.src = url;
+      }));
+    })
+  }
+
   render() {
     const { listNameList, tagList, tagStringList } = this.props;
     return (
         <Container>
           <LeftContainer>
             <TopContainer>
+              <span style={{marginLeft: '10px'}}>{`标注进度: ${this.props.labeledFileCount}/${this.props.fileCount}`}</span>
               {this.props.videoList.length > 0 && <DeleteVideoIcon onClick={this.onDeleteVideo} className="et-hoverable-black" style={{fontSize: '24px', position: 'absolute', right: '10px', color: '#aaa'}} />}
             </TopContainer>
             <ContentContainer>
@@ -482,8 +522,8 @@ class VideoView extends Component {
                   <button onClick={this.getVideoList} className="w3-button w3-green w3-card" style={{width: '28%', marginLeft: '10px'}}>获取视频</button>
               </div>
               <div className="flex-box margin-top-5" style={{justifyContent: 'space-between'}}>
-                  <button style={{width: '49%'}} onClick={this.onPreviousImageList} className="w3-button w3-green w3-card">上一页</button>
-                  <button style={{width: '49%'}} onClick={this.onNextImageList} className="w3-button w3-green w3-card">下一页</button>
+                  <button style={{width: '49%'}} onClick={this.previousVideoList} className="w3-button w3-green w3-card">上一页</button>
+                  <button style={{width: '49%'}} onClick={this.nextVideoList} className="w3-button w3-green w3-card">下一页</button>
               </div>
             </div>
           </RightContainer>
@@ -493,6 +533,8 @@ class VideoView extends Component {
 }
 
 const mapStateToProps = ({ videoReducer }) => ({
+  labeledFileCount: videoReducer.labeledFileCount,
+  fileCount: videoReducer.fileCount,
   videoLabelList: videoReducer.videoLabelList,
   videoList: videoReducer.videoList,
   listNameList: videoReducer.listNameList,

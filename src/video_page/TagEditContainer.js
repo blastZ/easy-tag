@@ -236,8 +236,8 @@ class TagEditContainer extends Component {
   }
 }
 
-const mapStateToProps = ({ videoReducer }) => ({
-  userLevel: 3,
+const mapStateToProps = ({ appReducer, videoReducer }) => ({
+  userLevel: appReducer.userLevel,
   listNameList: videoReducer.listNameList,
   tagStringList: videoReducer.tagStringList
 })

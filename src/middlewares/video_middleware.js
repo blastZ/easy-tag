@@ -1,15 +1,15 @@
 import { SAVE_VIDEO_LABEL, GET_VIDEO_LABEL, ADD_NEW_VIDEO,
          GET_VIDEO_LIST, DELETE_VIDEO, GET_TAG_LIST,
-         SAVE_TAG_LIST, } from '../actions/video_action';
+         SAVE_TAG_LIST, GET_FILE_COUNT, GET_LABELED_FILE_COUNT } from '../actions/video_action';
 
 const videoMiddleware = store => next => action => {
   const appState = store.getState().appReducer;
   const videoState = store.getState().videoReducer;
-  const userName = 'fj';
-  const taskName = 'yy';
+  const userName = appState.userName;
+  const taskName = appState.taskName;
   const url = appState.defaultURL;
   if(action.type === GET_VIDEO_LIST) {
-    const { start, num } = action;
+    const { start, num, callback } = action;
     fetch(`${url}getdir?usrname=${userName}&taskname=${taskName}&start=${start}&num=${num}`)
       .then((response) => (response.json()))
       .then((result) => {
@@ -18,6 +18,9 @@ const videoMiddleware = store => next => action => {
             type: GET_VIDEO_LABEL,
             fileName: result[0].name
           })
+          if(callback !== null) {
+            callback(result[0].url);
+          }
         }
         next({
           type: GET_VIDEO_LIST,
@@ -86,6 +89,24 @@ const videoMiddleware = store => next => action => {
       method: 'POST',
       body: JSON.stringify(data)
     })
+  } else if(action.type === GET_FILE_COUNT) {
+    fetch(`${url}filecount?usrname=${userName}&taskname=${taskName}`)
+      .then((response) => (response.json()))
+      .then((result) => {
+        next({
+          type: GET_FILE_COUNT,
+          fileCount: parseInt(result, 10)
+        })
+      })
+  } else if(action.type === GET_LABELED_FILE_COUNT) {
+    fetch(`${url}labeledfilecount?usrname=${userName}&taskname=${taskName}`)
+      .then((response) => (response.json()))
+      .then((result) => {
+        next({
+          type: GET_LABELED_FILE_COUNT,
+          labeledFileCount: result
+        })
+      })
   } else {
     next(action);
   }

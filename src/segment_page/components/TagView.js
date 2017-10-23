@@ -55,15 +55,15 @@ class TagView extends Component {
     render() {
         return (
             <div className="flex-box flex-column" style={{height: '100%', marginTop: '10px'}}>
-                <div className="w3-container">
+                <div className="w3-container" style={{display: 'flex', flexDirection: 'column', maxHeight: '85%'}}>
                     <p style={{margin: '0'}}>标签:</p>
-                    <div id="legend" className="legend margin-top-5"></div>
-                    <p>
+                    <div id="legend" className="legend margin-top-5" style={{overflowY: 'auto'}}></div>
+                    <p style={{flexShrink: '0'}}>
                         <label htmlFor="add-label-input" style={{whiteSpace: 'nowrap'}}>添加:</label>
                         <input id="add-label-input" type="text" className="w3-input margin-top-5"/>
                     </p>
                     <p style={{margin: '0'}}>视图:</p>
-                    <div className="flex-box margin-top-5">
+                    <div className="flex-box margin-top-5" style={{flexShrink: '0'}}>
                         <div id="image-view-button" className="toggle-button w3-button w3-green">图片</div><br />
                         <div id="boundary-view-button" className="toggle-button w3-button w3-green">边界</div><br />
                         <div id="fill-view-button" className="toggle-button w3-button w3-green">填充</div>

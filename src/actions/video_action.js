@@ -15,11 +15,14 @@ export const EDIT_TAG_STRING = 'EDIT_TAG_STRING';
 export const ADD_NEW_TAG_STRING = 'ADD_NEW_TAG_STRING';
 export const DELETE_LIST_NAME = 'DELETE_LIST_NAME';
 export const DELETE_TAG_STRING = 'DELETE_TAG_STRING';
+export const GET_FILE_COUNT = 'GET_FILE_COUNT';
+export const GET_LABELED_FILE_COUNT = 'GET_LABELED_FILE_COUNT';
 
-export const getVideoList = (start, num) => ({
+export const getVideoList = (start, num, callback=null) => ({
   type: GET_VIDEO_LIST,
   start,
-  num
+  num,
+  callback
 })
 
 export const addNewVideoLabel = (label) => ({
@@ -103,4 +106,12 @@ export const deleteTagString = (listName, tagString) => ({
   type: DELETE_TAG_STRING,
   listName,
   tagString
+})
+
+export const getFileCount = () => ({
+  type: GET_FILE_COUNT
+})
+
+export const getLabeledFileCount = () => ({
+  type: GET_LABELED_FILE_COUNT
 })

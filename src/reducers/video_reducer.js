@@ -2,7 +2,8 @@ import { ADD_NEW_VIDEO_LABEL, REMOVE_VIDEO_LABEL, ADD_NEW_VIDEO,
          GET_VIDEO_LABEL, GET_VIDEO_LIST, INIT_STATE, DELETE_VIDEO,
          GET_TAG_LIST, ADD_NEW_LIST_NAME, CHANGE_TAG_STRING_LIST,
          EDIT_LIST_NAME, EDIT_TAG_STRING, ADD_NEW_TAG_STRING,
-         DELETE_LIST_NAME, DELETE_TAG_STRING } from '../actions/video_action';
+         DELETE_LIST_NAME, DELETE_TAG_STRING, GET_FILE_COUNT,
+         GET_LABELED_FILE_COUNT } from '../actions/video_action';
 
 const initState = {
   videoList: [],
@@ -10,22 +11,37 @@ const initState = {
   listNameList: [],
   tagList: {},
   tagStringList: [],
+  fileCount: 0,
 }
 
 const videoReducer = (state=initState, action) => {
   const { videoList, label, index, file, videoLabelList, listNameList, tagList, tagStringList,
-          newListName, listName, oldListName, oldTagString, newTagString, tagString } = action;
+          newListName, listName, oldListName, oldTagString, newTagString, tagString,
+          fileCount, labeledFileCount } = action;
   switch (action.type) {
     case GET_VIDEO_LIST: {
       return {
         ...state,
-        videoList
+        videoList: videoList
       }
     }
     case ADD_NEW_VIDEO_LABEL: {
-      return {
-        ...state,
-        videoLabelList: state.videoLabelList.concat([label])
+      let addNewOne = true;
+      state.videoLabelList.map((currentLabel) => {
+        if(currentLabel.start === label.start && currentLabel.end === label.end) {
+          addNewOne = false;
+          window.alert('该时间轴已存在');
+        }
+      })
+      if(addNewOne) {
+        return {
+          ...state,
+          videoLabelList: state.videoLabelList.concat([label]).sort(function(a, b) {
+            return a.start - b.start;
+          })
+        }
+      } else {
+        return state;
       }
     }
     case REMOVE_VIDEO_LABEL: {
@@ -50,7 +66,9 @@ const videoReducer = (state=initState, action) => {
     case GET_VIDEO_LABEL: {
       return {
         ...state,
-        videoLabelList
+        videoLabelList: videoLabelList.sort(function(a, b) {
+          return a.start - b.start;
+        })
       }
     }
     case INIT_STATE: {
@@ -174,6 +192,18 @@ const videoReducer = (state=initState, action) => {
         ...state,
         tagList: newTagList,
         tagStringList: newTagStringList
+      }
+    }
+    case GET_FILE_COUNT: {
+      return {
+        ...state,
+        fileCount
+      }
+    }
+    case GET_LABELED_FILE_COUNT: {
+      return {
+        ...state,
+        labeledFileCount
       }
     }
     default: return state
