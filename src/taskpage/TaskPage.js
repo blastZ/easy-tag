@@ -127,6 +127,13 @@ class TaskPage extends Component {
                       pretrainmodelSelect.value = this.state.trainParamsForObject.pretrainmodel;
                     }
                 }
+                fetch(`${this.props.defaultURL}getpretrainmodel?usrname=${this.props.username}&taskname=${this.state.currentTaskName}&structure=${select.value}`)
+                  .then((response) => (response.json()))
+                  .then((result) => {
+                    this.setState({
+                      pretrainmodelList: result
+                    })
+                  })
             }
         });
     }
@@ -616,38 +623,39 @@ class TaskPage extends Component {
                       thePretrainmodelValue = document.getElementById('pretrainmodelSelect').value;
                     }
                     that.shouldShowTrainSettingView();
-                    const startTask = new XMLHttpRequest();
-                    startTask.open('GET', `${that.props.defaultURL}starttask?usrname=${that.props.username}&taskname=${that.state.currentTaskName}`);
-                    startTask.send();
-                    startTask.onload = function() {
-                        const arrayData = that.getArrayData(startTask.response);
-                        that.addTask(arrayData);
-                        const request = new XMLHttpRequest();
-                        request.open('POST', `${that.props.defaultURL}savetrainparams?usrname=${that.props.username}&taskname=${that.state.currentTaskName}`)
-                        let data = '';
-                        if(that.state.currentTaskType === 1) {
-                            const structureList = that.state.trainParamsForObject;
-                            structureList.structure = theValue;
-                            structureList.optimizer = theOptimizerValue;
-                            if(that.state.retrainChecked) {
-                              structureList.Retrain = 1;
-                              structureList.pretrainmodel = thePretrainmodelValue
-                            }
-                            data = JSON.stringify(structureList);
-                        } else if(that.state.currentTaskType === 0) {
-                            const structureList = that.state.trainParams;
-                            structureList.structure = theValue;
-                            structureList.optimizer = theOptimizerValue;
-                            if(that.state.retrainChecked) {
-                              structureList.Retrain = 1;
-                              structureList.pretrainmodel = thePretrainmodelValue
-                            }
-                            data = JSON.stringify(structureList);
+                    const request = new XMLHttpRequest();
+                    request.open('POST', `${that.props.defaultURL}savetrainparams?usrname=${that.props.username}&taskname=${that.state.currentTaskName}`)
+                    let data = '';
+                    if(that.state.currentTaskType === 1) {
+                        const structureList = that.state.trainParamsForObject;
+                        structureList.structure = theValue;
+                        structureList.optimizer = theOptimizerValue;
+                        if(that.state.retrainChecked) {
+                          structureList.Retrain = 1;
+                          structureList.pretrainmodel = thePretrainmodelValue
                         }
-                        request.send(data);
-                        request.onload = function() {
-                            console.log(request.response);
+                        data = JSON.stringify(structureList);
+                    } else if(that.state.currentTaskType === 0) {
+                        const structureList = that.state.trainParams;
+                        structureList.structure = theValue;
+                        structureList.optimizer = theOptimizerValue;
+                        if(that.state.retrainChecked) {
+                          structureList.Retrain = 1;
+                          structureList.pretrainmodel = thePretrainmodelValue
                         }
+                        data = JSON.stringify(structureList);
+                    }
+                    request.send(data);
+                    request.onload = function() {
+                        setTimeout(() => {
+                          const startTask = new XMLHttpRequest();
+                          startTask.open('GET', `${that.props.defaultURL}starttask?usrname=${that.props.username}&taskname=${that.state.currentTaskName}`);
+                          startTask.send();
+                          startTask.onload = function() {
+                              const arrayData = that.getArrayData(startTask.response);
+                              that.addTask(arrayData);
+                          }
+                        }, 1000)
                     }
                 } catch(error) {
                     console.log(error);
@@ -834,13 +842,6 @@ class TaskPage extends Component {
 
     onStartTask = (index) => {
         try {
-          fetch(`${this.props.defaultURL}getpretrainmodel?usrname=${this.props.username}&taskname=${this.state.taskList[index].taskName}`)
-            .then((response) => (response.json()))
-            .then((result) => {
-              this.setState({
-                pretrainmodelList: result
-              })
-            })
           const request = new XMLHttpRequest();
           request.open('GET', `${this.props.defaultURL}gettrainparams?usrname=${this.props.username}&taskname=${this.state.taskList[index].taskName}`);
           request.send();
