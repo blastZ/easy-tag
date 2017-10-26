@@ -169,8 +169,9 @@ export const getTrainStateLog = (userName, taskName) => ({
   taskName
 })
 
-export const autoTagImages = (start, num) => ({
+export const autoTagImages = (start, num, pretrainmodel) => ({
   type: AUTO_TAG_IMAGES,
   start,
-  num
+  num,
+  pretrainmodel
 })

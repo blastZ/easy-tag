@@ -18,6 +18,14 @@ class TagView extends Component {
         showFindModeView: false,
         autoTagNum: 1,
         autoTagStart: 1,
+        showPremodelSelect: false,
+        pretrainmodelList: [],
+    }
+
+    shouldShowPremodelSelect = () => {
+      this.setState({
+        showPremodelSelect: !this.state.showPremodelSelect
+      })
     }
 
     changeAutoTagStart = (index) => {
@@ -81,6 +89,13 @@ class TagView extends Component {
         const that = this;
         this.loadTagList();
         document.addEventListener('keyup', this.pageUpAndDownListener);
+        fetch(`${this.props.defaultURL}getpretrainmodelall?usrname=${this.props.userName}&taskname=${this.props.taskName}`)
+          .then((response) => (response.json()))
+          .then((result) => {
+            this.setState({
+              pretrainmodelList: result
+            })
+          })
     }
 
     pageUpAndDownListener = (e) => {
@@ -269,9 +284,30 @@ class TagView extends Component {
         });
     }
 
+    autoTagImages = () => {
+      const theValue = document.getElementById('auto-tag-image-premodel-select').value;
+      this.props.onAutoTagImages(this.state.autoTagStart, this.state.autoTagNum, theValue);
+      this.shouldShowPremodelSelect();
+    }
+
     render() {
         return (
             <div className="flex-box flex-column" style={{justifyContent: 'center', height: '100%'}}>
+                {this.state.showPremodelSelect &&
+                  <div className="w3-modal" style={{background: 'transparent', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+                    <div style={{width: '460px', height: '208px', position: 'relative', display: 'flex', flexDirection: 'column', background: '#fafafa'}}>
+                      <div style={{height: '50px', background: 'black', color: 'white', padding: '10px', fontSize: '17px'}}><span>选择训练模型</span></div>
+                      <select id="auto-tag-image-premodel-select" className="w3-select" style={{height: '55px'}}>
+                        {this.state.pretrainmodelList.map((pretrainmodel, index) => (
+                          <option key={pretrainmodel + index}>{pretrainmodel}</option>
+                        ))}
+                      </select>
+                      <div style={{display: 'flex', width: '100%', height: '45px', justifyContent: 'space-around', position: 'absolute', bottom: '2px'}}>
+                        <button onClick={this.shouldShowPremodelSelect} className="w3-button w3-green" style={{width: '49%'}}>取消</button>
+                        <button onClick={this.autoTagImages} className="w3-button w3-green" style={{width: '49%'}}>确定</button>
+                      </div>
+                    </div>
+                  </div>}
                 {
                     this.props.userLevel === 3 || this.props.userLevel === 2 ?
                         this.state.showFindModeView ?
@@ -405,7 +441,7 @@ class TagView extends Component {
                       <input onChange={this.handleAutoTagStart} className="w3-input" type="number" value={this.state.autoTagStart} style={{width: '30%'}}/>
                       <span style={{padding: '0px 8px', display: 'flex', whiteSpace:'nowrap', alignItems: 'center'}}>标注<br/>数量</span>
                       <input onChange={this.handleAutoTagNum} className="w3-input" type="number" value={this.state.autoTagNum} style={{width: '30%'}}/>
-                      <button onClick={() => this.props.onAutoTagImages(this.state.autoTagStart, this.state.autoTagNum)} className="w3-button w3-green" style={{width: '30%'}}>自动标注</button>
+                      <button onClick={this.shouldShowPremodelSelect} className="w3-button w3-green" style={{width: '30%'}}>自动标注</button>
                   </div>
                   <div className="flex-box margin-top-5 w3-card">
                       <span style={{padding: '0px 8px', display: 'flex', whiteSpace:'nowrap', alignItems: 'center'}}>起始<br/>序号</span>

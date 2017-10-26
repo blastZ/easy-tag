@@ -1424,6 +1424,17 @@ class TaskPage extends Component {
         });
     }
 
+    changePretrainmodelList = () => {
+      const theValue = document.getElementById('structureSelect').value;
+      fetch(`${this.props.defaultURL}getpretrainmodel?usrname=${this.props.username}&taskname=${this.state.currentTaskName}&structure=${theValue}`)
+        .then((response) => (response.json()))
+        .then((result) => {
+          this.setState({
+            pretrainmodelList: result
+          })
+        })
+    }
+
     render() {
       const { userLevel } = this.props;
         return (
@@ -1484,7 +1495,7 @@ class TaskPage extends Component {
                             <div className="w3-modal-content w3-container w3-text-white" style={{width: '600px', padding: '0px 0px 36px 0px', background: 'rgba(0, 0, 0, 0.7)', borderRadius: '10px'}}>
                                 <div className="w3-container">
                                     <p>网络结构:</p>
-                                    <select id="structureSelect" className="w3-select">{
+                                    <select onChange={this.changePretrainmodelList} id="structureSelect" className="w3-select">{
                                         this.state.currentTaskType === 1 ?
                                         this.state.structureListForObject.map((item, index) => (
                                             <option key={item + index}>{item}</option>

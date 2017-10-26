@@ -177,8 +177,8 @@ const appMiddleware = store => next => action => {
           })
         })
     } else if(action.type === AUTO_TAG_IMAGES) {
-      const { start, num } = action;
-      fetch(`${url}autolabelimage?usrname=${appState.userName}&taskname=${appState.taskName}&start=${start}&num=${num}`)
+      const { start, num, pretrainmodel } = action;
+      fetch(`${url}autolabelimage?usrname=${appState.userName}&taskname=${appState.taskName}&start=${start}&num=${num}&pretrainmodel=${pretrainmodel}`)
         .then((response) => (response.text()))
         .then((result) => {
           console.log(result);

@@ -1001,8 +1001,8 @@ class App extends Component {
         });
     }
 
-    autoTagImages = (start, num) => {
-      this.props.dispatch(autoTagImages(start, num));
+    autoTagImages = (start, num, pretrainmodel) => {
+      this.props.dispatch(autoTagImages(start, num, pretrainmodel));
     }
 
     render() {
