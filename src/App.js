@@ -17,6 +17,9 @@ import { changeUserName, changeUserLevel, changeTaskName, changePassword, autoTa
 import { connect } from 'react-redux';
 import Helper from './helper_page/Helper';
 import VideoView from './video_page/VideoView';
+import SelectedDaubImage from './daub_page/SelectedDaubImage';
+import SelectDaubBar from './daub_page/SelectDaubBar';
+import TagDaubView from './daub_page/TagDaubView';
 //import { saveAs } from 'file-saver' when you want to save as txt on the localhost
 
 class App extends Component {
@@ -1142,6 +1145,60 @@ class App extends Component {
                 <Route path="/helper" render={() => (
                   <Helper />
                 )} />
+                <Route exact path="/daub" render={() => (
+                    <div className="flex-box full-height">
+                        <div className="flex-box flex-column full-height" style={{flex: '1 1 auto', width: '80%'}}>
+                            <SelectedDaubImage ref="selectedImage"
+                                           onNextImage={this.nextImage}
+                                           onPreviousImage={this.previousImage}
+                                           num={this.state.num}
+                                           info={this.state.info}
+                                           currentTagString={this.state.currentTagString}
+                                           onAddTag={this.addTag}
+                                           selectedImage={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].url : ''}
+                                           selectedImageName={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].name : 'No Image'}
+                                           selectedImageNumInAll={parseInt(this.state.start) + this.state.selectedImageNum}
+                                           complete={this.state.complete}
+                                           onDeleteImage={this.deleteImage}
+                                           onUploadImgeFiles={this.uploadImageFiles}
+                                           onShowNewImage={this.showNewImage}
+                                           boxList={this.state.tagList}
+                                           defaultURL={this.state.defaultURL}
+                                           userName={this.state.userName}
+                                           userLevel={this.state.userLevel}
+                                           taskName={this.state.taskName}/>
+                            <SelectDaubBar onClickItem={this.clickItem}
+                                       selectedImageNum={this.state.selectedImageNum}
+                                       imageList={this.state.imageList}/>
+                        </div>
+                        <div className="flex-box flex-column" style={{width: '20%', backgroundColor: '#F0F0F0'}}>
+                            <TagDaubView
+                               onHandleNumChange={this.handleNumChange}
+                               getImageListByTag={this.getImageListByTag}
+                               editTagString={this.editTagString}
+                               addNewTagToBox={this.addNewTagToBox}
+                               removeTagFromBox={this.removeTagFromBox}
+                               onHandleStartChange={this.handleStartChange}
+                               start={this.state.start}
+                               num={this.state.num}
+                               info={this.state.info}
+                               currentTagString={this.state.currentTagString}
+                               onChangeTagString={this.changeTagString}
+                               onChangeBrowserMode={this.changeBrowserMode}
+                               onGetImageList={this.getImageList}
+                               onNextImageList={this.nextImageList}
+                               onPreviousImageList={this.previousImageList}
+                               boxList={this.state.tagList}
+                               onDeleteBox={this.deleteBox}
+                               onChangeBoxInfo={this.changeBoxInfo}
+                               defaultURL={this.state.defaultURL}
+                               userName={this.state.userName}
+                               userLevel={this.state.userLevel}
+                               taskName={this.state.taskName}
+                               onAutoTagImages={this.autoTagImages} />
+                        </div>
+                    </div>
+                )}/>
             </div>
         )
   }

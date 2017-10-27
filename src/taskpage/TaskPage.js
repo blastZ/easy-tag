@@ -633,6 +633,9 @@ class TaskPage extends Component {
                         if(that.state.retrainChecked) {
                           structureList.Retrain = 1;
                           structureList.pretrainmodel = thePretrainmodelValue
+                        } else {
+                          structureList.Retrain = 0;
+                          delete structureList.pretrainmodel
                         }
                         data = JSON.stringify(structureList);
                     } else if(that.state.currentTaskType === 0) {
@@ -642,6 +645,9 @@ class TaskPage extends Component {
                         if(that.state.retrainChecked) {
                           structureList.Retrain = 1;
                           structureList.pretrainmodel = thePretrainmodelValue
+                        } else {
+                          structureList.Retrain = 0;
+                          delete structureList.pretrainmodel
                         }
                         data = JSON.stringify(structureList);
                     }
