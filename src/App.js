@@ -676,6 +676,29 @@ class App extends Component {
         }
     }
 
+    clickDaubItem = (url) => {
+        const preIndex = this.state.selectedImageNum;
+        const that = this;
+        for(let i=0; i<this.state.imageList.length; i++) {
+            if(this.state.imageList[i].url === url) {
+                this.setState((state) => {
+                    state.selectedImageNum = i
+                    if(preIndex !== i) {
+                        that.saveTagList(preIndex);
+                        that.getTagList(i);
+                    }
+                    if(state.imageList.length === 1) {
+                        that.saveTagList(preIndex);
+                    }
+                }, function() {
+                    that.refs.tagDaubRoute.refs.selectedDaubImage.initSelectedImage();
+                    //that.refs.tagRoute.refs.tagView.changeAutoTagStart(that.state.selectedImageNum + that.state.start);
+                })
+                break
+            }
+        }
+    }
+
     getTagList = (index) => {
         const that = this;
         let tagList = [];
@@ -1145,10 +1168,10 @@ class App extends Component {
                 <Route path="/helper" render={() => (
                   <Helper />
                 )} />
-                <Route exact path="/daub" render={() => (
+                <Route ref="tagDaubRoute" exact path="/daub" render={() => (
                     <div className="flex-box full-height">
                         <div className="flex-box flex-column full-height" style={{flex: '1 1 auto', width: '80%'}}>
-                            <SelectedDaubImage ref="selectedImage"
+                            <SelectedDaubImage ref="selectedDaubImage"
                                            onNextImage={this.nextImage}
                                            onPreviousImage={this.previousImage}
                                            num={this.state.num}
@@ -1167,7 +1190,7 @@ class App extends Component {
                                            userName={this.state.userName}
                                            userLevel={this.state.userLevel}
                                            taskName={this.state.taskName}/>
-                            <SelectDaubBar onClickItem={this.clickItem}
+                            <SelectDaubBar onClickItem={this.clickDaubItem}
                                        selectedImageNum={this.state.selectedImageNum}
                                        imageList={this.state.imageList}/>
                         </div>

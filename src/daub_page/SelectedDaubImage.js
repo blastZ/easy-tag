@@ -39,20 +39,30 @@ class SelectedDaubImage extends Component {
     initSelectedImage = () => {
         const theImage = document.getElementById('selectedImage');
         const container = document.getElementById('selectedImagePanel');
+        const canvas = document.getElementById('selectedCanvas');
+        const ctx = canvas.getContext('2d');
 
         if(theImage.naturalHeight > 600) {
             theImage.height = 600;
+            canvas.height = 600;
+            canvas.width = theImage.width;
         } else {
             theImage.height = theImage.naturalHeight;
+            canvas.height = theImage.height;
+            canvas.width = theImage.width;
         }
         theImage.style.left = container.width - theImage.width > 0 ? ((container.width - theImage.width) / 2).toString() + 'px' : '0px';
         theImage.style.top = container.height - theImage.height > 0 ? ((container.height - theImage.height) / 2).toString() + 'px' : '0px';
+        canvas.style.left = container.width - theImage.width > 0 ? ((container.width - theImage.width) / 2).toString() + 'px' : '0px';
+        canvas.style.top = container.height - theImage.height > 0 ? ((container.height - theImage.height) / 2).toString() + 'px' : '0px';
     }
 
     componentDidMount() {
         const that = this;
         const theImage = document.getElementById('selectedImage');
         const container = document.getElementById('selectedImagePanel');
+        const canvas = document.getElementById('selectedCanvas');
+        const ctx = canvas.getContext('2d');
 
         container.addEventListener('contextmenu', function(e) {
             e.preventDefault();
@@ -62,11 +72,17 @@ class SelectedDaubImage extends Component {
             const container = document.getElementById('selectedImagePanel');
             container.width = 1200;
             container.height = 600;
+            canvas.width = theImage.width;
+            canvas.height = theImage.height;
             if(theImage.height > 600) {
                 theImage.height = 600;
+                canvas.height = 600;
+                canvas.width = theImage.width;
             }
             theImage.style.left = container.width - theImage.width > 0 ? ((container.width - theImage.width) / 2).toString() + 'px' : '0px';
             theImage.style.top = container.height - theImage.height > 0 ? ((container.height - theImage.height) / 2).toString() + 'px' : '0px';
+            canvas.style.left = container.width - theImage.width > 0 ? ((container.width - theImage.width) / 2).toString() + 'px' : '0px';
+            canvas.style.top = container.height - theImage.height > 0 ? ((container.height - theImage.height) / 2).toString() + 'px' : '0px';
             that.setState({imgLoaded: true});
         }
 
@@ -101,26 +117,42 @@ class SelectedDaubImage extends Component {
             }
         })
 
-        let drawing = false
-        let x1 = 0, y1 = 0, x_move = 0, y_move = 0
-        let rect_width = 0, rect_height = 0
-        let offset = {}
+        let drawing = false;
+        let currentX, currentY, previousX, previousY;
         let start = false;
         let previousClientX = 0, previousClientY = 0, currentClientX = 0, currentClientY = 0;
+        canvas.addEventListener('mousedown', (e) => {
+          if(e.which === 1) {
+            drawing = true;
+            currentX = e.clientX - canvas.offsetLeft - container.offsetLeft;
+            currentY = e.clientY - canvas.offsetTop - container.offsetTop;
+            let dot_flag = true;
+            if(dot_flag) {
+              ctx.beginPath();
+              ctx.fillStyle = 'red';
+              ctx.fillRect(currentX, currentY, 4, 4);
+              ctx.closePath();
+              dot_flag = false;
+            }
+          }
+        });
         $('#selectedImagePanel').mousedown(function(e) {
-            if(e.which === 1) {
+            if(e.which === 3) {
+                start = true;
+                previousClientX = e.clientX;
+                previousClientY = e.clientY;
             }
         })
 
         $('#selectedImagePanel').mousemove(function(e) {
-            if(e.which === 1) {
-
-            } else if(e.which === 3) {
+            if(e.which === 3) {
                 if(start) {
                     currentClientX = e.clientX;
                     currentClientY = e.clientY;
-                    theImage.style.left = (parseInt(theImage.style.left) + currentClientX - previousClientX).toString() + 'px';
-                    theImage.style.top = (parseInt(theImage.style.top) + currentClientY - previousClientY).toString() + 'px';
+                    theImage.style.left = (parseInt(canvas.style.left) + currentClientX - previousClientX).toString() + 'px';
+                    theImage.style.top = (parseInt(canvas.style.top) + currentClientY - previousClientY).toString() + 'px';
+                    canvas.style.left = (parseInt(canvas.style.left) + currentClientX - previousClientX).toString() + 'px';
+                    canvas.style.top = (parseInt(canvas.style.top) + currentClientY - previousClientY).toString() + 'px';
                     previousClientX = e.clientX;
                     previousClientY = e.clientY;
                     that.forceUpdate();
@@ -128,9 +160,27 @@ class SelectedDaubImage extends Component {
             }
         })
 
+        canvas.addEventListener('mousemove', (e) => {
+          if(e.which === 1) {
+            if(drawing) {
+              previousX = currentX;
+              previousY = currentY;
+              currentX = e.clientX - canvas.offsetLeft - container.offsetLeft;
+              currentY = e.clientY - canvas.offsetTop - container.offsetTop;
+              ctx.beginPath();
+              ctx.moveTo(previousX, previousY);
+              ctx.lineTo(currentX, currentY);
+              ctx.strokeStyle = 'red';
+              ctx.lineWidth = 4;
+              ctx.stroke();
+              ctx.closePath();
+            }
+          }
+        });
+
         mouseupListener = function(e) {
           if(e.which === 1) {
-
+            drawing = false;
           } else if(e.which === 3) {
               start = false;
               that.forceUpdate();
@@ -142,21 +192,44 @@ class SelectedDaubImage extends Component {
 
     wheelListener = (e) => {
       e.wheelDeltaY > 0 ? this.increaseImageSize() : this.decreaseImageSize();
-      this.forceUpdate();
     }
 
     increaseImageSize = () => {
         const theImage = document.getElementById('selectedImage');
+        const canvas = document.getElementById('selectedCanvas');
+        const ctx  = canvas.getContext('2d');
+        const url = canvas.toDataURL();
         theImage.height += 10;
-        theImage.style.left = (parseInt(theImage.style.left) - 5).toString() + 'px';
-        theImage.style.top = (parseInt(theImage.style.top) - 5).toString() + 'px';
+        theImage.style.left = (parseInt(canvas.style.left) - 5).toString() + 'px';
+        theImage.style.top = (parseInt(canvas.style.top) - 5).toString() + 'px';
+        canvas.style.left = (parseInt(canvas.style.left) - 5).toString() + 'px';
+        canvas.style.top = (parseInt(canvas.style.top) - 5).toString() + 'px';
+        canvas.height = theImage.height;
+        canvas.width = theImage.width;
+        const newImage = new Image();
+        newImage.onload = () => {
+          ctx.drawImage(newImage, 0, 0, theImage.width, theImage.height);
+        }
+        newImage.src = url;
     }
 
     decreaseImageSize = () => {
         const theImage = document.getElementById('selectedImage');
+        const canvas = document.getElementById('selectedCanvas');
+        const ctx  = canvas.getContext('2d');
+        const url = canvas.toDataURL();
         theImage.height -= 10;
-        theImage.style.left = (parseInt(theImage.style.left) + 5).toString() + 'px';
-        theImage.style.top = (parseInt(theImage.style.top) + 5).toString() + 'px';
+        theImage.style.left = (parseInt(canvas.style.left) + 5).toString() + 'px';
+        theImage.style.top = (parseInt(canvas.style.top) + 5).toString() + 'px';
+        canvas.style.left = (parseInt(canvas.style.left) + 5).toString() + 'px';
+        canvas.style.top = (parseInt(canvas.style.top) + 5).toString() + 'px';
+        canvas.height = theImage.height;
+        canvas.width = theImage.width;
+        const newImage = new Image();
+        newImage.onload = () => {
+          ctx.drawImage(newImage, 0, 0, theImage.width, theImage.height);
+        }
+        newImage.src = url;
     }
 
     getFileCount = () => {
@@ -199,6 +272,7 @@ class SelectedDaubImage extends Component {
                 }
                 <div id="selectedImagePanel" style={{position: 'relative', width: '1200px', height: '600px', overflow: 'hidden'}}>
                     <img draggable="false" id="selectedImage" src={this.props.selectedImage} alt={this.props.selectedImage} style={{position: 'absolute'}}/>
+                    <canvas draggable="false" id="selectedCanvas" style={{position: 'absolute'}} />
                 </div>
                 {
                     // this.props.userLevel !== 0 ?
