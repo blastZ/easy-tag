@@ -26,7 +26,7 @@ class App extends Component {
     state = {
         userName: '',
         taskName: '',
-        userLevel: 0,
+        userLevel: 3,
         userGroup: '',
         password: '',
         defaultURL: 'http://demo.codvision.com:16831/api/',
@@ -44,7 +44,8 @@ class App extends Component {
         login: false,
         shouldPostTagList: false,
         shouldPostObjectTagList: false,
-        currentBrowserMode: 'normal' //'normal', 'find'
+        currentBrowserMode: 'normal', //'normal', 'find',
+        tagStringList: {}
     }
 
     uploadImageFiles = (files) => {
@@ -1031,6 +1032,23 @@ class App extends Component {
       this.props.dispatch(autoTagImages(start, num, pretrainmodel));
     }
 
+    getColor = () => {
+      const tagName = document.getElementById('mySelect').value;
+      console.log(tagName);
+      console.log(this.state.tagStringList);
+      for(let i=0; i<this.state.tagStringList.length; i++) {
+        if(this.state.tagStringList[i].name === tagName) {
+          return this.state.tagStringList[i].color;
+        }
+      }
+    }
+
+    changeTagStringList = (tagStringList) => {
+      this.setState({
+        tagStringList
+      })
+    }
+
     render() {
         return (
             <div className="App full-height">
@@ -1172,30 +1190,35 @@ class App extends Component {
                     <div className="flex-box full-height">
                         <div className="flex-box flex-column full-height" style={{flex: '1 1 auto', width: '80%'}}>
                             <SelectedDaubImage ref="selectedDaubImage"
-                                           onNextImage={this.nextImage}
-                                           onPreviousImage={this.previousImage}
-                                           num={this.state.num}
-                                           info={this.state.info}
-                                           currentTagString={this.state.currentTagString}
-                                           onAddTag={this.addTag}
-                                           selectedImage={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].url : ''}
-                                           selectedImageName={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].name : 'No Image'}
-                                           selectedImageNumInAll={parseInt(this.state.start) + this.state.selectedImageNum}
-                                           complete={this.state.complete}
-                                           onDeleteImage={this.deleteImage}
-                                           onUploadImgeFiles={this.uploadImageFiles}
-                                           onShowNewImage={this.showNewImage}
-                                           boxList={this.state.tagList}
-                                           defaultURL={this.state.defaultURL}
-                                           userName={this.state.userName}
-                                           userLevel={this.state.userLevel}
-                                           taskName={this.state.taskName}/>
+                               getColor={this.getColor}
+                               onNextImage={this.nextImage}
+                               onPreviousImage={this.previousImage}
+                               num={this.state.num}
+                               info={this.state.info}
+                               currentTagString={this.state.currentTagString}
+                               onAddTag={this.addTag}
+                               selectedImage={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].url : ''}
+                               selectedImageName={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].name : 'No Image'}
+                               selectedImageNumInAll={parseInt(this.state.start) + this.state.selectedImageNum}
+                               complete={this.state.complete}
+                               onDeleteImage={this.deleteImage}
+                               onUploadImgeFiles={this.uploadImageFiles}
+                               onShowNewImage={this.showNewImage}
+                               boxList={this.state.tagList}
+                               defaultURL={this.state.defaultURL}
+                               userName={this.state.userName}
+                               userLevel={this.state.userLevel}
+                               taskName={this.state.taskName}/>
                             <SelectDaubBar onClickItem={this.clickDaubItem}
                                        selectedImageNum={this.state.selectedImageNum}
                                        imageList={this.state.imageList}/>
                         </div>
                         <div className="flex-box flex-column" style={{width: '20%', backgroundColor: '#F0F0F0'}}>
                             <TagDaubView
+                               tagStringList={this.state.tagStringList}
+                               getColor={this.getColor}
+                               setTagStringList={this.setTagStringList}
+                               setColorList={this.setColorList}
                                onHandleNumChange={this.handleNumChange}
                                getImageListByTag={this.getImageListByTag}
                                editTagString={this.editTagString}
@@ -1206,14 +1229,11 @@ class App extends Component {
                                num={this.state.num}
                                info={this.state.info}
                                currentTagString={this.state.currentTagString}
-                               onChangeTagString={this.changeTagString}
+                               onChangeTagStringList={this.changeTagStringList}
                                onChangeBrowserMode={this.changeBrowserMode}
                                onGetImageList={this.getImageList}
                                onNextImageList={this.nextImageList}
                                onPreviousImageList={this.previousImageList}
-                               boxList={this.state.tagList}
-                               onDeleteBox={this.deleteBox}
-                               onChangeBoxInfo={this.changeBoxInfo}
                                defaultURL={this.state.defaultURL}
                                userName={this.state.userName}
                                userLevel={this.state.userLevel}

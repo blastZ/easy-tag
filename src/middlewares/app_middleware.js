@@ -167,8 +167,8 @@ const appMiddleware = store => next => action => {
         })
       }
     } else if(action.type === GET_TRAIN_STATE_LOG) {
-      const { userName, taskName } = action;
-      fetch(`${url}tasklog?usrname=${userName}&taskname=${taskName}`)
+      const { userName, taskName, structure } = action;
+      fetch(`${url}tasklog?usrname=${userName}&taskname=${taskName}&structure=${structure}`)
         .then((response) => (response.text()))
         .then((result) => {
           next({

@@ -129,7 +129,7 @@ class SelectedDaubImage extends Component {
             let dot_flag = true;
             if(dot_flag) {
               ctx.beginPath();
-              ctx.fillStyle = 'red';
+              ctx.fillStyle = that.props.getColor();
               ctx.fillRect(currentX, currentY, 4, 4);
               ctx.closePath();
               dot_flag = false;
@@ -170,7 +170,7 @@ class SelectedDaubImage extends Component {
               ctx.beginPath();
               ctx.moveTo(previousX, previousY);
               ctx.lineTo(currentX, currentY);
-              ctx.strokeStyle = 'red';
+              ctx.strokeStyle = that.props.getColor();
               ctx.lineWidth = 4;
               ctx.stroke();
               ctx.closePath();

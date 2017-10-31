@@ -77,7 +77,9 @@ class TaskPage extends Component {
         optimizerListForObject: [],
         pretrainmodelList: [],
         theRefreshInterval: null,
-        tabIndex: 0
+        tabIndex: 0,
+        taskStructureList: [],
+        currentTaskStructure: '',
     }
 
     handleRetrainChecked = () => {
@@ -560,22 +562,66 @@ class TaskPage extends Component {
         this.setState({newTaskName: e.target.value})
     }
 
+    changeTaskStructure = (e) => {
+      this.setState({
+        currentTaskStructure: e.target.value
+      }, () => {
+        this.props.dispatch(getTrainStateLog(this.props.username, this.props.taskName, this.state.currentTaskStructure));
+        try {
+          const lookTrainState = new XMLHttpRequest();
+          lookTrainState.open('GET', `${this.props.defaultURL}taskinfo?usrname=${this.props.username}&taskname=${this.props.taskName}&structure=${this.state.currentTaskStructure}`);
+          lookTrainState.send();
+          lookTrainState.onload = function() {
+            document.getElementById('train-state').src = lookTrainState.response;
+          }
+        } catch(error) {
+            console.log(error);
+        }
+      })
+    }
+
+    changeTaskStructureForTrainTask = (e) => {
+      this.setState({
+        currentTaskStructure: e.target.value
+      }, () => {
+        this.props.dispatch(getTrainStateLog(this.state.currentTrainTaskUserName, this.state.currentTaskName, this.state.currentTaskStructure));
+        try {
+          const lookTrainState = new XMLHttpRequest();
+          lookTrainState.open('GET', `${this.props.defaultURL}taskinfo?usrname=${this.state.currentTrainTaskUserName}&taskname=${this.state.currentTaskName}&structure=${this.state.currentTaskStructure}`);
+          lookTrainState.send();
+          lookTrainState.onload = function() {
+            document.getElementById('train-state').src = lookTrainState.response;
+          }
+        } catch(error) {
+            console.log(error);
+        }
+      })
+    }
+
     onLookTrainState = (index) => {
       this.props.dispatch(changeTaskName(this.state.taskList[index].taskName));
-      this.props.dispatch(getTrainStateLog(this.props.userName, this.state.taskList[index].taskName));
       const that = this;
       const taskState = this.state.taskList[index].taskState;
       const currentProgress = this.state.taskList[index].progress;
       if(taskState === '2' || taskState === '3') {
           try {
-              const lookTrainState = new XMLHttpRequest();
-              lookTrainState.open('GET', `${this.props.defaultURL}taskinfo?usrname=${this.props.username}&taskname=${this.state.taskList[index].taskName}`);
-              lookTrainState.send();
-              lookTrainState.onload = function() {
-                  that.setState({showImageView: true, currentProgress, currentTaskName: that.state.taskList[index].taskName}, function() {
-                      document.getElementById('train-state').src = lookTrainState.response;
+              fetch(`${this.props.defaultURL}taskinfostructure?usrname=${this.props.username}&taskname=${this.state.taskList[index].taskName}`)
+                .then((response) => response.json())
+                .then((result) => {
+                  this.setState({
+                    taskStructureList: result,
+                    currentTaskStructure: result[0]
                   })
-              }
+                  this.props.dispatch(getTrainStateLog(this.props.userName, this.state.taskList[index].taskName, result[0]));
+                  const lookTrainState = new XMLHttpRequest();
+                  lookTrainState.open('GET', `${this.props.defaultURL}taskinfo?usrname=${this.props.username}&taskname=${this.state.taskList[index].taskName}&structure=${result[0]}`);
+                  lookTrainState.send();
+                  lookTrainState.onload = function() {
+                      that.setState({showImageView: true, currentProgress, currentTaskName: that.state.taskList[index].taskName}, function() {
+                          document.getElementById('train-state').src = lookTrainState.response;
+                      })
+                  }
+                })
           } catch(error) {
               console.log(error);
           }
@@ -586,17 +632,25 @@ class TaskPage extends Component {
         const that = this;
         const taskState = task.taskState;
         const currentProgress = task.progress;
-        this.props.dispatch(getTrainStateLog(task.userName, task.taskName));
         if(taskState === '2' || taskState === '3') {
             try {
-                const lookTrainState = new XMLHttpRequest();
-                lookTrainState.open('GET', `${this.props.defaultURL}taskinfo?usrname=${task.userName}&taskname=${task.taskName}`);
-                lookTrainState.send();
-                lookTrainState.onload = function() {
+              fetch(`${this.props.defaultURL}taskinfostructure?usrname=${task.userName}&taskname=${task.taskName}`)
+                .then((response) => response.json())
+                .then((result) => {
+                  this.setState({
+                    taskStructureList: result,
+                    currentTaskStructure: result[0]
+                  })
+                  this.props.dispatch(getTrainStateLog(task.userName, task.taskName, result[0]));
+                  const lookTrainState = new XMLHttpRequest();
+                  lookTrainState.open('GET', `${this.props.defaultURL}taskinfo?usrname=${task.userName}&taskname=${task.taskName}&structure=${result[0]}`);
+                  lookTrainState.send();
+                  lookTrainState.onload = function() {
                     that.setState({showImageViewForTrainTask: !that.state.showImageViewForTrainTask, currentProgress, currentTaskName: task.taskName, currentTrainTaskUserName: task.userName}, function() {
                         document.getElementById('train-state').src = lookTrainState.response;
                     })
-                }
+                  }
+                })
             } catch(error) {
                 console.log(error);
             }
@@ -854,97 +908,85 @@ class TaskPage extends Component {
           request.onload = () => {
               this.setState({currentTaskName: this.state.taskList[index].taskName, currentTaskType: parseInt(this.state.taskList[index].taskType, 10)}, () => {
                   if(parseInt(this.state.currentTaskType, 10) === 0) {
-                      if(request.response !== '{}') {
-                          const trainParams = JSON.parse(request.response);
-                          if(trainParams.Retrain && trainParams.Retrain === 1) {
-                            this.setState({
-                              retrainChecked: true
-                            })
-                          } else {
-                            this.setState({
-                              retrainChecked: false
-                            })
-                          }
-                          this.setState({trainParams})
-                      } else {
-                          this.setState({
-                              trainParams: {
-                                  structure: '',
-                                  epoch: 5000,
-                                  batchsize: 32,
-                                  learningrate: 0.0001,
-                                  weightdecay: 0.0005,
-                                  momentum: 0.9
-                              },
-                              retrainChecked: false
+                      fetch(`${this.props.defaultURL}getdetstructure`)
+                        .then((response) => response.json())
+                        .then((result) => {
+                          this.setState({structureList: result}, () => {
+                            this.shouldShowTrainSettingView();
+                            if(request.response !== '{}') {
+                                const trainParams = JSON.parse(request.response);
+                                if(trainParams.Retrain && trainParams.Retrain === 1) {
+                                  this.setState({retrainChecked: true})
+                                } else {
+                                  this.setState({retrainChecked: false})
+                                }
+                                this.setState({trainParams})
+                            } else {
+                                fetch(`${this.props.defaultURL}getdefaulttrainparams?usrname=${this.props.userName}&taskname=${this.state.currentTaskName}&structure=${this.state.structureList[0]}`)
+                                  .then((response) => response.json())
+                                  .then((result) => {
+                                    document.getElementById('optimizerSelect').value = result.optimizer;
+                                    this.setState({
+                                      trainParams: {
+                                        structure: result.structure,
+                                        epoch: result.epoch,
+                                        batchsize: result.batchsize,
+                                        learningrate: parseFloat(result.learningrate, 10),
+                                        weightdecay: result.weightdecay,
+                                        momentum: result.momentum,
+                                        optimizer: result.optimizer
+                                      },
+                                      retrainChecked: false
+                                    })
+                                  })
+                            }
                           })
-                      }
-                      const request2 = new XMLHttpRequest();
-                      request2.open('GET', `${this.props.defaultURL}getdetstructure`);
-                      request2.send();
-                      request2.onload = () => {
-                          let structureList = [];
-                          structureList = JSON.parse(request2.response);
-                          const request3 = new XMLHttpRequest();
-                          request3.open('GET', `${this.props.defaultURL}getoptmethod`);
-                          request3.send();
-                          request3.onload = () => {
-                              let optimizerList = [];
-                              optimizerList = JSON.parse(request3.response);
-                              this.setState({
-                                  structureList,
-                                  optimizerList
-                              }, () => {
-                                  this.shouldShowTrainSettingView();
-                              })
-                          }
-                      }
+                          fetch(`${this.props.defaultURL}getoptmethod`)
+                            .then((response) => response.json())
+                            .then((result) => {
+                              this.setState({optimizerList: result})
+                            })
+                        })
                   } else if(parseInt(this.state.currentTaskType, 10) === 1) {
-                      if(request.response !== '{}') {
-                          const trainParamsForObject = JSON.parse(request.response);
-                          this.setState({trainParamsForObject})
-                          if(trainParamsForObject.Retrain && trainParamsForObject.Retrain === 1) {
-                            this.setState({
-                              retrainChecked: true
-                            })
+                    fetch(`${this.props.defaultURL}getclsstructure`)
+                      .then((response) => response.json())
+                      .then((result) => {
+                        this.setState({structureListForObject: result}, () => {
+                          this.shouldShowTrainSettingView();
+                          if(request.response !== '{}') {
+                              const trainParamsForObject = JSON.parse(request.response);
+                              if(trainParamsForObject.Retrain && trainParamsForObject.Retrain === 1) {
+                                this.setState({retrainChecked: true})
+                              } else {
+                                this.setState({retrainChecked: false})
+                              }
+                              this.setState({trainParamsForObject})
                           } else {
-                            this.setState({
-                              retrainChecked: false
-                            })
+                              fetch(`${this.props.defaultURL}getdefaulttrainparams?usrname=${this.props.userName}&taskname=${this.state.currentTaskName}&structure=${this.state.structureListForObject[0]}`)
+                                .then((response) => response.json())
+                                .then((result) => {
+                                  document.getElementById('optimizerSelect').value = result.optimizer;
+                                  this.setState({
+                                    trainParamsForObject: {
+                                      structure: result.structure,
+                                      epoch: result.epoch,
+                                      batchsize: result.batchsize,
+                                      learningrate: parseFloat(result.learningrate, 10),
+                                      weightdecay: result.weightdecay,
+                                      momentum: result.momentum,
+                                      optimizer: result.optimizer
+                                    },
+                                    retrainChecked: false
+                                  })
+                                })
                           }
-                      } else {
-                          this.setState({
-                              trainParamsForObject: {
-                                  structure: '',
-                                  epoch: 200,
-                                  batchsize: 64,
-                                  learningrate: 0.05,
-                                  weightdecay: 0.0005,
-                                  momentum: 0.9
-                              },
-                              retrainChecked: false
+                        })
+                        fetch(`${this.props.defaultURL}getoptmethod`)
+                          .then((response) => response.json())
+                          .then((result) => {
+                            this.setState({optimizerListForObject: result})
                           })
-                      }
-                      const request2 = new XMLHttpRequest();
-                      request2.open('GET', `${this.props.defaultURL}getclsstructure`);
-                      request2.send();
-                      request2.onload = () => {
-                          let structureListForObject = [];
-                          structureListForObject = JSON.parse(request2.response);
-                          const request3 = new XMLHttpRequest();
-                          request3.open('GET', `${this.props.defaultURL}getoptmethod`);
-                          request3.send();
-                          request3.onload = () => {
-                              let optimizerListForObject = [];
-                              optimizerListForObject = JSON.parse(request3.response);
-                              this.setState({
-                                  structureListForObject,
-                                  optimizerListForObject
-                              }, () => {
-                                  this.shouldShowTrainSettingView();
-                              })
-                          }
-                      }
+                      })
                   }
               })
           }
@@ -1432,11 +1474,30 @@ class TaskPage extends Component {
 
     changePretrainmodelList = () => {
       const theValue = document.getElementById('structureSelect').value;
+
       fetch(`${this.props.defaultURL}getpretrainmodel?usrname=${this.props.username}&taskname=${this.state.currentTaskName}&structure=${theValue}`)
         .then((response) => (response.json()))
         .then((result) => {
           this.setState({
             pretrainmodelList: result
+          })
+        })
+
+      fetch(`${this.props.defaultURL}getdefaulttrainparams?usrname=${this.props.userName}&taskname=${this.state.currentTaskName}&structure=${theValue}`)
+        .then((response) => response.json())
+        .then((result) => {
+          console.log(result)
+          this.setState({
+            trainParams: {
+              structure: result.structure,
+              epoch: result.epoch,
+              batchsize: result.batchsize,
+              learningrate: parseFloat(result.learningrate, 10),
+              weightdecay: result.weightdecay,
+              momentum: result.momentum,
+              optimizer: result.optimizer
+            },
+            retrainChecked: false
           })
         })
     }
@@ -1656,6 +1717,11 @@ class TaskPage extends Component {
                     this.state.showImageView === true ? (
                         <div className="popup w3-center w3-padding-64" style={{background: 'rgba(0, 0, 0, 0.4)', position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', zIndex: '100', overflowY: 'auto'}}>
                             <i onClick={this.closeImageView} className="fa fa-times w3-text-white w3-xxlarge et-hoverable" style={{position: 'absolute', top: '10px', right: '10px'}}></i>
+                            <select value={this.state.currentTaskStructure} onChange={this.changeTaskStructure} className="w3-select" style={{position: 'absolute', top: '10px', left: '10px', width: '130px', paddingLeft: '5px'}}>
+                              {this.state.taskStructureList.map((structure, index) => (
+                                <option key={structure + index}>{structure}</option>
+                              ))}
+                            </select>
                             <div className="w3-modal-content" style={{backgroundColor: 'rgba(0,0,0,0)'}}>
                                 <h3 className="w3-text-white">{`训练进度: ${this.state.currentProgress}%`}</h3>
                                 <img className="w3-image" id="train-state"/>
@@ -1675,6 +1741,11 @@ class TaskPage extends Component {
                     this.state.showImageViewForTrainTask === true ? (
                         <div className="popup w3-center w3-padding-64" style={{background: 'rgba(0, 0, 0, 0.4)', position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', zIndex: '100', overflowY: 'auto'}}>
                             <i onClick={this.shouldShowImageViewForTrainTask} className="fa fa-times w3-text-white w3-xxlarge et-hoverable" style={{position: 'absolute', top: '10px', right: '10px'}}></i>
+                            <select value={this.state.currentTaskStructure} onChange={this.changeTaskStructureForTrainTask} className="w3-select" style={{position: 'absolute', top: '10px', left: '10px', width: '130px', paddingLeft: '5px'}}>
+                              {this.state.taskStructureList.map((structure, index) => (
+                                <option key={structure + index}>{structure}</option>
+                              ))}
+                            </select>
                             <div className="w3-modal-content" style={{backgroundColor: 'rgba(0,0,0,0)'}}>
                                 <h3 className="w3-text-white">{`训练进度: ${this.state.currentProgress}%`}</h3>
                                 <img className="w3-image" id="train-state"/>
@@ -1823,7 +1894,8 @@ class TaskPage extends Component {
 const mapStateToProps = ({ appReducer }) => ({
   userLevel: appReducer.userLevel,
   trainStateLog: appReducer.trainStateLog,
-  userName: appReducer.userName
+  userName: appReducer.userName,
+  taskName: appReducer.taskName
 })
 
 export default withRouter(connect(mapStateToProps)(TaskPage));

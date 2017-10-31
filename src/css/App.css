@@ -254,3 +254,18 @@ a:hover {
   cursor: pointer;
   color: black !important;
 }
+
+#mySelectForListName {
+  outline: none;
+}
+
+#mySelect {
+  color: white !important;
+  outline: none;
+  text-shadow: 1px 1px black, 1px -1px black, -1px 1px black, -1px -1px black;
+}
+
+#mySelect option {
+  color: black !important;
+  text-shadow: 1px 1px black, 1px -1px black, -1px 1px black, -1px -1px black !important;
+}

@@ -163,10 +163,11 @@ export const getManagerData = () => ({
   type: GET_MANAGER_DATA
 })
 
-export const getTrainStateLog = (userName, taskName) => ({
+export const getTrainStateLog = (userName, taskName, structure) => ({
   type: GET_TRAIN_STATE_LOG,
   userName,
-  taskName
+  taskName,
+  structure
 })
 
 export const autoTagImages = (start, num, pretrainmodel) => ({

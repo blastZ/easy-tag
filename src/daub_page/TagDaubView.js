@@ -19,6 +19,7 @@ class TagDaubView extends Component {
         autoTagStart: 1,
         showPremodelSelect: false,
         pretrainmodelList: [],
+        currentColor: ''
     }
 
     shouldShowPremodelSelect = () => {
@@ -110,9 +111,12 @@ class TagDaubView extends Component {
         if(tagString.trim() !== '') {
             document.getElementById('new-tag-string').value = '';
             this.setState((state) => {
-                state.tagStringList = state.tagStringList.concat([tagString]);
+                state.tagStringList = state.tagStringList.concat([{name: tagString, color: this.getRandomColor()}]);
                 state.tagStringListAll[document.getElementById('mySelectForListName').value] = state.tagStringList;
-            }, () => this.saveTagList())
+            }, () => {
+              this.saveTagList();
+              this.props.onChangeTagStringList(this.state.tagStringList);
+            })
             this.shouldShowAddNewTagStringView();
         } else {
             window.alert('标签名不能为空');
@@ -192,19 +196,40 @@ class TagDaubView extends Component {
         request.open('GET', `${this.props.defaultURL}loadtag?usrname=${this.props.userName}&taskname=${this.props.taskName}`);
         request.send();
         request.onload = () => {
-            console.log('getTagStringList success');
             const data = JSON.parse(request.response);
-            const listNameList = data.listname;
-            const tagStringListAll = data.taglist;
-            const tagStringList = data.taglist[listNameList[0]];
-            this.setState({listNameList, tagStringList, tagStringListAll}, () => {
-                this.props.onChangeTagString();
-            })
+            if(data.listname.length === 1 && data.listname[0] === 'tagname') {
+              const listNameList = ['tagname'];
+              const tagStringListAll = {
+                tagname: [{name: 'tag1', color: 'white'}]
+              };
+              const tagStringList = tagStringListAll['tagname'];
+              this.setState({
+                tagStringList,
+                listNameList,
+                tagStringListAll
+              }, () => {
+                this.props.onChangeTagStringList(this.state.tagStringList);
+              })
+            } else {
+              const listNameList = data.listname;
+              const tagStringListAll = data.taglist;
+              const tagStringList = tagStringListAll[listNameList[0]];
+              this.setState({
+                tagStringList,
+                listNameList,
+                tagStringListAll
+              }, () => {
+                this.props.onChangeTagStringList(this.state.tagStringList);
+              })
+            }
         }
     }
 
-    onDeleteBox = (index) => {
-        this.props.onDeleteBox(index);
+    getRandomColor = () => {
+      const r = Math.floor(Math.random() * 256);
+      const g = Math.floor(Math.random() * 256);
+      const b = Math.floor(Math.random() * 256);
+      return `rgb(${r}, ${g}, ${b})`;
     }
 
     onChangeBoxInfo(index, e) {
@@ -279,7 +304,7 @@ class TagDaubView extends Component {
     changeTagStringList = () => {
         const listName = document.getElementById('mySelectForListName').value;
         this.setState({tagStringList: this.state.tagStringListAll[listName]}, () => {
-            this.props.onChangeTagString();
+            this.props.onChangeTagStringList(this.state.tagStringList);
         });
     }
 
@@ -287,6 +312,27 @@ class TagDaubView extends Component {
       const theValue = document.getElementById('auto-tag-image-premodel-select').value;
       this.props.onAutoTagImages(this.state.autoTagStart, this.state.autoTagNum, theValue);
       this.shouldShowPremodelSelect();
+    }
+
+    getBackgroundColor = () => {
+      if(this.state.listNameList.length > 0) {
+        const tagName = document.getElementById('mySelect').value;
+        const { tagStringList } = this.state;
+        for(let i=0; i<tagStringList.length; i++) {
+          if(tagStringList[i].name === tagName) {
+            console.log(tagStringList[i].color)
+            return tagStringList[i].color;
+          }
+        }
+      } else {
+        return 'white';
+      }
+    }
+
+    changeTagString = () => {
+      this.setState({
+        currentColor: this.getBackgroundColor()
+      })
     }
 
     render() {
@@ -323,10 +369,12 @@ class TagDaubView extends Component {
                     }
                     </select>
                     <div style={{backgroundColor: 'rgb(211, 204, 204)', width: '2px'}}></div>
-                    <select onChange={this.props.onChangeTagString} id="mySelect" className="w3-select" style={{width: '50%'}}>
+                    <select onChange={this.changeTagString} id="mySelect" className="w3-select" style={{width: '50%', background: `${this.state.currentColor}`}}>
                     {
                         this.state.tagStringList.map((tagString, index) => (
-                            <option key={tagString + index}>{tagString}</option>
+                            <option key={tagString + index} style={{background: tagString.color}}>
+                              {tagString.name}
+                            </option>
                         ))
                     }
                     </select>
@@ -410,29 +458,7 @@ class TagDaubView extends Component {
                     :null
                 }
                 <ul className="w3-ul w3-hoverable margin-top-5"  style={{overflowY: 'auto', flex: '1'}}>{
-                    this.props.boxList.map((box, index) => (
-                        <li className="w3-hover-green" key={box.x_start + box.y_end}>
-                            <div>
-                                <span>序号: {index + 1}</span>
-                                <i onClick={this.onDeleteBox.bind(this, index)} className="fa fa-times et-tag-button w3-right"></i>
-                            </div>
-                            <div>
-                                <div className="flex-box" style={{alignItems: 'center', padding: '5px 0px'}}>
-                                    <span>标签: </span>
-                                    <i onClick={this.props.addNewTagToBox.bind(this, index)} className="fa fa-plus-circle et-tag-button"></i>
-                                    <div className="flex-box" style={{overflowX: 'auto', marginLeft: '4px'}}>{
-                                        box.tag.map((tag, index2) => (
-                                            <div key={tag + index2} className="flex-box" style={{border: '2px solid black', alignItems: 'center', marginLeft: '2px', paddingLeft: '3px', paddingRight: '3px', whiteSpace: 'nowrap'}}>
-                                                {tag}
-                                                <i onClick={this.props.removeTagFromBox.bind(this, index, index2)} className="fa fa-times et-tag-button"></i>
-                                            </div>
-                                        ))
-                                    }</div>
-                                </div>
-                            </div>
-                            <div>额外信息:<input className="w3-input" type="text" onChange={this.onChangeBoxInfo.bind(this, index)} value={this.props.boxList[index].info}/></div>
-                        </li>
-                    ))
+
                 }</ul>
                 <div>
                   <div className="flex-box margin-top-5 w3-card">
