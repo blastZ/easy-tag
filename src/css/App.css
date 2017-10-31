@@ -269,3 +269,17 @@ a:hover {
   color: black !important;
   text-shadow: 1px 1px black, 1px -1px black, -1px 1px black, -1px -1px black !important;
 }
+
+.et-font-select {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.et-change-page-button {
+  width: 140px;
+  letter-spacing: 13px;
+  display: flex;
+  justify-content: center;
+  border-radius: 6px;
+  font-weight: bold;;
+}

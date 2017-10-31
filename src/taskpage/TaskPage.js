@@ -4,6 +4,7 @@ import TopBar from './TopBar'
 import { getTaskStateName, getTaskTypeName, getUserLevelCode, getTaskTypeCode } from '../utils/Task';
 import TrainTaskTable from './tables/TrainTaskTable';
 import TaskTable from './tables/TaskTable';
+import OperationsTable from './tables/OperationsTable';
 import WorkerTable from './tables/WorkerTable';
 import UserManageTable from './tables/UserManageTable';
 import UserGroupTable from './tables/UserGroupTable';
@@ -361,7 +362,6 @@ class TaskPage extends Component {
             const data = this.getManagerData();
             request.send(data);
             request.onload = function() {
-                console.log('get userManageList success');
                 that.getFormatUserManageList(request.response);
             }
         } catch(error) {
@@ -376,7 +376,6 @@ class TaskPage extends Component {
             request.open('GET', `${this.props.defaultURL}getgrouplist`);
             request.send();
             request.onload = function() {
-                console.log('get userGroupList success');
                 that.getFormatUserGroupList(request.response);
             }
         } catch(error) {
@@ -489,7 +488,6 @@ class TaskPage extends Component {
         getFileCount.open('GET', `${this.props.defaultURL}filecount?usrname=${this.props.username}&taskname=${taskName}`);
         getFileCount.send();
         getFileCount.onload = function() {
-            console.log('getFileCount success.');
             const theFileCount = getFileCount.response;
             const getTagedFileCount = new XMLHttpRequest();
             getTagedFileCount.open('GET', `${that.props.defaultURL}labeledfilecount?usrname=${that.props.username}&taskname=${taskName}`);
@@ -516,7 +514,6 @@ class TaskPage extends Component {
         getFileCount.open('GET', `${this.props.defaultURL}filecount?usrname=${task.userName}&taskname=${task.taskName}`);
         getFileCount.send();
         getFileCount.onload = function() {
-            console.log('getFileCount success.');
             const theFileCount = getFileCount.response;
             const getTagedFileCount = new XMLHttpRequest();
             getTagedFileCount.open('GET', `${that.props.defaultURL}labeledfilecount?usrname=${task.userName}&taskname=${task.taskName}`);
@@ -736,9 +733,7 @@ class TaskPage extends Component {
             if(parseInt(value, 10) <= 0) {
                 value = 0;
             }
-            console.log(value);
             value = parseInt(value, 10);
-            console.log(value);
             this.setState({
                 trainParams: {
                     ...this.state.trainParams,
@@ -1486,7 +1481,6 @@ class TaskPage extends Component {
       fetch(`${this.props.defaultURL}getdefaulttrainparams?usrname=${this.props.userName}&taskname=${this.state.currentTaskName}&structure=${theValue}`)
         .then((response) => response.json())
         .then((result) => {
-          console.log(result)
           this.setState({
             trainParams: {
               structure: result.structure,
@@ -1833,6 +1827,7 @@ class TaskPage extends Component {
                             <Tab>用户管理列表</Tab>}
                           {userLevel === 3 &&
                             <Tab>用户组列表</Tab>}
+                          <Tab>Operations列表</Tab>
                         </TabList>
                         <TabPanel>
                           <TaskTable
@@ -1884,6 +1879,9 @@ class TaskPage extends Component {
                                 userGroupList={this.state.userGroupList}
                                 deleteUserGroup={this.deleteUserGroup} />
                             </TabPanel>}
+                        <TabPanel>
+                          <OperationsTable />
+                        </TabPanel>
                     </Tabs>
                 </div>
             </div>
