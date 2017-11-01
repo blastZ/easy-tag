@@ -81,6 +81,13 @@ class TaskPage extends Component {
         tabIndex: 0,
         taskStructureList: [],
         currentTaskStructure: '',
+        showLabelStatisticsLoading: false,
+    }
+
+    shouldShowLabelStatisticsLoading = () => {
+      this.setState({
+        showLabelStatisticsLoading: !this.state.showLabelStatisticsLoading
+      })
     }
 
     handleRetrainChecked = () => {
@@ -1397,6 +1404,7 @@ class TaskPage extends Component {
     }
 
     showLabelStatistics = (index) => {
+        this.shouldShowLabelStatisticsLoading();
         const that = this;
         this.getTagProgress(this.state.taskList[index].taskName, function() {
             const currentTagProgress = that.state.taskList[index].tagProgress;
@@ -1405,6 +1413,7 @@ class TaskPage extends Component {
                 request.open('GET', `${that.props.defaultURL}labelstatistics?usrname=${that.props.username}&taskname=${that.state.taskList[index].taskName}`);
                 request.send();
                 request.onload = function() {
+                    that.shouldShowLabelStatisticsLoading();
                     const tagStatisticsList = that.getFormatLabelStatistics(request.response);
                     that.setState({tagStatisticsList, currentTagProgress, currentTaskName: that.state.taskList[index].taskName}, function() {
                         that.shouldShowLabelStatisticsView();
@@ -1419,6 +1428,7 @@ class TaskPage extends Component {
 
     showLabelStatisticsForTrainTask = (task) => {
         const that = this;
+        this.shouldShowLabelStatisticsLoading();
         this.getTagProgressForTrainTask(task, function(task) {
             const currentTagProgress = task.tagProgress;
             try {
@@ -1426,6 +1436,7 @@ class TaskPage extends Component {
                 request.open('GET', `${that.props.defaultURL}labelstatistics?usrname=${task.userName}&taskname=${task.taskName}`);
                 request.send();
                 request.onload = function() {
+                    that.shouldShowLabelStatisticsLoading();
                     const tagStatisticsList = that.getFormatLabelStatistics(request.response);
                     that.setState({tagStatisticsList, currentTagProgress, currentTaskName: task.taskName}, function() {
                         that.shouldShowLabelStatisticsViewForTrainTask();
@@ -1755,6 +1766,12 @@ class TaskPage extends Component {
                         </div>
                     ) : null
                 }
+                {this.state.showLabelStatisticsLoading
+                  ? <div className="w3-modal" style={{display: 'flex', justifyContent: 'center', paddingTop: '300px'}}>
+                    <i onClick={this.shouldShowLabelStatisticsLoading} className="fa fa-times w3-text-white w3-xxlarge et-hoverable" style={{position: 'absolute', top: '10px', right: '10px'}}></i>
+                    <p style={{fontSize: '4em', color: 'white'}}>统计中...</p>
+                  </div>
+                  : null}
                 {
                     this.state.showLabelStatisticsView === true ? (
                         <div className="popup w3-center w3-padding-64" style={{background: 'rgba(0, 0, 0, 0.4)', position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', zIndex: '100', overflowY: 'scroll'}}>

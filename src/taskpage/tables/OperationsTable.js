@@ -110,10 +110,10 @@ class OperationsTable extends Component {
               <span className={`et-hoverable ${this.state.mode === 'all' && 'et-font-select'}`} onClick={() => this.changeMode('all')}>全部</span>
             </div>}
         </div>
-        <table ref="theTaskTable" className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered">
+        <table ref="theTaskTable" className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered" style={{tableLayout: 'fixed'}}>
             <thead className="w3-green">
                 <tr>
-                    <th>操作者名称</th>
+                    <th style={{width: '110px'}}>操作者名称</th>
                     <th>操作者IP</th>
                     <th>操作时间</th>
                     <th>操作类型</th>
@@ -128,7 +128,7 @@ class OperationsTable extends Component {
                         <td>{task.ip}</td>
                         <td>{task.time}</td>
                         <td>{task.operationType}</td>
-                        <td>{task.operationDetail}</td>
+                        <td style={{whiteSpace: 'nowrap', overflowY: 'auto'}}>{task.operationDetail}</td>
                     </tr>
                 ))
             }</tbody>

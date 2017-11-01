@@ -21,16 +21,35 @@ const getTrainTaskList = (data) => {
 }
 
 const getOperationsTaskList = (data) => {
-  const arrayData = data.split(',');
+  const arrayData = data.split('(');
   const operationsTaskList = [];
-  for(let i=0; i<arrayData.length; i=i+5) {
-    const userName = arrayData[i].slice(4, arrayData[i].length - 1);
-    const ip = arrayData[i + 1].slice(3, arrayData[i + 1].length - 1);
-    const time = arrayData[i + 2].slice(3, arrayData[i + 2].length -1);
-    const operationType = arrayData[i + 3].slice(3, arrayData[i + 3].length - 1);
-    const operationDetail = (i + 4)  === arrayData.length - 1
-      ? arrayData[i + 4].slice(3, arrayData[i + 4].length - 3)
-      : arrayData[i + 4].slice(3, arrayData[i + 4].length - 2);
+  for(let i=1; i<arrayData.length; i++) {
+    const itemData = arrayData[i].split(',');
+    console.log(itemData);
+    const userName = itemData[0].slice(2, itemData[0].length - 1);
+    const ip = itemData[1].slice(3, itemData[1].length - 1);
+    const time = itemData[2].slice(3, itemData[2].length - 1);
+    const operationType = itemData[3].slice(3, itemData[3].length - 1);
+    let operationDetail = '';
+    if(itemData.length === 6) {
+      operationDetail += itemData[4].slice(3, itemData[4].length - 2);
+    } else if(itemData.length === 5) {
+      operationDetail += itemData[4].slice(3, itemData[4].length - 3);
+    } else {
+      for(let j=4; j<itemData.length; j++) {
+        if(j === 4) {
+          operationDetail += itemData[j].slice(3, itemData[j].length);
+        } else if(j === itemData.length - 2) {
+          if(i !== arrayData.length - 1) {
+            operationDetail += itemData[j].slice(0, itemData[j].length - 2);
+          } else {
+            operationDetail += itemData[j].slice(0, itemData[j].length - 3);
+          }
+        } else {
+          operationDetail += itemData[j];
+        }
+      }
+    }
     operationsTaskList.push({
       userName,
       ip,
