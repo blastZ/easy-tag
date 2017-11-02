@@ -361,7 +361,7 @@ class TagDaubView extends Component {
                     : null
                 }
                 <div className="flex-box margin-top-5">
-                    <select onChange={this.changeTagStringList} id="mySelectForListName" className="w3-select" style={{width: '50%'}}>
+                    <select onChange={this.changeTagStringList} id="mySelectForListName-daub" className="w3-select" style={{width: '50%'}}>
                     {
                         this.state.listNameList.map((listName, index) => (
                             <option key={listName + index}>{listName}</option>
@@ -369,7 +369,7 @@ class TagDaubView extends Component {
                     }
                     </select>
                     <div style={{backgroundColor: 'rgb(211, 204, 204)', width: '2px'}}></div>
-                    <select onChange={this.changeTagString} id="mySelect" className="w3-select" style={{width: '50%', background: `${this.state.currentColor}`}}>
+                    <select onChange={this.changeTagString} id="mySelect-daub" className="w3-select" style={{width: '50%', background: `${this.state.currentColor}`}}>
                     {
                         this.state.tagStringList.map((tagString, index) => (
                             <option key={tagString + index} style={{background: tagString.color}}>

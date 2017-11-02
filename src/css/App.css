@@ -255,17 +255,17 @@ a:hover {
   color: black !important;
 }
 
-#mySelectForListName {
+#mySelectForListName-daub {
   outline: none;
 }
 
-#mySelect {
+#mySelect-daub {
   color: white !important;
   outline: none;
   text-shadow: 1px 1px black, 1px -1px black, -1px 1px black, -1px -1px black;
 }
 
-#mySelect option {
+#mySelect-daub option {
   color: black !important;
   text-shadow: 1px 1px black, 1px -1px black, -1px 1px black, -1px -1px black !important;
 }

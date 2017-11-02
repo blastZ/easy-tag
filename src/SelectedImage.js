@@ -1,5 +1,9 @@
 import React, {Component} from 'react';
 import $ from 'jquery';
+import LeftIcon from 'react-icons/lib/md/chevron-left';
+import RightIcon from 'react-icons/lib/md/chevron-right';
+import SearchIcon from 'react-icons/lib/fa/search';
+import UrlIcon from 'react-icons/lib/fa/chain';
 
 var mouseupListener;
 
@@ -7,7 +11,42 @@ class SelectedImage extends Component {
     state = {
         fileCount: 0,
         tagedFileCount: 0,
-        imgLoaded: false
+        imgLoaded: false,
+        uploadMode: 1,
+        showSearchView: false,
+        showUrlView: false,
+    }
+
+    shouldShowSearchView = () => {
+      this.setState({
+        showSearchView: !this.state.showSearchView
+      })
+    }
+
+    shouldShowUrlView = () => {
+      this.setState({
+        showUrlView: !this.state.showUrlView
+      })
+    }
+
+    previousUploadMode = () => {
+      this.setState({
+        uploadMode: this.state.uploadMode - 1 > 0 ? this.state.uploadMode - 1 : 3
+      }, () => {
+        if(this.state.uploadMode === 1) {
+          this.bindFileEvent();
+        }
+      })
+    }
+
+    nextUploadMode = () => {
+      this.setState({
+        uploadMode: this.state.uploadMode + 1 < 4 ? this.state.uploadMode + 1 : 1
+      }, () => {
+        if(this.state.uploadMode === 1) {
+          this.bindFileEvent();
+        }
+      })
     }
 
     componentWillMount() {
@@ -49,6 +88,36 @@ class SelectedImage extends Component {
         theImage.style.top = container.height - theImage.height > 0 ? ((container.height - theImage.height) / 2).toString() + 'px' : '0px';
     }
 
+    bindFileEvent = () => {
+      const that = this;
+      $('#file').on('change', function() {
+          const files = this.files;
+          let result = true;
+          for(const file of files) {
+              if((/^[a-zA-Z0-9\-\_\.\u4e00-\u9fa5]+$/).test(file.name) === false) {
+                  result = false;
+              }
+          }
+          if(result) {
+              for(const file of files) {
+                  //decide the file is a image or not
+                  if(file.type === 'image/jpeg' || file.type === 'image/png') {
+                      const name = file.name;
+                      const reader = new FileReader()
+                      reader.onload = function() {
+                          const url = this.result;
+                          that.props.onShowNewImage(url, name);
+                      }
+                      reader.readAsDataURL(file);
+                  }
+              }
+              that.props.onUploadImgeFiles(files);
+          } else {
+              window.alert('图片命名不符合规则');
+          }
+      })
+    }
+
     componentDidMount() {
         const that = this;
         const theImage = document.getElementById('selectedImage');
@@ -74,32 +143,7 @@ class SelectedImage extends Component {
         document.addEventListener('keyup', this.nextPreviousImageListener);
 
         //bind upload and show events
-        $('#file').on('change', function() {
-            const files = this.files;
-            let result = true;
-            for(const file of files) {
-                if((/^[a-zA-Z0-9\-\_\.\u4e00-\u9fa5]+$/).test(file.name) === false) {
-                    result = false;
-                }
-            }
-            if(result) {
-                for(const file of files) {
-                    //decide the file is a image or not
-                    if(file.type === 'image/jpeg' || file.type === 'image/png') {
-                        const name = file.name;
-                        const reader = new FileReader()
-                        reader.onload = function() {
-                            const url = this.result;
-                            that.props.onShowNewImage(url, name);
-                        }
-                        reader.readAsDataURL(file);
-                    }
-                }
-                that.props.onUploadImgeFiles(files);
-            } else {
-                window.alert('图片命名不符合规则');
-            }
-        })
+        this.bindFileEvent();
 
         let drawing = false
         let x1 = 0, y1 = 0, x_move = 0, y_move = 0
@@ -284,6 +328,29 @@ class SelectedImage extends Component {
         );
     }
 
+    uploadImgByUrl = () => {
+      fetch(`${this.props.defaultURL}uploadfile?usrname=${this.props.userName}&taskname=${this.props.taskName}`, {
+        method: 'POST',
+        body: JSON.stringify({
+          url: 'https://news.nationalgeographic.com/content/dam/news/photos/000/755/75552.ngsversion.1422285553360.adapt.1900.1.jpg'
+        })
+      }).then((response) => response.text())
+        .then((result) => {console.log(result)})
+    }
+
+    uploadImgBySearch = () => {
+      fetch(`${this.props.defaultURL}scrapyimg?usrname=${this.props.userName}&taskname=${this.props.taskName}`, {
+        method: 'POST',
+        body: JSON.stringify({
+          engine: 'baidu',
+          keyword: '狗',
+          start: '1',
+          num: '50'
+        })
+      }).then((response) => response.text())
+        .then((result) => {console.log(result)})
+    }
+
     render() {
         return (
             <div className="w3-center w3-padding-24 flex-box full-width" style={{position: 'relative', justifyContent: 'center', alignItems: 'center', backgroundColor: '#303030', flex: '1'}}>
@@ -304,17 +371,55 @@ class SelectedImage extends Component {
                         this.state.imgLoaded ? this.drawBoxList() : null
                     }
                 </div>
-                {
-                    this.props.userLevel !== 0 ?
-                    <form style={{position: 'absolute', bottom: '25px'}}>
-                        <label htmlFor="file" className="w3-green w3-button w3-text-white">
-                            <i className="fa fa-picture-o" aria-hidden="true"></i>&nbsp;
-                            上 传 本 地 图 片
-                        </label>
-                        <input multiple id="file" type="file" style={{display: 'none'}}/>
-                    </form>
-                    : null
-                }
+                {this.props.userLevel !== 0 ?
+                    <div style={{position: 'absolute', bottom: '25px', display: 'flex', alignItems: 'center'}}>
+                      <LeftIcon onClick={this.previousUploadMode} className="et-hoverable" style={{fontSize: '3em', color: 'white'}}/>
+                      {this.state.uploadMode === 1 &&
+                        <form>
+                          <label htmlFor="file" className="w3-green w3-button w3-text-white">
+                              <i className="fa fa-picture-o" aria-hidden="true"></i>&nbsp;
+                              上 传 本 地 图 片
+                          </label>
+                          <input multiple id="file" type="file" style={{display: 'none'}}/>
+                        </form>}
+                      {this.state.uploadMode === 2 &&
+                        <div onClick={this.shouldShowUrlView} className="w3-button w3-green" style={{width: '175px', display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+                          <UrlIcon />&nbsp;
+                          <span>通</span>
+                          <span>过</span>
+                          <span>U</span>
+                          <span>R</span>
+                          <span>L</span>
+                          <span>上</span>
+                          <span>传</span>
+                        </div>}
+                      {this.state.uploadMode === 3 ?
+                        this.state.showSearchView ?
+                          <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0'}}>
+                            <div style={{width: '500px', height: '40px', display: 'flex'}}>
+                              <select className="w3-select" style={{width: '120px', paddingLeft: '15px'}}>
+                                <option>百度</option>
+                                <option>搜狗</option>
+                              </select>
+                              <input className="w3-input" style={{borderLeft: '1px solid rgb(48, 48, 48)'}}/>
+                              <button onClick={this.shouldShowSearchView} className="w3-button w3-green" style={{flexShrink: '0', borderLeft: '1px solid rgb(48, 48, 48)'}}>取消</button>
+                              <button className="w3-button w3-green" style={{flexShrink: '0', borderLeft: '1px solid rgb(48, 48, 48)'}}>确定</button>
+                            </div>
+                          </div> :
+                          <div onClick={this.shouldShowSearchView} className="w3-button w3-green" style={{width: '175px', display: 'flex', alignItems: 'center'}}>
+                            <SearchIcon />&nbsp;
+                            <span>通</span>
+                            <span>过</span>
+                            <span>搜</span>
+                            <span>索</span>
+                            <span>引</span>
+                            <span>擎</span>
+                            <span>爬</span>
+                            <span>图</span>
+                          </div> : null}
+                      <RightIcon onClick={this.nextUploadMode} className="et-hoverable" style={{fontSize: '3em', color: 'white'}} />
+                    </div>
+                    : null}
             </div>
         )
     }
