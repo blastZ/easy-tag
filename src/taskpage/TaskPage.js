@@ -21,7 +21,7 @@ class TaskPage extends Component {
         distrableUserList: [], //userName: 'aaa', userLevel: '0'
         userManageList: [], //userName: 'aaa', email: 'aa@aa.com', activeState: '0', userLevel: '0', userGroup: 'common'
         userGroupList: [], // 'common', 'test'
-        tagStatisticsList: [], //tagName: 'aa', tagNum: '11'
+        statisticsUrl: '',
         workerOwnerList: [], //"public", "codvision"
         newTaskName: '',
         showInputView: false,
@@ -32,7 +32,6 @@ class TaskPage extends Component {
         showDistributeTaskView: false,
         showStartAndNumInputView: false,
         showLabelStatisticsView: false,
-        showLabelStatisticsViewForTrainTask: false,
         showUserManageEditView: false,
         showEditWorkerOwner: false,
         currentTaskName: '',
@@ -149,17 +148,14 @@ class TaskPage extends Component {
     }
 
     outputTagData = () => {
-        try {
-            const request = new XMLHttpRequest();
-            request.open('POST', `${this.props.defaultURL}getlabelzip?usrname=${this.props.username}&taskname=${this.state.currentTaskName}`);
-            const data = this.getManagerData();
-            request.send(data);
-            request.onload = () => {
-                window.open(request.response);
-            }
-        } catch (error) {
-            console.log(error);
-        }
+      fetch(`${this.props.defaultURL}getlabelzip?usrname=${this.state.currentUserName}&taskname=${this.state.currentTaskName}`, {
+        method: 'POST',
+        body: this.getManagerData()
+      })
+        .then((response) => response.text())
+        .then((result) => {
+          window.open(result);
+        })
     }
 
     outputTrainObjectData = () => {
@@ -248,10 +244,6 @@ class TaskPage extends Component {
     }
 
     shouldShowLabelStatisticsView = () => {
-        this.setState({showLabelStatisticsView: !this.state.showLabelStatisticsView});
-    }
-
-    shouldShowLabelStatisticsViewForTrainTask = () => {
         this.setState({showLabelStatisticsView: !this.state.showLabelStatisticsView});
     }
 
@@ -1392,72 +1384,41 @@ class TaskPage extends Component {
     }
 
     showLabelStatistics = (index) => {
-        this.shouldShowLabelStatisticsLoading();
-        const that = this;
-        this.getTagProgress(this.state.taskList[index].taskName, function() {
-            const currentTagProgress = that.state.taskList[index].tagProgress;
-            try {
-                const request = new XMLHttpRequest();
-                request.open('GET', `${that.props.defaultURL}labelstatistics?usrname=${that.props.username}&taskname=${that.state.taskList[index].taskName}`);
-                request.send();
-                request.onload = function() {
-                    that.shouldShowLabelStatisticsLoading();
-                    const tagStatisticsList = that.getFormatLabelStatistics(request.response);
-                    that.setState({tagStatisticsList, currentTagProgress, currentTaskName: that.state.taskList[index].taskName}, function() {
-                        that.shouldShowLabelStatisticsView();
-                    });
-                }
-            } catch(error) {
-                console.log(error);
-            }
-        });
-
+      this.shouldShowLabelStatisticsLoading();
+      this.getTagProgress(this.state.taskList[index].taskName, () => {
+        fetch(`${this.props.defaultURL}labelstatisticsfig?usrname=${this.props.userName}&taskname=${this.state.taskList[index].taskName}`)
+          .then((response) => response.text())
+          .then((result) => {
+            this.shouldShowLabelStatisticsLoading();
+            this.setState({
+              currentUserName: this.props.userName,
+              currentTagProgress: this.state.taskList[index].tagProgress,
+              statisticsUrl: result,
+              currentTaskName: this.state.taskList[index].taskName
+            }, () => {
+              this.shouldShowLabelStatisticsView();
+            })
+          })
+      });
     }
 
     showLabelStatisticsForTrainTask = (task) => {
-        const that = this;
         this.shouldShowLabelStatisticsLoading();
-        this.getTagProgressForTrainTask(task, function(task) {
-            const currentTagProgress = task.tagProgress;
-            try {
-                const request = new XMLHttpRequest();
-                request.open('GET', `${that.props.defaultURL}labelstatistics?usrname=${task.userName}&taskname=${task.taskName}`);
-                request.send();
-                request.onload = function() {
-                    that.shouldShowLabelStatisticsLoading();
-                    const tagStatisticsList = that.getFormatLabelStatistics(request.response);
-                    that.setState({tagStatisticsList, currentTagProgress, currentTaskName: task.taskName}, function() {
-                        that.shouldShowLabelStatisticsViewForTrainTask();
-                    });
-                }
-            } catch(error) {
-                console.log(error);
-            }
+        this.getTagProgressForTrainTask(task, (task) => {
+          fetch(`${this.props.defaultURL}labelstatisticsfig?usrname=${task.userName}&taskname=${task.taskName}`)
+            .then((response) => response.text())
+            .then((result) => {
+              this.shouldShowLabelStatisticsLoading();
+              this.setState({
+                currentUserName: task.userName,
+                currentTagProgress: task.tagProgress,
+                statisticsUrl: result,
+                currentTaskName: task.taskName
+              }, () => {
+                this.shouldShowLabelStatisticsView();
+              })
+            })
         });
-    }
-
-    getFormatLabelStatistics = (data) => {
-        const arrayData = data.split(',');
-        const newArrayData = [];
-        const tagStatisticsList = [];
-        if(arrayData[0] !== '{}') {
-            for(let i=0; i<arrayData.length; i++) {
-                const innerArrayData = arrayData[i].split(':');
-                newArrayData.push(innerArrayData);
-            }
-            for(let i=0; i<newArrayData.length; i++) {
-                const tagName = newArrayData[i][0].slice(3, newArrayData[i][0].length - 1);
-                let tagNum = '';
-                if(i !== newArrayData.length - 1) {
-                    tagNum = newArrayData[i][1].slice(1, newArrayData[i][1].length);
-                } else {
-                    tagNum = newArrayData[i][1].slice(1, newArrayData[i][1].length - 1);
-                }
-                tagStatisticsList.push({tagName, tagNum});
-            }
-        }
-
-        return tagStatisticsList;
     }
 
     unicodeToChar = (text) => {
@@ -1760,66 +1721,15 @@ class TaskPage extends Component {
                     <p style={{fontSize: '4em', color: 'white'}}>统计中...</p>
                   </div>
                   : null}
-                {
-                    this.state.showLabelStatisticsView === true ? (
-                        <div className="popup w3-center w3-padding-64" style={{background: 'rgba(0, 0, 0, 0.4)', position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', zIndex: '100', overflowY: 'scroll'}}>
-                            <i onClick={this.shouldShowLabelStatisticsView} className="fa fa-times w3-text-white w3-xxlarge et-hoverable" aria-hidden="true" style={{position: 'absolute', top: '10px', right: '10px'}}></i>
-                            <div>
-                                <h3 className="w3-text-white">{`标注进度: ${this.state.currentTagProgress}`}</h3>
-                                <table className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered" style={{width: '50%', margin: '0 auto', marginTop: '10px'}}>
-                                    <thead className="w3-orange w3-text-white">
-                                        <tr>
-                                            <th>标签名</th>
-                                            <th>已标记数量</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                    {
-                                        this.state.tagStatisticsList.map((tag) => (
-                                            <tr key={tag.tagName + tag.tagNum}>
-                                                <td>{this.unicodeToChar(tag.tagName)}</td>
-                                                <td>{tag.tagNum}</td>
-                                            </tr>
-                                        ))
-                                    }
-                                    </tbody>
-                                    <tfoot></tfoot>
-                                </table>
-                                <button onClick={this.outputTagData} className="w3-button w3-orange w3-text-white w3-margin-top" style={{borderRadius: '5px'}}>输出标记数据</button>
-                            </div>
-                        </div>
-                    ) : null
-                }
-                {
-                    this.state.showLabelStatisticsViewForTrainTask === true ? (
-                        <div className="popup w3-center w3-padding-64" style={{background: 'rgba(0, 0, 0, 0.4)', position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', zIndex: '100', overflowY: 'scroll'}}>
-                            <i onClick={this.shouldShowLabelStatisticsViewForTrainTask} className="fa fa-times w3-text-white w3-xxlarge et-hoverable" aria-hidden="true" style={{position: 'absolute', top: '10px', right: '10px'}}></i>
-                            <div>
-                                <h3 className="w3-text-white">{`标注进度: ${this.state.currentTagProgress}`}</h3>
-                                <table className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered" style={{width: '50%', margin: '0 auto', marginTop: '10px'}}>
-                                    <thead className="w3-orange w3-text-white">
-                                        <tr>
-                                            <th>标签名</th>
-                                            <th>已标记数量</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                    {
-                                        this.state.tagStatisticsList.map((tag) => (
-                                            <tr key={tag.tagName + tag.tagNum}>
-                                                <td>{this.unicodeToChar(tag.tagName)}</td>
-                                                <td>{tag.tagNum}</td>
-                                            </tr>
-                                        ))
-                                    }
-                                    </tbody>
-                                    <tfoot></tfoot>
-                                </table>
-                                <button onClick={this.outputTagDataForTrainTask} className="w3-button w3-orange w3-text-white w3-margin-top" style={{borderRadius: '5px'}}>输出标记数据</button>
-                            </div>
-                        </div>
-                    ) : null
-                }
+                {this.state.showLabelStatisticsView === true &&
+                  <div className="popup w3-center w3-padding-64" style={{background: 'rgba(0, 0, 0, 0.4)', position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', zIndex: '100', overflowY: 'scroll'}}>
+                      <i onClick={this.shouldShowLabelStatisticsView} className="fa fa-times w3-text-white w3-xxlarge et-hoverable" aria-hidden="true" style={{position: 'absolute', top: '10px', right: '10px'}}></i>
+                      <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
+                          <h3 className="w3-text-white">{`标注进度: ${this.state.currentTagProgress}`}</h3>
+                          <img src={this.state.statisticsUrl} />
+                          <button onClick={this.outputTagData} className="w3-button w3-orange w3-text-white w3-margin-top" style={{borderRadius: '5px'}}>输出标记数据</button>
+                      </div>
+                  </div>}
                 <div className={`et-content ${userLevel === 3 ? 'et-padding-128' : 'w3-padding-64'}`}>
                     <Tabs selectedIndex={this.state.tabIndex} onSelect={(tabIndex) => this.handleTabChange(tabIndex)}>
                         <TabList>
