@@ -1,4 +1,4 @@
-import { GET_TRAIN_TASK_LIST, GET_OPERATIONS_TASK_LIST } from '../actions/task_action';
+import { GET_TRAIN_TASK_LIST, GET_OPERATIONS_TASK_LIST, GET_OPERATIONS_COUNT } from '../actions/task_action';
 
 const getTrainTaskList = (data) => {
   const arrayData = data.split(',');
@@ -25,7 +25,6 @@ const getOperationsTaskList = (data) => {
   const operationsTaskList = [];
   for(let i=1; i<arrayData.length; i++) {
     const itemData = arrayData[i].split(',');
-    console.log(itemData);
     const userName = itemData[0].slice(2, itemData[0].length - 1);
     const ip = itemData[1].slice(3, itemData[1].length - 1);
     const time = itemData[2].slice(3, itemData[2].length - 1);
@@ -87,6 +86,16 @@ const taskMiddleware = store => next => action => {
         next({
           type: GET_OPERATIONS_TASK_LIST,
           operationsTaskList
+        })
+      })
+  } else if(action.type === GET_OPERATIONS_COUNT) {
+    const { userName } = action;
+    fetch(`${url}getoperationscount?usrname=${userName}`)
+      .then((response) => response.text())
+      .then((result) => {
+        next({
+          type: GET_OPERATIONS_COUNT,
+          operationsCount: parseInt(result, 10)
         })
       })
   } else {

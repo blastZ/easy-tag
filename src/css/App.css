@@ -283,3 +283,24 @@ a:hover {
   border-radius: 6px;
   font-weight: bold;;
 }
+
+.et-normal-index {
+  width: 28px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.et-selected-index {
+  color: white;
+  border-radius: 5px;
+  background: #4caf50;
+}
+
+.et-normal-index:hover {
+  cursor: pointer;
+  color: white;
+  border-radius: 5px;
+  background: #4caf50;
+}

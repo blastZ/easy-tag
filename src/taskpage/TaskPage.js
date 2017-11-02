@@ -166,7 +166,7 @@ class TaskPage extends Component {
         try {
             this.setState({loadingTrainObjectData: true});
             const request = new XMLHttpRequest();
-            request.open('POST', `${this.props.defaultURL}getmodel?usrname=${this.props.username}&taskname=${this.state.currentTaskName}`);
+            request.open('POST', `${this.props.defaultURL}getmodel?usrname=${this.props.username}&taskname=${this.state.currentTaskName}&structure=${this.state.currentTaskStructure}`);
             const data = this.getManagerData();
             request.send(data);
             request.onload = () => {
@@ -308,18 +308,12 @@ class TaskPage extends Component {
     }
 
     getTaskList = () => {
-        const that = this;
-        const getTaskList = new XMLHttpRequest();
-        try {
-            getTaskList.open('GET', `${this.props.defaultURL}gettasklist?usrname=${this.props.username}`);
-            getTaskList.send();
-            getTaskList.onload = function() {
-                const arrayData = that.getArrayData(getTaskList.response);
-                that.addTask(arrayData);
-            }
-        } catch(error) {
-            console.log(error);
-        }
+      fetch(`${this.props.defaultURL}gettasklist?usrname=${this.props.username}`)
+        .then((response) => response.text())
+        .then((result) => {
+          const arrayData = this.getArrayData(result);
+          this.addTask(arrayData);
+        })
     }
 
     getWorkerList = () => {
@@ -474,19 +468,20 @@ class TaskPage extends Component {
     }
 
     addTask = (arrayData) => {
-        if(arrayData.length > 4) {
-            this.setState({showInputView: false});
-            const newTaskList = [];
-            for(let i=0; i<arrayData.length; i=i+5) {
-                const  taskName = arrayData[i].slice(4, arrayData[i].length - 1);
-                const time = arrayData[i + 1].slice(3, 22);
-                const progress = arrayData[i + 2].slice(1,arrayData[i + 2].length);
-                const taskState = arrayData[i + 3].slice(1, 2);
-                const taskType = arrayData[i + 4].slice(1, 2);
-                newTaskList.push({taskName: taskName, time: time,tagProgress: '0/0', progress: progress, taskState: taskState, taskType: taskType});
-            }
-            this.setState({taskList: newTaskList});
-        }
+      if(arrayData.length > 4) {
+          this.setState({showInputView: false});
+          const newTaskList = [];
+          for(let i=0; i<arrayData.length; i=i+6) {
+              const  taskName = arrayData[i].slice(4, arrayData[i].length - 1);
+              const time = arrayData[i + 1].slice(3, 22);
+              const progress = arrayData[i + 2].slice(1,arrayData[i + 2].length);
+              const taskState = arrayData[i + 3].slice(1, 2);
+              const taskType = arrayData[i + 4].slice(1, 2);
+              const taskTrained = arrayData[i + 5].slice(1, 2) === '1' ? true : false;
+              newTaskList.push({taskName, time,tagProgress: '0/0', progress, taskState, taskType, taskTrained});
+          }
+          this.setState({taskList: newTaskList});
+      }
     }
 
     getTagProgress = (taskName, showLabelStatistics) => {
@@ -605,31 +600,24 @@ class TaskPage extends Component {
     onLookTrainState = (index) => {
       this.props.dispatch(changeTaskName(this.state.taskList[index].taskName));
       const that = this;
-      const taskState = this.state.taskList[index].taskState;
       const currentProgress = this.state.taskList[index].progress;
-      if(taskState === '2' || taskState === '3') {
-          try {
-              fetch(`${this.props.defaultURL}taskinfostructure?usrname=${this.props.username}&taskname=${this.state.taskList[index].taskName}`)
-                .then((response) => response.json())
-                .then((result) => {
-                  this.setState({
-                    taskStructureList: result,
-                    currentTaskStructure: result[0]
-                  })
-                  this.props.dispatch(getTrainStateLog(this.props.userName, this.state.taskList[index].taskName, result[0]));
-                  const lookTrainState = new XMLHttpRequest();
-                  lookTrainState.open('GET', `${this.props.defaultURL}taskinfo?usrname=${this.props.username}&taskname=${this.state.taskList[index].taskName}&structure=${result[0]}`);
-                  lookTrainState.send();
-                  lookTrainState.onload = function() {
-                      that.setState({showImageView: true, currentProgress, currentTaskName: that.state.taskList[index].taskName}, function() {
-                          document.getElementById('train-state').src = lookTrainState.response;
-                      })
-                  }
-                })
-          } catch(error) {
-              console.log(error);
+      fetch(`${this.props.defaultURL}taskinfostructure?usrname=${this.props.username}&taskname=${this.state.taskList[index].taskName}`)
+        .then((response) => response.json())
+        .then((result) => {
+          this.setState({
+            taskStructureList: result,
+            currentTaskStructure: result[0]
+          })
+          this.props.dispatch(getTrainStateLog(this.props.userName, this.state.taskList[index].taskName, result[0]));
+          const lookTrainState = new XMLHttpRequest();
+          lookTrainState.open('GET', `${this.props.defaultURL}taskinfo?usrname=${this.props.username}&taskname=${this.state.taskList[index].taskName}&structure=${result[0]}`);
+          lookTrainState.send();
+          lookTrainState.onload = function() {
+              that.setState({showImageView: true, currentProgress, currentTaskName: that.state.taskList[index].taskName}, function() {
+                  document.getElementById('train-state').src = lookTrainState.response;
+              })
           }
-      }
+        })
     }
 
     onLookTrainStateForTrainTask = (task) => {
@@ -1844,7 +1832,7 @@ class TaskPage extends Component {
                             <Tab>用户管理列表</Tab>}
                           {userLevel === 3 &&
                             <Tab>用户组列表</Tab>}
-                          <Tab>Operations列表</Tab>
+                          <Tab>操作日志</Tab>
                         </TabList>
                         <TabPanel>
                           <TaskTable

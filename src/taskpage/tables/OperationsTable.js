@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { getTaskStateName, getTaskTypeName } from '../../utils/Task';
 import { Link } from 'react-router-dom';
-import { getOperationsTaskList } from '../../actions/task_action';
+import { getOperationsTaskList, getOperationsCount } from '../../actions/task_action';
 
 class OperationsTable extends Component {
   state = {
@@ -18,19 +18,41 @@ class OperationsTable extends Component {
     mode: 'current',
     start: 0,
     num: 20,
+    pageList: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    currentPage: 1,
+    showStart: 1,
+    showEnd: 10
   }
 
   getOperationsTaskList = () => {
     if(this.state.mode === 'current') {
+      this.props.dispatch(getOperationsCount(this.props.userName));
       this.props.dispatch(getOperationsTaskList(this.props.userName, this.state.start, this.state.num));
     } else {
+      this.props.dispatch(getOperationsCount('all'));
       this.props.dispatch(getOperationsTaskList('all', this.state.start, this.state.num))
+    }
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if(nextProps.pageCount) {
+      const pageList = [];
+      for(let i=1; i<=nextProps.pageCount; i++) {
+        pageList.push(i);
+      }
+      this.setState({
+        pageList
+      })
     }
   }
 
   changeMode = (mode) => {
     this.setState({
-      mode
+      mode,
+      showStart: 1,
+      showEnd: 10,
+      currentPage: 1,
+      start: 0,
     }, () => {
       this.getOperationsTaskList();
     })
@@ -73,21 +95,34 @@ class OperationsTable extends Component {
   }
 
   previousList = () => {
-    const preNum = this.state.start - this.state.num;
-    if(this.state.start !== 0) {
-      this.setState({
-        start: preNum > 0 ? preNum : 0,
-      }, () => {
-        this.getOperationsTaskList();
-      })
+    if(this.state.currentPage > 1) {
+      this.changePage(this.state.currentPage - 1);
     }
   }
 
   nextList = () => {
-    const nextNum = this.state.start + this.state.num;
+    if(this.state.currentPage < this.props.pageCount) {
+      this.changePage(this.state.currentPage + 1);
+    }
+  }
+
+  changePage = (page) => {
     this.setState({
-      start: nextNum
+      currentPage: page,
+      start: ((page - 1) * this.state.num)
     }, () => {
+      if(this.state.currentPage > this.state.showEnd) {
+        this.setState({
+          showStart: this.state.showStart + 10,
+          showEnd: this.state.showEnd + 10
+        })
+      }
+      if(this.state.currentPage < this.state.showStart) {
+        this.setState({
+          showStart: this.state.showStart - 10,
+          showEnd: this.state.showEnd - 10
+        })
+      }
       this.getOperationsTaskList();
     })
   }
@@ -97,9 +132,9 @@ class OperationsTable extends Component {
     return(
       <div>
         <div className="et-margin-top-32" style={{position: 'relative', display: 'flex', alignItems: 'center'}}>
-            <h3 className="et-table-title">Operations列表</h3>
+            <h3 className="et-table-title">操作日志</h3>
             <input className="w3-input" style={{width: '236px', borderRadius: '40px', outline: 'none', height: '100%', marginLeft: '13px', paddingLeft: '110px', paddingRight: '14px'}} value={this.state.keyword} onChange={this.handleKeyword} />
-            <select value={this.state.currentSearchKey} onChange={this.handleSearchKeyChange} style={{position: 'absolute', left: '178px', borderRadius: '40px 0 0 40px', outline: 'none', height: '34px', width: '104px', paddingLeft: '15px', border: 'none', borderRight: '1px solid #f1f1f1'}}>
+            <select value={this.state.currentSearchKey} onChange={this.handleSearchKeyChange} style={{position: 'absolute', left: '109px', borderRadius: '40px 0 0 40px', outline: 'none', height: '34px', width: '104px', paddingLeft: '15px', border: 'none', borderRight: '1px solid #f1f1f1'}}>
               {this.state.searchKey.map((key, index) => (
                 <option key={key.name + index} value={key.value}>{key.name}</option>
               ))}
@@ -133,8 +168,17 @@ class OperationsTable extends Component {
                 ))
             }</tbody>
         </table>
-        <div style={{display: 'flex', justifyContent: 'space-around', marginTop: '20px'}}>
+        <div style={{display: 'flex', justifyContent: 'space-around', marginTop: '20px', alignItems: 'center'}}>
           <button className="w3-button w3-green et-change-page-button" onClick={this.previousList}>上一页</button>
+          <div style={{display: 'flex', width: '50%', justifyContent: 'space-around'}}>
+            {this.state.pageList.map((page) => (
+              parseInt(page, 10) >= this.state.showStart && parseInt(page, 10) <= this.state.showEnd &&
+              <div
+                key={page}
+                onClick={() => this.changePage(page)}
+                className={`et-normal-index ${this.state.currentPage === parseInt(page, 10) ? 'et-selected-index' : ''}`}>{page}</div>
+            ))}
+          </div>
           <button className="w3-button w3-green et-change-page-button" onClick={this.nextList}>下一页</button>
         </div>
       </div>
@@ -145,7 +189,9 @@ class OperationsTable extends Component {
 const mapStateToProps = ({ appReducer, taskReducer }) => ({
   userLevel: appReducer.userLevel,
   operationsTaskList: taskReducer.operationsTaskList,
-  userName: appReducer.userName
+  userName: appReducer.userName,
+  operationsCount: taskReducer.operationsCount,
+  pageCount: taskReducer.pageCount
 })
 
 export default connect(mapStateToProps)(OperationsTable);
