@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import $ from 'jquery';
+import UploadImageButton from './UploadImageButton';
 
 var mouseupListener = '';
 
@@ -8,6 +9,36 @@ class SelectedObjectImage extends Component {
         fileCount: 0,
         tagedFileCount: 0,
         imgLoaded: false
+    }
+
+    bindFileEvent = () => {
+      const that = this;
+      $('#file').on('change', function() {
+          const files = this.files;
+          let result = true;
+          for(const file of files) {
+              if((/^[a-zA-Z0-9\-\_\.\u4e00-\u9fa5]+$/).test(file.name) === false) {
+                  result = false;
+              }
+          }
+          if(result) {
+              for(const file of files) {
+                  //decide the file is a image or not
+                  if(file.type === 'image/jpeg' || file.type === 'image/png') {
+                      const name = file.name;
+                      const reader = new FileReader()
+                      reader.onload = function() {
+                          const url = this.result;
+                          that.props.onShowNewImage(url, name);
+                      }
+                      reader.readAsDataURL(file);
+                  }
+              }
+              that.props.onUploadImgeFiles(files);
+          } else {
+              window.alert('图片命名不符合规则');
+          }
+      })
     }
 
     componentWillMount() {
@@ -74,33 +105,7 @@ class SelectedObjectImage extends Component {
         document.addEventListener('keyup', this.nextPreviousImageListener);
 
         //bind upload and show events
-        $('#file').on('change', function() {
-            const files = this.files;
-            let result = true;
-            for(const file of files) {
-                if((/^[a-zA-Z0-9\-\_\.\u4e00-\u9fa5]+$/).test(file.name) === false) {
-                    result = false;
-                }
-            }
-            if(result) {
-                for(const file of files) {
-                    //decide the file is a image or not
-                    if(file.type === 'image/jpeg' || file.type === 'image/png') {
-                        const name = file.name;
-                        const reader = new FileReader()
-                        reader.onload = function() {
-                            const url = this.result;
-                            that.props.onShowNewImage(url, name);
-                        }
-                        reader.readAsDataURL(file);
-                    }
-                }
-                that.props.onUploadImgeFiles(files);
-            } else {
-                window.alert('图片命名不符合规则');
-            }
-        })
-
+        this.bindFileEvent();
         let start = false;
         let previousClientX = 0, previousClientY = 0, currentClientX = 0, currentClientY = 0;
         $('#selectedImagePanel').mousedown(function(e) {
@@ -196,15 +201,14 @@ class SelectedObjectImage extends Component {
                     <img draggable="false" id="selectedImage" className="et-cursor-move" src={this.props.selectedImage} alt={this.props.selectedImage} style={{position: 'absolute'}}/>
                 </div>
                 {
-                    this.props.userLevel !== 0 ?
-                    <form style={{position: 'absolute', bottom: '25px'}}>
-                        <label htmlFor="file" className="w3-green w3-button w3-text-white">
-                            <i className="fa fa-picture-o" aria-hidden="true"></i>&nbsp;
-                            上 传 本 地 图 片
-                        </label>
-                        <input multiple id="file" type="file" style={{display: 'none'}}/>
-                    </form>
-                    : null
+                    this.props.userLevel !== 0
+                      ? <UploadImageButton
+                          defaultURL={this.props.defaultURL}
+                          userName={this.props.userName}
+                          taskName={this.props.taskName}
+                          getImageList={this.props.getImageList}
+                          bindFileEvent={this.bindFileEvent} />
+                      : null
                 }
             </div>
         )

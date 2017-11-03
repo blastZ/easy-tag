@@ -108,28 +108,19 @@ class App extends Component {
 
     getImageList = () => {
         this.setState({selectedImageNum: 0, tagList: []});
-        const that = this;
-        //load imageList from server
-        const xhr = new XMLHttpRequest();
-        xhr.open('GET', `${that.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start}&num=${this.state.num}`);
-        xhr.onload = function() {
-            console.log('getImageList success');
+        fetch(`${this.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start}&num=${this.state.num}`)
+          .then((response) => response.json())
+          .then((result) => {
             const newImageList = [];
-            if(xhr.response) {
-                const jsonResponse = JSON.parse(xhr.response);
-                jsonResponse.map((image) => {
-                    newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
-                })
-            }
-            that.setState({imageList: newImageList}, () => {
-                that.getTagList(0)
-            });
-        }
-        xhr.onerror = function() {
-            console.log('get imageList failed');
-            that.getTagList(0);
-        }
-        xhr.send();
+            result.map((image) => {
+              newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
+            })
+            this.setState({
+              imageList: newImageList
+            }, () => {
+              this.getTagList(0)
+            })
+          })
     }
 
     nextImageList = () => {
@@ -1068,24 +1059,25 @@ class App extends Component {
                     <div className="flex-box full-height">
                         <div className="flex-box flex-column full-height" style={{flex: '1 1 auto', width: '80%'}}>
                             <SelectedImage ref="selectedImage"
-                                           onNextImage={this.nextImage}
-                                           onPreviousImage={this.previousImage}
-                                           num={this.state.num}
-                                           info={this.state.info}
-                                           currentTagString={this.state.currentTagString}
-                                           onAddTag={this.addTag}
-                                           selectedImage={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].url : ''}
-                                           selectedImageName={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].name : 'No Image'}
-                                           selectedImageNumInAll={parseInt(this.state.start) + this.state.selectedImageNum}
-                                           complete={this.state.complete}
-                                           onDeleteImage={this.deleteImage}
-                                           onUploadImgeFiles={this.uploadImageFiles}
-                                           onShowNewImage={this.showNewImage}
-                                           boxList={this.state.tagList}
-                                           defaultURL={this.state.defaultURL}
-                                           userName={this.state.userName}
-                                           userLevel={this.state.userLevel}
-                                           taskName={this.state.taskName}/>
+                               getImageList={this.getImageList}
+                               onNextImage={this.nextImage}
+                               onPreviousImage={this.previousImage}
+                               num={this.state.num}
+                               info={this.state.info}
+                               currentTagString={this.state.currentTagString}
+                               onAddTag={this.addTag}
+                               selectedImage={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].url : ''}
+                               selectedImageName={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].name : 'No Image'}
+                               selectedImageNumInAll={parseInt(this.state.start) + this.state.selectedImageNum}
+                               complete={this.state.complete}
+                               onDeleteImage={this.deleteImage}
+                               onUploadImgeFiles={this.uploadImageFiles}
+                               onShowNewImage={this.showNewImage}
+                               boxList={this.state.tagList}
+                               defaultURL={this.state.defaultURL}
+                               userName={this.state.userName}
+                               userLevel={this.state.userLevel}
+                               taskName={this.state.taskName}/>
                             <SelectBar onClickItem={this.clickItem}
                                        selectedImageNum={this.state.selectedImageNum}
                                        imageList={this.state.imageList}/>
@@ -1123,24 +1115,25 @@ class App extends Component {
                     <div className="flex-box full-height">
                         <div className="flex-box flex-column full-height" style={{flex: '1 1 auto', width: '80%'}}>
                             <SelectedObjectImage ref="selectedObjectImage"
-                                           onNextImage={this.nextImageForObject}
-                                           onPreviousImage={this.previousImageForObject}
-                                           num={this.state.num}
-                                           info={this.state.info}
-                                           currentTagString={this.state.currentTagString}
-                                           onAddTag={this.addTag}
-                                           selectedImage={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].url : ''}
-                                           selectedImageName={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].name : 'No Image'}
-                                           selectedImageNumInAll={parseInt(this.state.start) + this.state.selectedImageNum}
-                                           complete={this.state.complete}
-                                           onDeleteImage={this.deleteImage}
-                                           onUploadImgeFiles={this.uploadImageFiles}
-                                           onShowNewImage={this.showNewImage}
-                                           boxList={this.state.tagList}
-                                           defaultURL={this.state.defaultURL}
-                                           userName={this.state.userName}
-                                           userLevel={this.state.userLevel}
-                                           taskName={this.state.taskName}/>
+                               getImageList={this.getImageList}
+                               onNextImage={this.nextImageForObject}
+                               onPreviousImage={this.previousImageForObject}
+                               num={this.state.num}
+                               info={this.state.info}
+                               currentTagString={this.state.currentTagString}
+                               onAddTag={this.addTag}
+                               selectedImage={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].url : ''}
+                               selectedImageName={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].name : 'No Image'}
+                               selectedImageNumInAll={parseInt(this.state.start) + this.state.selectedImageNum}
+                               complete={this.state.complete}
+                               onDeleteImage={this.deleteImage}
+                               onUploadImgeFiles={this.uploadImageFiles}
+                               onShowNewImage={this.showNewImage}
+                               boxList={this.state.tagList}
+                               defaultURL={this.state.defaultURL}
+                               userName={this.state.userName}
+                               userLevel={this.state.userLevel}
+                               taskName={this.state.taskName}/>
                             <SelectBar onClickItem={this.clickObjectItem} selectedImageNum={this.state.selectedImageNum} imageList={this.state.imageList}/>
                         </div>
                         <div className="flex-box flex-column" style={{width: '20%', backgroundColor: '#F0F0F0'}}>
