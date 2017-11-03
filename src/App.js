@@ -1040,6 +1040,14 @@ class App extends Component {
       })
     }
 
+    autoDeleteSameFiles = () => {
+      fetch(`${this.state.defaultURL}delsamefile?usrname=${this.state.userName}&taskname=${this.state.taskName}`)
+        .then((response) => response.text())
+        .then((result) => {
+          this.getImageList();
+        })
+    }
+
     render() {
         return (
             <div className="App full-height">
@@ -1059,6 +1067,7 @@ class App extends Component {
                     <div className="flex-box full-height">
                         <div className="flex-box flex-column full-height" style={{flex: '1 1 auto', width: '80%'}}>
                             <SelectedImage ref="selectedImage"
+                               deleteSameImage={this.autoDeleteSameFiles}
                                getImageList={this.getImageList}
                                onNextImage={this.nextImage}
                                onPreviousImage={this.previousImage}
@@ -1115,6 +1124,7 @@ class App extends Component {
                     <div className="flex-box full-height">
                         <div className="flex-box flex-column full-height" style={{flex: '1 1 auto', width: '80%'}}>
                             <SelectedObjectImage ref="selectedObjectImage"
+                               deleteSameImage={this.autoDeleteSameFiles}
                                getImageList={this.getImageList}
                                onNextImage={this.nextImageForObject}
                                onPreviousImage={this.previousImageForObject}

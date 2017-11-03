@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import $ from 'jquery';
 import UploadImageButton from './UploadImageButton';
+import TopMenu from './TopMenu';
 
 var mouseupListener = '';
 
@@ -192,11 +193,10 @@ class SelectedObjectImage extends Component {
                 <div style={{position: 'absolute', top: '0', left: '45%'}}>
                     <p className="w3-text-white">{`第 ${this.props.selectedImageNumInAll} 张 图片名称: ${this.props.selectedImageName}`}</p>
                 </div>
-                {
-                    this.props.userLevel !== 0 ?
-                    <i onClick={this.props.onDeleteImage} className="fa fa-times delete-button-white" aria-hidden="true" style={{position: 'absolute', top: '10px', right: '20px', zIndex: '100'}}></i>
-                    : null
-                }
+                <TopMenu
+                  userLevel={this.props.userLevel}
+                  deleteSameImage={this.props.deleteSameImage}
+                  deleteImage={this.props.onDeleteImage} />
                 <div id="selectedImagePanel" style={{position: 'relative', width: '1200px', height: '600px', overflow: 'hidden'}}>
                     <img draggable="false" id="selectedImage" className="et-cursor-move" src={this.props.selectedImage} alt={this.props.selectedImage} style={{position: 'absolute'}}/>
                 </div>
