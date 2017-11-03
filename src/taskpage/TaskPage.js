@@ -1726,7 +1726,9 @@ class TaskPage extends Component {
                       <i onClick={this.shouldShowLabelStatisticsView} className="fa fa-times w3-text-white w3-xxlarge et-hoverable" aria-hidden="true" style={{position: 'absolute', top: '10px', right: '10px'}}></i>
                       <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
                           <h3 className="w3-text-white">{`标注进度: ${this.state.currentTagProgress}`}</h3>
-                          <img src={this.state.statisticsUrl} />
+                          <div style={{overflowX: 'auto', width: '90%'}}>
+                            <img src={this.state.statisticsUrl} />
+                          </div>
                           <button onClick={this.outputTagData} className="w3-button w3-orange w3-text-white w3-margin-top" style={{borderRadius: '5px'}}>输出标记数据</button>
                       </div>
                   </div>}
