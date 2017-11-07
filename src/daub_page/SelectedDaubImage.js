@@ -1,5 +1,7 @@
 import React, {Component} from 'react';
 import $ from 'jquery';
+import UploadImageButton from '../UploadImageButton';
+import TopMenu from '../TopMenu';
 
 var mouseupListener;
 
@@ -7,12 +9,13 @@ class SelectedDaubImage extends Component {
     state = {
         fileCount: 0,
         tagedFileCount: 0,
-        imgLoaded: false
+        imgLoaded: false,
     }
 
     componentWillMount() {
         this.getFileCount();
         this.getTagedFileCount();
+        this.props.getImageList();
     }
 
     componentWillUnmount() {
@@ -57,12 +60,48 @@ class SelectedDaubImage extends Component {
         canvas.style.top = container.height - theImage.height > 0 ? ((container.height - theImage.height) / 2).toString() + 'px' : '0px';
     }
 
+    bindFileEvent = () => {
+      const that = this;
+      $('#file').on('change', function() {
+          const files = this.files;
+          let result = true;
+          for(const file of files) {
+              if((/^[a-zA-Z0-9\-\_\.\u4e00-\u9fa5]+$/).test(file.name) === false) {
+                  result = false;
+              }
+          }
+          if(result) {
+              for(const file of files) {
+                  //decide the file is a image or not
+                  if(file.type === 'image/jpeg' || file.type === 'image/png') {
+                      const name = file.name;
+                      const reader = new FileReader()
+                      reader.onload = function() {
+                          const url = this.result;
+                          that.props.onShowNewImage(url, name);
+                      }
+                      reader.readAsDataURL(file);
+                  }
+              }
+              that.props.onUploadImgeFiles(files);
+          } else {
+              window.alert('图片命名不符合规则');
+          }
+      })
+    }
+
     componentDidMount() {
         const that = this;
         const theImage = document.getElementById('selectedImage');
         const container = document.getElementById('selectedImagePanel');
         const canvas = document.getElementById('selectedCanvas');
         const ctx = canvas.getContext('2d');
+
+        setTimeout(() => {
+          if(this.props.imageList.length > 0) {
+            this.props.getDaubData(0);
+          }
+        })
 
         container.addEventListener('contextmenu', function(e) {
             e.preventDefault();
@@ -90,32 +129,7 @@ class SelectedDaubImage extends Component {
         document.addEventListener('keyup', this.nextPreviousImageListener);
 
         //bind upload and show events
-        $('#file').on('change', function() {
-            const files = this.files;
-            let result = true;
-            for(const file of files) {
-                if((/^[a-zA-Z0-9\-\_\.\u4e00-\u9fa5]+$/).test(file.name) === false) {
-                    result = false;
-                }
-            }
-            if(result) {
-                for(const file of files) {
-                    //decide the file is a image or not
-                    if(file.type === 'image/jpeg' || file.type === 'image/png') {
-                        const name = file.name;
-                        const reader = new FileReader()
-                        reader.onload = function() {
-                            const url = this.result;
-                            that.props.onShowNewImage(url, name);
-                        }
-                        reader.readAsDataURL(file);
-                    }
-                }
-                that.props.onUploadImgeFiles(files);
-            } else {
-                window.alert('图片命名不符合规则');
-            }
-        })
+        this.bindFileEvent();
 
         let drawing = false;
         let currentX, currentY, previousX, previousY;
@@ -128,11 +142,18 @@ class SelectedDaubImage extends Component {
             currentY = e.clientY - canvas.offsetTop - container.offsetTop;
             let dot_flag = true;
             if(dot_flag) {
-              ctx.beginPath();
-              ctx.fillStyle = that.props.getColor();
-              ctx.fillRect(currentX, currentY, 4, 4);
-              ctx.closePath();
-              dot_flag = false;
+              if(this.props.eraseMode) {
+                ctx.beginPath();
+                ctx.clearRect(currentX, currentY, this.props.lineWidth, this.props.lineWidth);
+                ctx.closePath();
+                dot_flag = false;
+              } else {
+                ctx.beginPath();
+                ctx.fillStyle = that.props.getColor();
+                ctx.fillRect(currentX, currentY, this.props.lineWidth, this.props.lineWidth);
+                ctx.closePath();
+                dot_flag = false;
+              }
             }
           }
         });
@@ -163,17 +184,30 @@ class SelectedDaubImage extends Component {
         canvas.addEventListener('mousemove', (e) => {
           if(e.which === 1) {
             if(drawing) {
+              this.props.shouldSaveDaub(true);
               previousX = currentX;
               previousY = currentY;
               currentX = e.clientX - canvas.offsetLeft - container.offsetLeft;
               currentY = e.clientY - canvas.offsetTop - container.offsetTop;
-              ctx.beginPath();
-              ctx.moveTo(previousX, previousY);
-              ctx.lineTo(currentX, currentY);
-              ctx.strokeStyle = that.props.getColor();
-              ctx.lineWidth = 4;
-              ctx.stroke();
-              ctx.closePath();
+              if(this.props.eraseMode) {
+                ctx.globalCompositeOperation = "destination-out";
+                ctx.beginPath();
+                ctx.moveTo(previousX, previousY);
+                ctx.lineTo(currentX, currentY);
+                ctx.strokeStyle = 'rgba(0,0,0,1)'
+                ctx.lineWidth = this.props.lineWidth;
+                ctx.stroke();
+                ctx.closePath();
+              } else {
+                ctx.globalCompositeOperation = "source-over";
+                ctx.beginPath();
+                ctx.moveTo(previousX, previousY);
+                ctx.lineTo(currentX, currentY);
+                ctx.strokeStyle = that.props.getColor();
+                ctx.lineWidth = this.props.lineWidth;
+                ctx.stroke();
+                ctx.closePath();
+              }
             }
           }
         });
@@ -187,7 +221,7 @@ class SelectedDaubImage extends Component {
           }
         }
         document.addEventListener('mouseup', mouseupListener);
-        container.addEventListener('wheel', this.wheelListener);
+        // container.addEventListener('wheel', this.wheelListener);
     }
 
     wheelListener = (e) => {
@@ -204,6 +238,7 @@ class SelectedDaubImage extends Component {
         theImage.style.top = (parseInt(canvas.style.top) - 5).toString() + 'px';
         canvas.style.left = (parseInt(canvas.style.left) - 5).toString() + 'px';
         canvas.style.top = (parseInt(canvas.style.top) - 5).toString() + 'px';
+        const rate = theImage.height / canvas.height ;
         canvas.height = theImage.height;
         canvas.width = theImage.width;
         const newImage = new Image();
@@ -238,7 +273,6 @@ class SelectedDaubImage extends Component {
         getFileCount.open('GET', `${this.props.defaultURL}filecount?usrname=${this.props.userName}&taskname=${this.props.taskName}`);
         getFileCount.send();
         getFileCount.onload = function() {
-            console.log('getFileCount success.');
             const theFileCount = getFileCount.response;
             that.setState({fileCount: theFileCount});
         }
@@ -265,26 +299,22 @@ class SelectedDaubImage extends Component {
                 <div style={{position: 'absolute', top: '0', left: '45%'}}>
                     <p className="w3-text-white">{`第 ${this.props.selectedImageNumInAll} 张 图片名称: ${this.props.selectedImageName}`}</p>
                 </div>
-                {
-                    this.props.userLevel !== 0 ?
-                    <i onClick={this.props.onDeleteImage} className="fa fa-times delete-button-white" aria-hidden="true" style={{position: 'absolute', top: '10px', right: '20px', zIndex: '100'}}></i>
-                    : null
-                }
+                <TopMenu
+                  userLevel={this.props.userLevel}
+                  deleteSameImage={this.props.deleteSameImage}
+                  deleteImage={this.props.onDeleteImage} />
                 <div id="selectedImagePanel" style={{position: 'relative', width: '1200px', height: '600px', overflow: 'hidden'}}>
                     <img draggable="false" id="selectedImage" src={this.props.selectedImage} alt={this.props.selectedImage} style={{position: 'absolute'}}/>
                     <canvas draggable="false" id="selectedCanvas" style={{position: 'absolute'}} />
                 </div>
-                {
-                    // this.props.userLevel !== 0 ?
-                    <form style={{position: 'absolute', bottom: '25px'}}>
-                        <label htmlFor="file" className="w3-green w3-button w3-text-white">
-                            <i className="fa fa-picture-o" aria-hidden="true"></i>&nbsp;
-                            上 传 本 地 图 片
-                        </label>
-                        <input multiple id="file" type="file" style={{display: 'none'}}/>
-                    </form>
-                    // : null
-                }
+                {1 !== 0 ?
+                    <UploadImageButton
+                      defaultURL={this.props.defaultURL}
+                      userName={this.props.userName}
+                      taskName={this.props.taskName}
+                      getImageList={this.props.getImageList}
+                      bindFileEvent={this.bindFileEvent} />
+                    : null}
             </div>
         )
     }

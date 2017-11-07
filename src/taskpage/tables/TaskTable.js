@@ -106,6 +106,9 @@ class TaskTable extends Component {
                             {parseInt(task.taskType) === 3
                               ? <i onClick={this.props.onLinkToVideo.bind(this, index)} className="fa fa-tags table-item-button" aria-hidden="true"> 标注</i>
                               : null}
+                            {parseInt(task.taskType) === 4
+                              ? <i onClick={this.props.onLinkToDaub.bind(this, index)} className="fa fa-tags table-item-button" aria-hidden="true"> 标注</i>
+                              : null}
                             {parseInt(task.taskType, 10) === 0 || parseInt(task.taskType, 10) === 1
                               ? <i onClick={this.props.showLabelStatistics.bind(this, index)} className="fa fa-area-chart table-item-button w3-margin-left"> 标注统计</i>
                               : <i className="fa fa-area-chart et-silence-button w3-margin-left"> 标注统计</i>}

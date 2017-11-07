@@ -1080,6 +1080,11 @@ class TaskPage extends Component {
       this.props.history.push('/video');
     }
 
+    onLinkToDaub = (index) => {
+      this.props.dispatch(changeTaskName(this.state.taskList[index].taskName));
+      this.props.history.push('/daub');
+    }
+
     getWorkerStateName = (workerStateID) => {
         workerStateID = parseInt(workerStateID);
         switch (workerStateID) {
@@ -1594,6 +1599,7 @@ class TaskPage extends Component {
                                     <option>图片分类</option>
                                     <option>语义分割</option>
                                     <option>视频分类</option>
+                                    <option>图像涂抹</option>
                                 </select>
                                 <input placeholder="输入新的任务名称" onChange={this.handleInputChange} value={this.state.newTaskName} className="w3-input" type="text"/>
                                 <button onClick={this.onAddTask} className="w3-button w3-orange">添加</button>
@@ -1755,6 +1761,7 @@ class TaskPage extends Component {
                             onLinkToSegment={this.onLinkToSegment}
                             onLinkToTest={this.onLinkToTest}
                             onLinkToVideo={this.onLinkToVideo}
+                            onLinkToDaub={this.onLinkToDaub}
                             onStartTask={this.onStartTask}
                             onStopTask={this.onStopTask}
                             onLookTrainState={this.onLookTrainState}

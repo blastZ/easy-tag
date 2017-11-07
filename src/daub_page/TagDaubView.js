@@ -112,7 +112,7 @@ class TagDaubView extends Component {
             document.getElementById('new-tag-string').value = '';
             this.setState((state) => {
                 state.tagStringList = state.tagStringList.concat([{name: tagString, color: this.getRandomColor()}]);
-                state.tagStringListAll[document.getElementById('mySelectForListName').value] = state.tagStringList;
+                state.tagStringListAll[document.getElementById('mySelectForListName-daub').value] = state.tagStringList;
             }, () => {
               this.saveTagList();
               this.props.onChangeTagStringList(this.state.tagStringList);
@@ -160,7 +160,7 @@ class TagDaubView extends Component {
             if(this.state.listNameList.length === 1) {
                 window.alert('不能删除最后一个标签组');
             }else {
-                const listName = document.getElementById('mySelectForListName').value;
+                const listName = document.getElementById('mySelectForListName-daub').value;
                 const index = this.state.listNameList.indexOf(listName);
                 this.setState((state) => {
                     state.listNameList.splice(index, 1);
@@ -174,7 +174,7 @@ class TagDaubView extends Component {
     }
 
     updateTagStringList = () => {
-        const listName = document.getElementById('mySelectForListName').value;
+        const listName = document.getElementById('mySelectForListName-daub').value;
         this.setState({tagStringList: this.state.tagStringListAll[listName]}, () => {this.props.onChangeTagString()});
     }
 
@@ -192,44 +192,42 @@ class TagDaubView extends Component {
     }
 
     loadTagList = () => {
-        const request = new XMLHttpRequest();
-        request.open('GET', `${this.props.defaultURL}loadtag?usrname=${this.props.userName}&taskname=${this.props.taskName}`);
-        request.send();
-        request.onload = () => {
-            const data = JSON.parse(request.response);
-            if(data.listname.length === 1 && data.listname[0] === 'tagname') {
-              const listNameList = ['tagname'];
-              const tagStringListAll = {
-                tagname: [{name: 'tag1', color: 'white'}]
-              };
-              const tagStringList = tagStringListAll['tagname'];
-              this.setState({
-                tagStringList,
-                listNameList,
-                tagStringListAll
-              }, () => {
-                this.props.onChangeTagStringList(this.state.tagStringList);
-              })
-            } else {
-              const listNameList = data.listname;
-              const tagStringListAll = data.taglist;
-              const tagStringList = tagStringListAll[listNameList[0]];
-              this.setState({
-                tagStringList,
-                listNameList,
-                tagStringListAll
-              }, () => {
-                this.props.onChangeTagStringList(this.state.tagStringList);
-              })
-            }
-        }
+      fetch(`${this.props.defaultURL}loadtag?usrname=${this.props.userName}&taskname=${this.props.taskName}`)
+        .then((response) => response.json())
+        .then((data) => {
+          if(data.listname[0] === 'tagname' && data.taglist.tagname[0] === 'tag1' && data.taglist.tagname[1] === 'tag2' && data.taglist.tagname[2] === 'tag3') {
+            const listNameList = ['tagname'];
+            const tagStringListAll = {
+              tagname: [{name: 'tag1', color: 'rgb(255,255,255)'}]
+            };
+            const tagStringList = tagStringListAll['tagname'];
+            this.setState({
+              tagStringList,
+              listNameList,
+              tagStringListAll
+            }, () => {
+              this.props.onChangeTagStringList(this.state.tagStringList);
+            })
+          } else {
+            const listNameList = data.listname;
+            const tagStringListAll = data.taglist;
+            const tagStringList = tagStringListAll[listNameList[0]];
+            this.setState({
+              tagStringList,
+              listNameList,
+              tagStringListAll
+            }, () => {
+              this.props.onChangeTagStringList(this.state.tagStringList);
+            })
+          }
+        })
     }
 
     getRandomColor = () => {
       const r = Math.floor(Math.random() * 256);
       const g = Math.floor(Math.random() * 256);
       const b = Math.floor(Math.random() * 256);
-      return `rgb(${r}, ${g}, ${b})`;
+      return `rgb(${r},${g},${b})`;
     }
 
     onChangeBoxInfo(index, e) {
@@ -253,7 +251,7 @@ class TagDaubView extends Component {
 
     editTagString = () => {
         if(this.state.newTagString.trim() !== '') {
-            const oldTagString = document.getElementById('mySelect').value;
+            const oldTagString = document.getElementById('mySelect-daub').value;
             const newTagString = this.state.newTagString;
             this.setState((state) => {
                 const newTagStringList = state.tagStringList.reduce((newTagStringList, tagString) => {
@@ -264,7 +262,7 @@ class TagDaubView extends Component {
                     }
                 }, []);
                 state.tagStringList = newTagStringList;
-                state.tagStringListAll[document.getElementById('mySelectForListName').value] = newTagStringList;
+                state.tagStringListAll[document.getElementById('mySelectForListName-daub').value] = newTagStringList;
                 state.newTagString = '';
             }, () => {
                 this.saveTagList();
@@ -280,7 +278,7 @@ class TagDaubView extends Component {
     editListName = () => {
         const theNewListName = this.state.newListName;
         if(this.state.newListName.trim() !== '') {
-            const oldListName = document.getElementById('mySelectForListName').value;
+            const oldListName = document.getElementById('mySelectForListName-daub').value;
             const newListName = this.state.newListName;
             this.setState((state) => {
                 const index = state.listNameList.indexOf(oldListName);
@@ -292,7 +290,7 @@ class TagDaubView extends Component {
                 delete state.tagStringListAll[oldListName];
                 state.newListName = '';
             }, () => {
-                document.getElementById('mySelectForListName').value = theNewListName;
+                document.getElementById('mySelectForListName-daub').value = theNewListName;
                 this.saveTagList();
                 this.shouldShowListNameEditView();
             });
@@ -302,7 +300,7 @@ class TagDaubView extends Component {
     }
 
     changeTagStringList = () => {
-        const listName = document.getElementById('mySelectForListName').value;
+        const listName = document.getElementById('mySelectForListName-daub').value;
         this.setState({tagStringList: this.state.tagStringListAll[listName]}, () => {
             this.props.onChangeTagStringList(this.state.tagStringList);
         });
@@ -316,16 +314,15 @@ class TagDaubView extends Component {
 
     getBackgroundColor = () => {
       if(this.state.listNameList.length > 0) {
-        const tagName = document.getElementById('mySelect').value;
+        const tagName = document.getElementById('mySelect-daub').value;
         const { tagStringList } = this.state;
         for(let i=0; i<tagStringList.length; i++) {
           if(tagStringList[i].name === tagName) {
-            console.log(tagStringList[i].color)
             return tagStringList[i].color;
           }
         }
       } else {
-        return 'white';
+        return 'rgb(255,255,255)';
       }
     }
 
@@ -457,9 +454,16 @@ class TagDaubView extends Component {
                         : <button onClick={this.shouldShowEditView} className="w3-button w3-green w3-card margin-top-5">编辑标签</button>
                     :null
                 }
-                <ul className="w3-ul w3-hoverable margin-top-5"  style={{overflowY: 'auto', flex: '1'}}>{
-
-                }</ul>
+                <div className="w3-ul w3-hoverable margin-top-5"  style={{overflowY: 'auto', flex: '1'}}>
+                  <div style={{display: 'flex', padding: '0px 10px', alignItems: 'center'}}>
+                    <p>画笔宽度</p>
+                    <input value={this.props.lineWidth} onChange={this.props.changeLineWidth} type="number" style={{width: '20%', marginLeft: '5px', paddingLeft: '5px'}} />
+                  </div>
+                  <div className="margin-top-5" style={{display: 'flex', alignItems: 'center', padding: '0px 10px'}}>
+                    <p>橡皮擦</p>
+                    <input value={this.props.eraseMode} onChange={this.props.changeEraseMode} type="checkbox" style={{marginLeft: '5px'}} />
+                  </div>
+                </div>
                 <div>
                   <div className="flex-box margin-top-5 w3-card">
                       <span style={{padding: '0px 8px', display: 'flex', whiteSpace:'nowrap', alignItems: 'center'}}>起始<br/>序号</span>
