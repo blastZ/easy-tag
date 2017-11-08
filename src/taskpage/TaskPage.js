@@ -1599,7 +1599,7 @@ class TaskPage extends Component {
                                     <option>图片分类</option>
                                     <option>语义分割</option>
                                     <option>视频分类</option>
-                                    <option>图像涂抹</option>
+                                    <option>缺陷检测</option>
                                 </select>
                                 <input placeholder="输入新的任务名称" onChange={this.handleInputChange} value={this.state.newTaskName} className="w3-input" type="text"/>
                                 <button onClick={this.onAddTask} className="w3-button w3-orange">添加</button>

@@ -304,3 +304,7 @@ a:hover {
   border-radius: 5px;
   background: #4caf50;
 }
+
+#selectedCanvas {
+  opacity: 0.6;
+}

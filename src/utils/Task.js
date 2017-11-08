@@ -28,7 +28,7 @@ export function getTaskTypeName(taskTypeID) {
       case 3:
         return ('视频分类');
       case 4:
-        return ('图像涂抹');
+        return ('缺陷检测');
     }
 }
 
@@ -38,7 +38,7 @@ export function getTaskTypeCode(str) {
         case '图片分类': return 1;
         case '语义分割': return 2;
         case '视频分类': return 3;
-        case '图像涂抹': return 4;
+        case '缺陷检测': return 4;
         default: return 0;
     }
 }

@@ -3,6 +3,8 @@ import { connect } from 'react-redux';
 import { getTaskStateName, getTaskTypeName } from '../../utils/Task';
 import { Link } from 'react-router-dom';
 import { getOperationsTaskList, getOperationsCount } from '../../actions/task_action';
+import FirstPageIcon from 'react-icons/lib/md/skip-previous';
+import LastPageIcon from 'react-icons/lib/md/skip-next';
 
 class OperationsTable extends Component {
   state = {
@@ -106,6 +108,28 @@ class OperationsTable extends Component {
     }
   }
 
+  goFirstPage = () => {
+    this.setState({
+      currentPage: 1,
+      start: 0,
+      showStart: 1,
+      showEnd: 10
+    }, () => {
+      this.getOperationsTaskList();
+    })
+  }
+
+  goLastPage = () => {
+    this.setState({
+      currentPage: this.props.pageCount,
+      start: this.props.pageCount - 10,
+      showStart: this.props.pageCount - 10,
+      showEnd: this.props.pageCount
+    }, () => {
+      this.getOperationsTaskList();
+    })
+  }
+
   changePage = (page) => {
     this.setState({
       currentPage: page,
@@ -170,6 +194,7 @@ class OperationsTable extends Component {
         </table>
         <div style={{display: 'flex', justifyContent: 'space-around', marginTop: '20px', alignItems: 'center'}}>
           <button className="w3-button w3-green et-change-page-button" onClick={this.previousList}>上一页</button>
+          <FirstPageIcon onClick={this.goFirstPage} className="et-hoverable" style={{fontSize: '30px'}} />
           <div style={{display: 'flex', width: '50%', justifyContent: 'space-around'}}>
             {this.state.pageList.map((page) => (
               parseInt(page, 10) >= this.state.showStart && parseInt(page, 10) <= this.state.showEnd &&
@@ -179,6 +204,7 @@ class OperationsTable extends Component {
                 className={`et-normal-index ${this.state.currentPage === parseInt(page, 10) ? 'et-selected-index' : ''}`}>{page}</div>
             ))}
           </div>
+          <LastPageIcon onClick={this.goLastPage} className="et-hoverable" style={{fontSize: '30px'}} />
           <button className="w3-button w3-green et-change-page-button" onClick={this.nextList}>下一页</button>
         </div>
       </div>

@@ -97,11 +97,15 @@ class SelectedDaubImage extends Component {
         const canvas = document.getElementById('selectedCanvas');
         const ctx = canvas.getContext('2d');
 
+        this.props.getCursor((dataURL) => {
+          document.getElementById('selectedCanvas').style.cursor = `url(${dataURL}), pointer`;
+        })
+
         setTimeout(() => {
           if(this.props.imageList.length > 0) {
             this.props.getDaubData(0);
           }
-        })
+        }, 300)
 
         container.addEventListener('contextmenu', function(e) {
             e.preventDefault();
@@ -141,16 +145,18 @@ class SelectedDaubImage extends Component {
             currentX = e.clientX - canvas.offsetLeft - container.offsetLeft;
             currentY = e.clientY - canvas.offsetTop - container.offsetTop;
             let dot_flag = true;
+            const offset = 1.0 * this.props.lineWidth;
             if(dot_flag) {
               if(this.props.eraseMode) {
                 ctx.beginPath();
-                ctx.clearRect(currentX, currentY, this.props.lineWidth, this.props.lineWidth);
+                ctx.clearRect(currentX - this.props.lineWidth + offset, currentY - this.props.lineWidth + offset, 2 * this.props.lineWidth, 2 * this.props.lineWidth);
                 ctx.closePath();
                 dot_flag = false;
               } else {
                 ctx.beginPath();
                 ctx.fillStyle = that.props.getColor();
-                ctx.fillRect(currentX, currentY, this.props.lineWidth, this.props.lineWidth);
+                ctx.arc(currentX + offset, currentY + offset, this.props.lineWidth, 0, 2 * Math.PI);
+                ctx.fill();
                 ctx.closePath();
                 dot_flag = false;
               }
@@ -189,22 +195,25 @@ class SelectedDaubImage extends Component {
               previousY = currentY;
               currentX = e.clientX - canvas.offsetLeft - container.offsetLeft;
               currentY = e.clientY - canvas.offsetTop - container.offsetTop;
+              const offset = 1.0 * this.props.lineWidth;
               if(this.props.eraseMode) {
                 ctx.globalCompositeOperation = "destination-out";
                 ctx.beginPath();
-                ctx.moveTo(previousX, previousY);
-                ctx.lineTo(currentX, currentY);
+                ctx.moveTo(previousX + offset, previousY + offset);
+                ctx.lineTo(currentX + offset, currentY + offset);
                 ctx.strokeStyle = 'rgba(0,0,0,1)'
-                ctx.lineWidth = this.props.lineWidth;
+                ctx.lineWidth = this.props.lineWidth * 2;
+                ctx.lineCap = 'round';
                 ctx.stroke();
                 ctx.closePath();
               } else {
                 ctx.globalCompositeOperation = "source-over";
                 ctx.beginPath();
-                ctx.moveTo(previousX, previousY);
-                ctx.lineTo(currentX, currentY);
+                ctx.moveTo(previousX + offset, previousY + offset);
+                ctx.lineTo(currentX + offset, currentY + offset);
                 ctx.strokeStyle = that.props.getColor();
-                ctx.lineWidth = this.props.lineWidth;
+                ctx.lineWidth = this.props.lineWidth * 2;
+                ctx.lineCap = 'round';
                 ctx.stroke();
                 ctx.closePath();
               }

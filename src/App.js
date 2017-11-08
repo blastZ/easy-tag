@@ -194,7 +194,6 @@ class App extends Component {
                 that.getTagList(0);
             }
         }
-
     }
 
     nextImageListForObject = () => {
@@ -259,6 +258,62 @@ class App extends Component {
                 that.getTagList(0);
             }
         }
+    }
+
+    nextImageListForDaub = () => {
+      this.saveDaubData(this.state.selectedImageNum);
+      const that = this;
+      let maxValue = 0;
+      if(that.refs.tagDaubRoute && that.refs.tagDaubRoute.refs.selectedDaubImage) {
+          maxValue = that.refs.tagDaubRoute.refs.selectedDaubImage.state.fileCount;
+      }
+      if(this.state.currentBrowserMode === 'normal') {
+        fetch(`${that.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.props.taskName}&start=${this.state.start + this.state.num > maxValue ? maxValue : this.state.start + this.state.num}&num=${this.state.num}`)
+          .then((response) => (response.json()))
+          .then((result) => {
+            const newImageList = [];
+            result.map((image) => {
+                newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
+            })
+            this.setState((state) => {
+                state.start = state.start + state.num > maxValue ? maxValue : state.start + state.num;
+                state.selectedImageNum = 0;
+                state.imageList = newImageList;
+            }, function() {
+                if(that.refs.tagDaubRoute.refs.selectedDaubImage) that.refs.tagDaubRoute.refs.selectedDaubImage.initSelectedImage();
+            })
+            setTimeout(() => {
+              this.getDaubData(0);
+            }, 300)
+          })
+      } else if(this.state.currentBrowserMode === 'find') {
+          const xhr = new XMLHttpRequest();
+          xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.props.taskName}&start=${this.state.start + this.state.num}&num=${this.state.num}`);
+          const data = JSON.stringify({
+              tag: this.state.currentTagString
+          })
+          xhr.send(data);
+          xhr.onload = function() {
+              const newImageList = [];
+              if(xhr.response) {
+                  const jsonResponse = JSON.parse(xhr.response);
+                  jsonResponse.map((image) => {
+                      newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
+                  })
+              }
+              that.setState((state) => {
+                  state.start = state.start + state.num > maxValue ? maxValue : state.start + state.num;
+                  state.selectedImageNum = 0;
+                  state.tagList = [];
+                  state.imageList = newImageList;
+              }, function() {
+                  that.refs.tagDaubRoute.refs.selectedDaubImage.initSelectedImage();
+              })
+              setTimeout(() => {
+                that.getDaubData(0);
+              }, 300)
+          }
+      }
     }
 
     previousImageList = () => {
@@ -377,6 +432,59 @@ class App extends Component {
                 that.getTagList(0);
             }
         }
+    }
+
+    previousImageListForDaub = () => {
+      const that = this;
+      this.saveDaubData(this.state.selectedImageNum);
+      if(this.state.currentBrowserMode === 'normal') {
+          //load imageList from server
+          fetch(`${this.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.props.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`)
+            .then((response) => response.json())
+            .then((result) => {
+              const newImageList = [];
+              result.map((image) => {
+                  newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
+              })
+              this.setState((state) => {
+                  state.start = state.start - state.num > 0 ? state.start - state.num : 1;
+                  state.selectedImageNum = 0;
+                  state.imageList = newImageList;
+              }, function() {
+                  if(that.refs.tagDaubRoute.refs.selectedDaubImage) that.refs.tagDaubRoute.refs.selectedDaubImage.initSelectedImage();
+              })
+            })
+            setTimeout(() => {
+              this.getDaubData(0);
+            }, 300)
+      } else if(this.state.currentBrowserMode === 'find') {
+          const xhr = new XMLHttpRequest();
+          xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.props.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
+          const data = JSON.stringify({
+              tag: this.state.currentTagString
+          })
+          xhr.send(data);
+          xhr.onload = function() {
+              const newImageList = [];
+              if(xhr.response) {
+                  const jsonResponse = JSON.parse(xhr.response);
+                  jsonResponse.map((image) => {
+                      newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
+                  })
+              }
+              that.setState((state) => {
+                  state.start = state.start - state.num > 0 ? state.start - state.num : 1;
+                  state.selectedImageNum = 0;
+                  state.tagList = [];
+                  state.imageList = newImageList;
+              }, function() {
+                  that.refs.tagDaubRoute.refs.selectedDaubImage.initSelectedImage();
+              })
+              setTimeout(() => {
+                that.getDaubData(0);
+              }, 300)
+          }
+      }
     }
 
     previousImageListForShortcut = () => {
@@ -886,50 +994,6 @@ class App extends Component {
         }
     }
 
-    // saveResult = () => {
-    //     // let result = `{length: ${this.state.tagList.length} }`
-    //     // this.state.tagList.map((tag) => {
-    //     //     const x_start = tag.x_start
-    //     //     const y_start = tag.y_start
-    //     //     const x_end = tag.x_end
-    //     //     const y_end = tag.y_end
-    //     //     const tag = tag.tag
-    //     //     result = result.concat(`${x_start} `).concat(`${y_start} `).concat(`${x_end} `).concat(`${y_end} `).concat(tag).concat('\n')
-    //     // })
-    //     const result = `{
-    //         "length": ${this.state.tagList.length},
-    //         "objects": [
-    //             ${this.state.tagList.map((tag) => (
-    //                 `{
-    //                     "x_start": ${tag.x_start},
-    //                     "y_start": ${tag.y_start},
-    //                     "x_end": ${tag.x_end},
-    //                     "y_end": ${tag.y_end},
-    //                     "tag": "${tag.tag}"
-    //                 }`
-    //             ))}
-    //         ]
-    //     }`
-    //
-    //     //var blob = new Blob([result], {type: "text/plain;charset=utf-8"});
-    //     //saveAs(blob, `${this.state.imageList[this.state.selectedImageNum].name}.txt`);
-    //     $.ajax({
-    //         url: 'http://192.168.0.118:8888/api/v1.0',
-    //         type: 'POST',
-    //         headers: {
-    //             'Content-Type': 'application/json'
-    //         },
-    //         data: result,
-    //         dataType: 'text/plain',
-    //         success: function(data) {
-    //             console.log(data)
-    //         },
-    //         error: function(data) {
-    //             console.log(data)
-    //         }
-    //     })
-    // }
-
     addTag = (tag) => {
         this.setState((state) => {
             state.shouldPostTagList = true;
@@ -1179,7 +1243,25 @@ class App extends Component {
       }
       this.setState({
         lineWidth: value
+      }, () => {
+        this.getCursor((dataURL) => {
+          document.getElementById('selectedCanvas').style.cursor = `url(${dataURL}), pointer`;
+        })
       })
+    }
+
+    getCursor = (setCursor) => {
+      const img = new Image();
+      img.src = require('./imgs/cursor.png');
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = this.state.lineWidth * 2;
+        canvas.height = this.state.lineWidth * 2;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, canvas.width, canvas.height);
+        const dataURL = canvas.toDataURL();
+        setCursor(dataURL);
+      }
     }
 
     changeEraseMode = (e) => {
@@ -1335,6 +1417,7 @@ class App extends Component {
                     <div className="flex-box full-height">
                         <div className="flex-box flex-column full-height" style={{flex: '1 1 auto', width: '80%'}}>
                             <SelectedDaubImage ref="selectedDaubImage"
+                               getCursor={this.getCursor}
                                shouldSaveDaub={this.shouldSaveDaub}
                                eraseMode={this.state.eraseMode}
                                lineWidth={this.state.lineWidth}
@@ -1389,8 +1472,8 @@ class App extends Component {
                                onChangeTagStringList={this.changeTagStringList}
                                onChangeBrowserMode={this.changeBrowserMode}
                                onGetImageList={this.getImageList}
-                               onNextImageList={this.nextImageList}
-                               onPreviousImageList={this.previousImageList}
+                               onNextImageList={this.nextImageListForDaub}
+                               onPreviousImageList={this.previousImageListForDaub}
                                defaultURL={this.state.defaultURL}
                                userName={this.state.userName}
                                userLevel={this.state.userLevel}
