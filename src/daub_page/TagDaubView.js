@@ -332,6 +332,15 @@ class TagDaubView extends Component {
       })
     }
 
+    clearCanvas = () => {
+      const result = window.confirm('确定清除所有标记吗?');
+      if(result) {
+        const canvas = document.getElementById('selectedCanvas');
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+    }
+
     render() {
         return (
             <div className="flex-box flex-column" style={{justifyContent: 'center', height: '100%'}}>
@@ -454,6 +463,7 @@ class TagDaubView extends Component {
                         : <button onClick={this.shouldShowEditView} className="w3-button w3-green w3-card margin-top-5">编辑标签</button>
                     :null
                 }
+                <button onClick={this.clearCanvas} className="w3-button w3-green w3-card" style={{marginTop: '5px'}}>清除所有标记</button>
                 <div className="w3-ul w3-hoverable margin-top-5"  style={{overflowY: 'auto', flex: '1'}}>
                   <div style={{display: 'flex', padding: '0px 10px', alignItems: 'center'}}>
                     <p>画笔宽度</p>
