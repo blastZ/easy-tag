@@ -230,7 +230,7 @@ class SelectedDaubImage extends Component {
           }
         }
         document.addEventListener('mouseup', mouseupListener);
-        // container.addEventListener('wheel', this.wheelListener);
+        container.addEventListener('wheel', this.wheelListener);
     }
 
     wheelListener = (e) => {

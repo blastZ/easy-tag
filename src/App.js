@@ -817,7 +817,7 @@ class App extends Component {
     decodeDaubData = (data) => {
       const newData = [];
       let i,j;
-      for(i=0; i<data.length; i++) {
+      for(i=0; i<data.length; i=i+2) {
         if(data[i] === 0) {
           for(j=0; j<data[i+1]; j++) {
             newData.push(0);
@@ -825,13 +825,14 @@ class App extends Component {
             newData.push(0);
             newData.push(0);
           }
-          i++;
         } else {
           const color = this.getTagRGB(data[i]);
-          newData.push(parseInt(color[0], 10));
-          newData.push(parseInt(color[1], 10));
-          newData.push(parseInt(color[2], 10));
-          newData.push(parseInt(color[3], 10));
+          for(j=0; j<data[i+1]; j++) {
+            newData.push(color[0]);
+            newData.push(color[1]);
+            newData.push(color[2]);
+            newData.push(color[3]);
+          }
         }
       }
       return newData;
@@ -841,21 +842,18 @@ class App extends Component {
       const newData = [];
       let i, j;
       for(i=0; i<data.length; i++) {
-        if(data[i] === 0) {
-          let count = 0;
-          for(j=i;;j++) {
-            if(data[j] === 0) {
-              count++;
-            } else {
-              break;
-            }
+        let num = data[i];
+        let count = 0;
+        for(j=i; j<data.length; j++) {
+          if(num === data[j]) {
+            count++;
+          } else {
+            break;
           }
-          i = j - 1;
-          newData.push(0);
-          newData.push(count);
-        } else {
-          newData.push(data[i]);
         }
+        i = j - 1;
+        newData.push(num);
+        newData.push(count);
       }
       return newData;
     }
@@ -896,10 +894,22 @@ class App extends Component {
           if(result.length !== 0) {
             const data = this.decodeDaubData(result.data);
             const canvas = document.getElementById('selectedCanvas');
+            const image = document.getElementById('selectedImage');
             const ctx = canvas.getContext('2d');
             const imageData = ctx.createImageData(result.width, result.height);
             imageData.data.set(new Uint8ClampedArray(data));
+            canvas.width = result.width;
+            canvas.height = result.height;
             ctx.putImageData(imageData, 0, 0);
+            const url = canvas.toDataURL();
+            const newImage = new Image();
+            newImage.onload = () => {
+              ctx.clearRect(0, 0, result.width, result.height);
+              canvas.width = image.width;
+              canvas.height = image.height;
+              ctx.drawImage(newImage, 0, 0, image.width, image.height);
+            }
+            newImage.src = url;
           }
         })
     }
@@ -1197,7 +1207,7 @@ class App extends Component {
       const R = color[0].slice(4, color[0].length);
       const G = color[1].slice(0, color[1].length);
       const B = color[2].slice(0, color[2].length - 1);
-      return [R,G,B,255];
+      return [parseInt(R, 10),parseInt(G, 10),parseInt(B, 10),255];
     }
 
     getTagNum = (r,g,b) => {
