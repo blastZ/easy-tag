@@ -308,3 +308,23 @@ a:hover {
 #selectedCanvas {
   opacity: 0.6;
 }
+
+.animation-rotate {
+  animation-name: rotate;
+  animation-duration: 3s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(359deg);
+  }
+}
+
+.margin-left {
+  margin-left: 5px;
+}

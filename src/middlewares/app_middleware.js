@@ -29,7 +29,7 @@ const appMiddleware = store => next => action => {
     else if(action.type === 'GET_IMAGE_LIST') {
         const state = store.getState().appReducer;
         const xhr = new XMLHttpRequest();
-        xhr.open('GET', `${state.defaultURL}getdir?usrname=${state.userName}&taskname=${state.taskName}&start=${state.start}&num=${state.num}`);
+        xhr.open('GET', `${state.defaultURL}getdir?usrname=${state.userName}&taskname=${state.taskName}&start=${state.start}&num=${state.num}&video=0`);
         xhr.onload = function() {
             console.log('getImageList success');
             const imageList = [];

@@ -10,7 +10,7 @@ const videoMiddleware = store => next => action => {
   const url = appState.defaultURL;
   if(action.type === GET_VIDEO_LIST) {
     const { start, num, callback } = action;
-    fetch(`${url}getdir?usrname=${userName}&taskname=${taskName}&start=${start}&num=${num}`)
+    fetch(`${url}getdir?usrname=${userName}&taskname=${taskName}&start=${start}&num=${num}&video=1`)
       .then((response) => (response.json()))
       .then((result) => {
         if(result.length > 0) {
@@ -31,14 +31,17 @@ const videoMiddleware = store => next => action => {
     const { file } = action;
     const formData = new FormData();
     formData.append('file', file);
-    fetch(`${url}uploadfile?usrname=${userName}&taskname=${taskName}&filename=${file.name}`, {
+    fetch(`${url}uploadvideofile?usrname=${userName}&taskname=${taskName}&filename=${file.name}`, {
       method: 'POST',
       body: formData
-    })
-    next({
-      type: ADD_NEW_VIDEO,
-      file
-    })
+    }).then((response) => response.text())
+      .then((result) => {
+        next({
+          type: ADD_NEW_VIDEO,
+          file,
+          url: result
+        })
+      })
   } else if(action.type === SAVE_VIDEO_LABEL) {
     const { fileName, videoLabelList } = action;
     fetch(`${url}savelabel?usrname=${userName}&taskname=${taskName}&filename=${fileName}`, {

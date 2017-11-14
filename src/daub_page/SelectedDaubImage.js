@@ -242,7 +242,7 @@ class SelectedDaubImage extends Component {
         const canvas = document.getElementById('selectedCanvas');
         const ctx  = canvas.getContext('2d');
         const url = canvas.toDataURL();
-        theImage.height += 10;
+        theImage.height += 30;
         theImage.style.left = (parseInt(canvas.style.left) - 5).toString() + 'px';
         theImage.style.top = (parseInt(canvas.style.top) - 5).toString() + 'px';
         canvas.style.left = (parseInt(canvas.style.left) - 5).toString() + 'px';
@@ -262,18 +262,20 @@ class SelectedDaubImage extends Component {
         const canvas = document.getElementById('selectedCanvas');
         const ctx  = canvas.getContext('2d');
         const url = canvas.toDataURL();
-        theImage.height -= 10;
-        theImage.style.left = (parseInt(canvas.style.left) + 5).toString() + 'px';
-        theImage.style.top = (parseInt(canvas.style.top) + 5).toString() + 'px';
-        canvas.style.left = (parseInt(canvas.style.left) + 5).toString() + 'px';
-        canvas.style.top = (parseInt(canvas.style.top) + 5).toString() + 'px';
-        canvas.height = theImage.height;
-        canvas.width = theImage.width;
-        const newImage = new Image();
-        newImage.onload = () => {
-          ctx.drawImage(newImage, 0, 0, theImage.width, theImage.height);
+        if(theImage.height > 630) {
+          theImage.height -= 30;
+          theImage.style.left = (parseInt(canvas.style.left) + 5).toString() + 'px';
+          theImage.style.top = (parseInt(canvas.style.top) + 5).toString() + 'px';
+          canvas.style.left = (parseInt(canvas.style.left) + 5).toString() + 'px';
+          canvas.style.top = (parseInt(canvas.style.top) + 5).toString() + 'px';
+          canvas.height = theImage.height;
+          canvas.width = theImage.width;
+          const newImage = new Image();
+          newImage.onload = () => {
+            ctx.drawImage(newImage, 0, 0, theImage.width, theImage.height);
+          }
+          newImage.src = url;
         }
-        newImage.src = url;
     }
 
     getFileCount = () => {

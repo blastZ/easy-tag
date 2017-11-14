@@ -354,15 +354,7 @@ class VideoView extends Component {
     if(files) {
       for(const file of files) {
         const type = file.type;
-        const canPlay = video.canPlayType(type);
-        if(canPlay === '') {
-          window.alert('不支持该视频格式');
-        } else {
-          this.props.dispatch(addNewVideo(file));
-          if(this.props.videoList.length === 0) {
-            video.src = URL.createObjectURL(file);
-          }
-        }
+        this.props.dispatch(addNewVideo(file));
       }
     }
   }
@@ -447,6 +439,15 @@ class VideoView extends Component {
     })
   }
 
+  changePlaySpeed = (value) => {
+    const video = document.getElementById('my-video');
+    const time = video.currentTime;
+    video.defaultPlaybackRate = value;
+    video.load();
+    video.currentTime = time;
+    video.play();
+  }
+
   render() {
     const { listNameList, tagList, tagStringList } = this.props;
     return (
@@ -460,10 +461,16 @@ class VideoView extends Component {
               <VideoContainer>
                 <Video id='my-video' controls autoplay type="video/mp4"/>
               </VideoContainer>
-              <label className="w3-button w3-green" htmlFor="video-file-input" style={{marginTop: '10px', width: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', }}>
-                <UploadIcon style={{fontSize: '22px'}} />&nbsp;上 传 本 地 视 频
-              </label>
-              <input multiple onChange={this.uploadNewVideo} id="video-file-input" type="file" style={{display: 'none'}}/>
+              <div style={{display: 'flex', marginTop: '10px', alignItems: 'center'}}>
+                <label className="w3-button w3-green" htmlFor="video-file-input" style={{width: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', }}>
+                  <UploadIcon style={{fontSize: '22px'}} />&nbsp;上 传 本 地 视 频
+                </label>
+                <input multiple onChange={this.uploadNewVideo} id="video-file-input" type="file" style={{display: 'none'}}/>
+                <button onClick={() => this.changePlaySpeed(0.5)} className="w3-button w3-green margin-left">{`0.5X`}</button>
+                <button onClick={() => this.changePlaySpeed(1)} className="w3-button w3-green margin-left">{`1X`}</button>
+                <button onClick={() => this.changePlaySpeed(2)} className="w3-button w3-green margin-left">{`2X`}</button>
+                <button onClick={() => this.changePlaySpeed(4)} className="w3-button w3-green margin-left">{`4X`}</button>
+              </div>
             </ContentContainer>
             <ListContainer>
               {this.props.videoList.map((video, index) => (
@@ -510,7 +517,7 @@ class VideoView extends Component {
             </OptionsContainer>
             <LabelListContainer>
               {this.props.videoLabelList.map((label, index) => (
-                <VideoLabel removeLabel={this.removeLabel} goToPoint={this.goToPoint} key={label.start + label.end + index} index={index} start={label.start} end={label.end} tagList={label.tagList} />
+                <VideoLabel removeLabel={this.removeLabel} goToPoint={this.goToPoint} key={index + Math.random()} index={index} start={label.start} end={label.end} tagList={label.tagList} />
               ))}
             </LabelListContainer>
             <div>

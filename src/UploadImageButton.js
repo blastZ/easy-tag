@@ -47,20 +47,24 @@ class UploadImageButton extends Component {
 
   previousUploadMode = () => {
     this.setState({
-      uploadMode: this.state.uploadMode - 1 > 0 ? this.state.uploadMode - 1 : 3
+      uploadMode: this.state.uploadMode - 1 > 0 ? this.state.uploadMode - 1 : 4
     }, () => {
       if(this.state.uploadMode === 1) {
         this.props.bindFileEvent();
+      } else if(this.state.uploadMode === 4) {
+        this.props.bindVideoFileEvent();
       }
     })
   }
 
   nextUploadMode = () => {
     this.setState({
-      uploadMode: this.state.uploadMode + 1 < 4 ? this.state.uploadMode + 1 : 1
+      uploadMode: this.state.uploadMode + 1 < 5 ? this.state.uploadMode + 1 : 1
     }, () => {
       if(this.state.uploadMode === 1) {
         this.props.bindFileEvent();
+      } else if(this.state.uploadMode === 4) {
+        this.props.bindVideoFileEvent();
       }
     })
   }
@@ -162,6 +166,14 @@ class UploadImageButton extends Component {
               <span>爬</span>
               <span>图</span>
             </div> : null}
+            {this.state.uploadMode === 4 &&
+              <form>
+                <label htmlFor="video-file" className="w3-green w3-button w3-text-white">
+                    <i className="fa fa-picture-o"></i>&nbsp;
+                    上 传 本 地 视 频
+                </label>
+                <input id="video-file" type="file" style={{display: 'none'}}/>
+              </form>}
         <RightIcon onClick={this.nextUploadMode} className="et-hoverable" style={{fontSize: '3em', color: 'white'}} />
       </div>
     )

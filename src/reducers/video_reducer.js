@@ -17,7 +17,7 @@ const initState = {
 const videoReducer = (state=initState, action) => {
   const { videoList, label, index, file, videoLabelList, listNameList, tagList, tagStringList,
           newListName, listName, oldListName, oldTagString, newTagString, tagString,
-          fileCount, labeledFileCount } = action;
+          fileCount, labeledFileCount, url } = action;
   switch (action.type) {
     case GET_VIDEO_LIST: {
       return {
@@ -60,7 +60,7 @@ const videoReducer = (state=initState, action) => {
     case ADD_NEW_VIDEO: {
       return {
         ...state,
-        videoList: state.videoList.concat([{name: file.name, url: URL.createObjectURL(file)}])
+        videoList: state.videoList.concat([{name: file.name, url: url}])
       }
     }
     case GET_VIDEO_LABEL: {

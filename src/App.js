@@ -20,6 +20,7 @@ import VideoView from './video_page/VideoView';
 import SelectedDaubImage from './daub_page/SelectedDaubImage';
 import SelectDaubBar from './daub_page/SelectDaubBar';
 import TagDaubView from './daub_page/TagDaubView';
+import WaitingPage from './WaitingPage';
 //import { saveAs } from 'file-saver' when you want to save as txt on the localhost
 
 class App extends Component {
@@ -48,7 +49,15 @@ class App extends Component {
         tagStringList: {},
         eraseMode: false,
         lineWidth: 4,
-        saveDaub: false
+        saveDaub: false,
+        showWaitingPage: false,
+        video: 0,
+    }
+
+    shouldShowWaitingPage = () => {
+      this.setState({
+        showWaitingPage: !this.state.showWaitingPage
+      })
     }
 
     shouldSaveDaub = (value) => {
@@ -117,7 +126,7 @@ class App extends Component {
 
     getImageList = () => {
         this.setState({selectedImageNum: 0, tagList: []});
-        fetch(`${this.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.props.taskName}&start=${this.state.start}&num=${this.state.num}`)
+        fetch(`${this.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.props.taskName}&start=${this.state.start}&num=${this.state.num}&video=${this.state.video}`)
           .then((response) => response.json())
           .then((result) => {
             const newImageList = [];
@@ -143,7 +152,7 @@ class App extends Component {
             //load imageList from server
             const xhr = new XMLHttpRequest();
             //it is doesn't matter send a number larger than the maxValue, server side will detect it
-            xhr.open('GET', `${that.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start + this.state.num}&num=${this.state.num}`);
+            xhr.open('GET', `${that.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start + this.state.num}&num=${this.state.num}&video=${this.state.video}`);
             xhr.onload = function() {
                 console.log('getNextList success');
                 const newImageList = [];
@@ -207,7 +216,7 @@ class App extends Component {
             //load imageList from server
             const xhr = new XMLHttpRequest();
             //it is doesn't matter send a number larger than the maxValue, server side will detect it
-            xhr.open('GET', `${that.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start + this.state.num}&num=${this.state.num}`);
+            xhr.open('GET', `${that.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start + this.state.num}&num=${this.state.num}&video=${this.state.video}`);
             xhr.onload = function() {
                 console.log('getNextList success');
                 const newImageList = [];
@@ -268,7 +277,7 @@ class App extends Component {
           maxValue = that.refs.tagDaubRoute.refs.selectedDaubImage.state.fileCount;
       }
       if(this.state.currentBrowserMode === 'normal') {
-        fetch(`${that.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.props.taskName}&start=${this.state.start + this.state.num > maxValue ? maxValue : this.state.start + this.state.num}&num=${this.state.num}`)
+        fetch(`${that.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.props.taskName}&start=${this.state.start + this.state.num > maxValue ? maxValue : this.state.start + this.state.num}&num=${this.state.num}&video=${this.state.video}`)
           .then((response) => (response.json()))
           .then((result) => {
             const newImageList = [];
@@ -322,7 +331,7 @@ class App extends Component {
         if(this.state.currentBrowserMode === 'normal') {
             //load imageList from server
             const xhr = new XMLHttpRequest();
-            xhr.open('GET', `${that.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
+            xhr.open('GET', `${that.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}&video=${this.state.video}`);
             xhr.onload = function() {
                 console.log('getNextList success');
                 const newImageList = [];
@@ -381,7 +390,7 @@ class App extends Component {
         if(this.state.currentBrowserMode === 'normal') {
             //load imageList from server
             const xhr = new XMLHttpRequest();
-            xhr.open('GET', `${that.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
+            xhr.open('GET', `${that.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}&video=${this.state.video}`);
             xhr.onload = function() {
                 console.log('getNextList success');
                 const newImageList = [];
@@ -497,7 +506,7 @@ class App extends Component {
             if(this.state.currentBrowserMode === 'normal') {
                 try {
                     const xhr = new XMLHttpRequest();
-                    xhr.open('GET', `${that.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
+                    xhr.open('GET', `${that.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}&video=${this.state.video}`);
                     const newImageList = [];
                     xhr.onload = function() {
                         console.log('getNextList success');
@@ -569,7 +578,7 @@ class App extends Component {
             if(this.state.currentBrowserMode === 'normal') {
                 try {
                     const xhr = new XMLHttpRequest();
-                    xhr.open('GET', `${that.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
+                    xhr.open('GET', `${that.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}&video=${this.state.video}`);
                     const newImageList = [];
                     xhr.onload = function() {
                         console.log('getNextList success');
@@ -863,6 +872,7 @@ class App extends Component {
       const ctx = canvas.getContext('2d');
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const data = imageData.data;
+      console.log(data);
       let theData = [];
       for(let i=0; i<data.length; i=i+4) {
         const r = data[i];
@@ -897,6 +907,7 @@ class App extends Component {
             const image = document.getElementById('selectedImage');
             const ctx = canvas.getContext('2d');
             const imageData = ctx.createImageData(result.width, result.height);
+            console.log(data);
             imageData.data.set(new Uint8ClampedArray(data));
             canvas.width = result.width;
             canvas.height = result.height;
@@ -1281,9 +1292,29 @@ class App extends Component {
       })
     }
 
+    bindVideoFileEvent = () => {
+      document.getElementById('video-file').addEventListener('change', (e) => {
+        this.shouldShowWaitingPage();
+        const file = e.target.files[0];
+        const formData = new FormData();
+        formData.append('file', file);
+        fetch(`${this.state.defaultURL}uploadvideo2image?usrname=${this.state.userName}&taskname=${this.props.taskName}&filename=${file.name}&interval=${5}`, {
+          method: 'POST',
+          body: formData
+        }).then((response) => response.text())
+          .then((result) => {
+            setTimeout(() => {
+              this.getImageList();
+              this.shouldShowWaitingPage();
+            }, 6000)
+          })
+      })
+    }
+
     render() {
         return (
             <div className="App full-height">
+                {this.state.showWaitingPage && <WaitingPage text="视频解码中"/>}
                 <Route exact path="/" render={() => (
                     this.state.login ?
                     <TaskPage onInitStartAndNum={this.initStartAndNum}
@@ -1300,6 +1331,7 @@ class App extends Component {
                     <div className="flex-box full-height">
                         <div className="flex-box flex-column full-height" style={{flex: '1 1 auto', width: '80%'}}>
                             <SelectedImage ref="selectedImage"
+                               bindVideoFileEvent={this.bindVideoFileEvent}
                                deleteSameImage={this.autoDeleteSameFiles}
                                getImageList={this.getImageList}
                                onNextImage={this.nextImage}
