@@ -320,6 +320,7 @@ class SelectedDaubImage extends Component {
                 </div>
                 {1 !== 0 ?
                     <UploadImageButton
+                      bindVideoFileEvent={this.props.bindVideoFileEvent}
                       defaultURL={this.props.defaultURL}
                       userName={this.props.userName}
                       taskName={this.props.taskName}

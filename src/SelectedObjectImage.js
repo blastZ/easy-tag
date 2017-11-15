@@ -203,6 +203,7 @@ class SelectedObjectImage extends Component {
                 {
                     this.props.userLevel !== 0
                       ? <UploadImageButton
+                          bindVideoFileEvent={this.props.bindVideoFileEvent}
                           defaultURL={this.props.defaultURL}
                           userName={this.props.userName}
                           taskName={this.props.taskName}

@@ -51,7 +51,7 @@ class App extends Component {
         lineWidth: 4,
         saveDaub: false,
         showWaitingPage: false,
-        video: 0,
+        video: 0
     }
 
     shouldShowWaitingPage = () => {
@@ -872,7 +872,6 @@ class App extends Component {
       const ctx = canvas.getContext('2d');
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const data = imageData.data;
-      console.log(data);
       let theData = [];
       for(let i=0; i<data.length; i=i+4) {
         const r = data[i];
@@ -907,7 +906,6 @@ class App extends Component {
             const image = document.getElementById('selectedImage');
             const ctx = canvas.getContext('2d');
             const imageData = ctx.createImageData(result.width, result.height);
-            console.log(data);
             imageData.data.set(new Uint8ClampedArray(data));
             canvas.width = result.width;
             canvas.height = result.height;
@@ -1292,23 +1290,33 @@ class App extends Component {
       })
     }
 
-    bindVideoFileEvent = () => {
-      document.getElementById('video-file').addEventListener('change', (e) => {
-        this.shouldShowWaitingPage();
+    bindVideoFileEvent = (interval, e) => {
+      if(interval === '') {
+        window.alert('时间间隔不能为空');
+      } else {
         const file = e.target.files[0];
-        const formData = new FormData();
-        formData.append('file', file);
-        fetch(`${this.state.defaultURL}uploadvideo2image?usrname=${this.state.userName}&taskname=${this.props.taskName}&filename=${file.name}&interval=${5}`, {
-          method: 'POST',
-          body: formData
-        }).then((response) => response.text())
-          .then((result) => {
-            setTimeout(() => {
-              this.getImageList();
-              this.shouldShowWaitingPage();
-            }, 6000)
-          })
-      })
+        if(file) {
+          this.shouldShowWaitingPage();
+          const name = file.name;
+          const type = name.split('.')[1];
+          if(type === 'mp4' || type === 'avi' || type === 'mpg' || type === 'ts') {
+            const formData = new FormData();
+            formData.append('file', file);
+            fetch(`${this.state.defaultURL}uploadvideo2image?usrname=${this.state.userName}&taskname=${this.props.taskName}&filename=${file.name}&interval=${interval}`, {
+              method: 'POST',
+              body: formData
+            }).then((response) => response.text())
+              .then((result) => {
+                setTimeout(() => {
+                  this.getImageList();
+                  this.shouldShowWaitingPage();
+                }, 6000)
+              })
+          } else {
+            window.alert('视频格式错误');
+          }
+        }
+      }
     }
 
     render() {
@@ -1389,6 +1397,7 @@ class App extends Component {
                     <div className="flex-box full-height">
                         <div className="flex-box flex-column full-height" style={{flex: '1 1 auto', width: '80%'}}>
                             <SelectedObjectImage ref="selectedObjectImage"
+                               bindVideoFileEvent={this.bindVideoFileEvent}
                                deleteSameImage={this.autoDeleteSameFiles}
                                getImageList={this.getImageList}
                                onNextImage={this.nextImageForObject}
@@ -1459,6 +1468,7 @@ class App extends Component {
                     <div className="flex-box full-height">
                         <div className="flex-box flex-column full-height" style={{flex: '1 1 auto', width: '80%'}}>
                             <SelectedDaubImage ref="selectedDaubImage"
+                               bindVideoFileEvent={this.bindVideoFileEvent}
                                getCursor={this.getCursor}
                                shouldSaveDaub={this.shouldSaveDaub}
                                eraseMode={this.state.eraseMode}

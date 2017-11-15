@@ -3,14 +3,32 @@ import LeftIcon from 'react-icons/lib/md/chevron-left';
 import RightIcon from 'react-icons/lib/md/chevron-right';
 import SearchIcon from 'react-icons/lib/fa/search';
 import UrlIcon from 'react-icons/lib/fa/chain';
+import VideoIcon from 'react-icons/lib/md/local-movies';
 
 class UploadImageButton extends Component {
   state = {
     uploadMode: 1,
     showSearchView: false,
     showUrlView: false,
+    showIntervalView: false,
     start: 1,
-    num: 10
+    num: 10,
+    interval: '',
+  }
+
+  handleInterval = (e) => {
+    let value = parseInt(e.target.value, 10);
+    if(value < 1) value = 1;
+    this.setState({
+      interval: value
+    })
+  }
+
+  shouldShowIntervalView = () => {
+    this.setState({
+      interval: '',
+      showIntervalView: !this.state.showIntervalView
+    })
   }
 
   handleStartChange = (e) => {
@@ -51,8 +69,6 @@ class UploadImageButton extends Component {
     }, () => {
       if(this.state.uploadMode === 1) {
         this.props.bindFileEvent();
-      } else if(this.state.uploadMode === 4) {
-        this.props.bindVideoFileEvent();
       }
     })
   }
@@ -63,8 +79,6 @@ class UploadImageButton extends Component {
     }, () => {
       if(this.state.uploadMode === 1) {
         this.props.bindFileEvent();
-      } else if(this.state.uploadMode === 4) {
-        this.props.bindVideoFileEvent();
       }
     })
   }
@@ -109,6 +123,11 @@ class UploadImageButton extends Component {
     this.shouldShowSearchView();
   }
 
+  bindVideoFileEvent = (e) => {
+    this.shouldShowIntervalView();
+    this.props.bindVideoFileEvent(this.state.interval, e);
+  }
+
   render() {
     return (
       <div style={{position: 'absolute', bottom: '25px', display: 'flex', alignItems: 'center'}}>
@@ -126,8 +145,8 @@ class UploadImageButton extends Component {
             <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0'}}>
               <div style={{width: '500px', height: '40px', display: 'flex'}}>
                 <input id="upload-input-url" className="w3-input" style={{borderLeft: '1px solid rgb(48, 48, 48)'}}/>
-                <button onClick={this.shouldShowUrlView} className="w3-button w3-green" style={{flexShrink: '0', borderLeft: '1px solid rgb(48, 48, 48)'}}>取消</button>
                 <button onClick={this.uploadImgByUrl} className="w3-button w3-green" style={{flexShrink: '0', borderLeft: '1px solid rgb(48, 48, 48)'}}>确定</button>
+                <button onClick={this.shouldShowUrlView} className="w3-button w3-green" style={{flexShrink: '0', borderLeft: '1px solid rgb(48, 48, 48)'}}>取消</button>
               </div>
             </div> :
             <div onClick={this.shouldShowUrlView} className="w3-button w3-green" style={{width: '175px', display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
@@ -151,8 +170,8 @@ class UploadImageButton extends Component {
                 <input id="upload-input-search" className="w3-input" style={{borderLeft: '1px solid rgb(48, 48, 48)'}}/>
                 <input value={this.state.start} onChange={this.handleStartChange} type="number" className="w3-input" style={{borderLeft: '1px solid rgb(48,48,48)', width: '55px'}}/>
                 <input value={this.state.num} onChange={this.handleNumChange} type="number" className="w3-input" style={{borderLeft: '1px solid rgb(48, 48, 48)', width: '55px'}}/>
-                <button onClick={this.shouldShowSearchView} className="w3-button w3-green" style={{flexShrink: '0', borderLeft: '1px solid rgb(48, 48, 48)'}}>取消</button>
                 <button onClick={this.uploadImgBySearch} className="w3-button w3-green" style={{flexShrink: '0', borderLeft: '1px solid rgb(48, 48, 48)'}}>确定</button>
+                <button onClick={this.shouldShowSearchView} className="w3-button w3-green" style={{flexShrink: '0', borderLeft: '1px solid rgb(48, 48, 48)'}}>取消</button>
               </div>
             </div> :
             <div onClick={this.shouldShowSearchView} className="w3-button w3-green" style={{width: '175px', display: 'flex', alignItems: 'center'}}>
@@ -166,14 +185,25 @@ class UploadImageButton extends Component {
               <span>爬</span>
               <span>图</span>
             </div> : null}
-            {this.state.uploadMode === 4 &&
-              <form>
-                <label htmlFor="video-file" className="w3-green w3-button w3-text-white">
-                    <i className="fa fa-picture-o"></i>&nbsp;
-                    上 传 本 地 视 频
-                </label>
-                <input id="video-file" type="file" style={{display: 'none'}}/>
-              </form>}
+            {this.state.uploadMode === 4 ?
+              !this.state.showIntervalView ?
+              <div onClick={this.shouldShowIntervalView} className="w3-button w3-green" style={{width: '175px', display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+                <VideoIcon style={{fontSize: '20px'}} />
+                <span>上</span>
+                <span>传</span>
+                <span>本</span>
+                <span>地</span>
+                <span>视</span>
+                <span>频</span>
+              </div>
+              : <form style={{display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0'}}>
+                  <input placeholder="输入时间间隔" type="number" value={this.state.interval} onChange={this.handleInterval} className="w3-input" style={{height: '38px', width: '140px'}}/>
+                  <label htmlFor="video-file" className="w3-green w3-button w3-text-white" style={{flexShrink: '0', borderLeft: '1px solid rgb(48, 48, 48)'}}>
+                      确定
+                  </label>
+                  <input onChange={this.bindVideoFileEvent} id="video-file" type="file" style={{display: 'none'}}/>
+                  <button onClick={this.shouldShowIntervalView} className="w3-green w3-button w3-text-white" style={{flexShrink: '0', borderLeft: '1px solid rgb(48, 48, 48)'}}>取消</button>
+              </form> : null}
         <RightIcon onClick={this.nextUploadMode} className="et-hoverable" style={{fontSize: '3em', color: 'white'}} />
       </div>
     )

@@ -353,8 +353,13 @@ class VideoView extends Component {
     const files = e.target.files;
     if(files) {
       for(const file of files) {
-        const type = file.type;
-        this.props.dispatch(addNewVideo(file));
+        const name = file.name;
+        const type = name.split('.')[1];
+        if(type === 'mp4' || type === 'avi' || type === 'mpg' || type === 'ts') {
+          this.props.dispatch(addNewVideo(file));
+        } else {
+          window.alert('视频格式错误');
+        }
       }
     }
   }
