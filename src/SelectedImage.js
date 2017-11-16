@@ -291,7 +291,6 @@ class SelectedImage extends Component {
         );
     }
 
-
     render() {
         return (
             <div className="w3-center w3-padding-24 flex-box full-width" style={{position: 'relative', justifyContent: 'center', alignItems: 'center', backgroundColor: '#303030', flex: '1'}}>

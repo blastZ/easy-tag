@@ -355,7 +355,7 @@ class VideoView extends Component {
       for(const file of files) {
         const name = file.name;
         const type = name.split('.')[1];
-        if(type === 'mp4' || type === 'avi' || type === 'mpg' || type === 'ts') {
+        if(type === 'mp4' || type === 'MP4' || type === 'avi' || type === 'AVI' || type === 'MTS' || type === 'mts' || type === 'mov' || type === 'MOV' || type === 'wmv' || type === 'WMV' || type === 'mpg' || type === 'MPG' || type === 'ts' || type === 'TS') {
           this.props.dispatch(addNewVideo(file));
         } else {
           window.alert('视频格式错误');

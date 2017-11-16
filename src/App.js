@@ -54,6 +54,12 @@ class App extends Component {
         video: 0
     }
 
+    needPostTagList = () => {
+      this.setState({
+        shouldPostTagList: true
+      })
+    }
+
     shouldShowWaitingPage = () => {
       this.setState({
         showWaitingPage: !this.state.showWaitingPage
@@ -1299,7 +1305,7 @@ class App extends Component {
           this.shouldShowWaitingPage();
           const name = file.name;
           const type = name.split('.')[1];
-          if(type === 'mp4' || type === 'avi' || type === 'mpg' || type === 'ts') {
+          if(type === 'mp4' || type === 'MP4' || type === 'avi' || type === 'AVI' || type === 'MTS' || type === 'mts' || type === 'mov' || type === 'MOV' || type === 'wmv' || type === 'WMV' || type === 'mpg' || type === 'MPG' || type === 'ts' || type === 'TS') {
             const formData = new FormData();
             formData.append('file', file);
             fetch(`${this.state.defaultURL}uploadvideo2image?usrname=${this.state.userName}&taskname=${this.props.taskName}&filename=${file.name}&interval=${interval}`, {
@@ -1366,6 +1372,9 @@ class App extends Component {
                         </div>
                         <div className="flex-box flex-column" style={{width: '20%', backgroundColor: '#F0F0F0'}}>
                             <TagView ref="tagView"
+                               selectedImageNum={this.state.selectedImageNum}
+                               getBoxList={this.getTagList}
+                               needPostTagList={this.needPostTagList}
                                onHandleNumChange={this.handleNumChange}
                                getImageListByTag={this.getImageListByTag}
                                editTagString={this.editTagString}
@@ -1422,28 +1431,28 @@ class App extends Component {
                         </div>
                         <div className="flex-box flex-column" style={{width: '20%', backgroundColor: '#F0F0F0'}}>
                             <TagObjectView ref="tagObjectView" onHandleNumChange={this.handleNumChange}
-                                     getImageListByTag={this.getImageListByTag}
-                                     editTagString={this.editTagString}
-                                     addNewTagToBox={this.addNewTagToBoxForObject}
-                                     removeTagFromBox={this.removeTagFromBox}
-                                     onHandleStartChange={this.handleStartChange}
-                                     start={this.state.start}
-                                     num={this.state.num}
-                                     info={this.state.info}
-                                     currentTagString={this.state.currentTagString}
-                                     onChangeTagString={this.changeObjectTagString}
-                                     onChangeBrowserMode={this.changeBrowserMode}
-                                     onGetImageList={this.getImageList}
-                                     onNextImageList={this.nextImageListForObject}
-                                     onPreviousImageList={this.previousImageListForObject}
-                                     boxList={this.state.tagList}
-                                     onDeleteBox={this.deleteBox}
-                                     onChangeBoxInfo={this.changeBoxInfo}
-                                     defaultURL={this.state.defaultURL}
-                                     userName={this.state.userName}
-                                     userLevel={this.state.userLevel}
-                                     taskName={this.state.taskName}
-                                     onAutoTagImages={this.autoTagImages}/>
+                               getImageListByTag={this.getImageListByTag}
+                               editTagString={this.editTagString}
+                               addNewTagToBox={this.addNewTagToBoxForObject}
+                               removeTagFromBox={this.removeTagFromBox}
+                               onHandleStartChange={this.handleStartChange}
+                               start={this.state.start}
+                               num={this.state.num}
+                               info={this.state.info}
+                               currentTagString={this.state.currentTagString}
+                               onChangeTagString={this.changeObjectTagString}
+                               onChangeBrowserMode={this.changeBrowserMode}
+                               onGetImageList={this.getImageList}
+                               onNextImageList={this.nextImageListForObject}
+                               onPreviousImageList={this.previousImageListForObject}
+                               boxList={this.state.tagList}
+                               onDeleteBox={this.deleteBox}
+                               onChangeBoxInfo={this.changeBoxInfo}
+                               defaultURL={this.state.defaultURL}
+                               userName={this.state.userName}
+                               userLevel={this.state.userLevel}
+                               taskName={this.state.taskName}
+                               onAutoTagImages={this.autoTagImages}/>
                         </div>
                     </div> : null
                 )}/>

@@ -290,6 +290,12 @@ class TagView extends Component {
       this.shouldShowPremodelSelect();
     }
 
+    copyLastBoxList = () => {
+      this.props.getBoxList(this.props.selectedImageNum - 1 >= 0 ? this.props.selectedImageNum - 1 : 0);
+      this.props.needPostTagList();
+      this.shouldShowPremodelSelect();
+    }
+
     render() {
         return (
             <div className="flex-box flex-column" style={{justifyContent: 'center', height: '100%'}}>
@@ -302,7 +308,8 @@ class TagView extends Component {
                           <option key={pretrainmodel + index}>{pretrainmodel}</option>
                         ))}
                       </select>
-                      <div style={{display: 'flex', width: '100%', height: '45px', justifyContent: 'space-around', position: 'absolute', bottom: '2px'}}>
+                      <button onClick={this.copyLastBoxList} className="w3-button w3-green" style={{flexShrink: '0', margin: '5px 2px', height: '45px'}}>获取上一张标注</button>
+                      <div style={{display: 'flex', width: '100%', height: '45px', justifyContent: 'space-around'}}>
                         <button onClick={this.shouldShowPremodelSelect} className="w3-button w3-green" style={{width: '49%'}}>取消</button>
                         <button onClick={this.autoTagImages} className="w3-button w3-green" style={{width: '49%'}}>确定</button>
                       </div>
