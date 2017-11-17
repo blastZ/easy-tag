@@ -35,14 +35,18 @@ class TagDaubView extends Component {
     }
 
     handleAutoTagNum = (e) => {
+      let value = parseInt(e.target.value, 10);
+      if(value < 1) value = 1;
       this.setState({
-        autoTagNum: e.target.value
+        autoTagNum: value
       })
     }
 
     handleAutoTagStart = (e) => {
+      let value = parseInt(e.target.value, 10);
+      if(value < 1) value = 1;
       this.setState({
-        autoTagStart: e.target.value
+        autoTagStart: value
       })
     }
 

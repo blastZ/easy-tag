@@ -187,7 +187,8 @@ class SelectedDaubImage extends Component {
             }
         })
 
-        canvas.addEventListener('mousemove', (e) => {
+        document.addEventListener('mousemove', (e) => {
+          e.preventDefault();
           if(e.which === 1) {
             if(drawing) {
               this.props.shouldSaveDaub(true);
@@ -262,7 +263,7 @@ class SelectedDaubImage extends Component {
         const canvas = document.getElementById('selectedCanvas');
         const ctx  = canvas.getContext('2d');
         const url = canvas.toDataURL();
-        if(theImage.height > 630) {
+        if(theImage.height > 130) {
           theImage.height -= 30;
           theImage.style.left = (parseInt(canvas.style.left) + 5).toString() + 'px';
           theImage.style.top = (parseInt(canvas.style.top) + 5).toString() + 'px';

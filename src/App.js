@@ -646,6 +646,78 @@ class App extends Component {
         }
     }
 
+    previousImageListForShortcutForDaub = () => {
+      this.saveDaubData(this.state.selectedImageNum);
+      const that = this;
+      //load imageList from server
+      if(this.state.start === 1 && this.state.selectedImageNum === 0) {
+
+      } else {
+          if(this.state.currentBrowserMode === 'normal') {
+              try {
+                  const xhr = new XMLHttpRequest();
+                  xhr.open('GET', `${that.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.props.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}&video=${this.state.video}`);
+                  const newImageList = [];
+                  xhr.onload = function() {
+                      console.log('getNextList success');
+                      if(xhr.response) {
+                          const jsonResponse = JSON.parse(xhr.response);
+                          jsonResponse.map((image) => {
+                              newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
+                          })
+                      }
+                      that.setState((state) => {
+                          state.start = state.start - state.num > 0 ? state.start - state.num : 1;
+                          state.selectedImageNum = newImageList.length - 1;
+                          state.tagList = [];
+                          state.imageList = newImageList;
+                      }, function() {
+                          that.refs.tagDaubRoute.refs.selectedDaubImage.initSelectedImage();
+                      })
+                      that.getDaubData(newImageList.length - 1);
+                  }
+                  xhr.onerror = function() {
+                      console.log('getNextList failed');
+                      that.getDaubData(newImageList.length - 1);
+                  }
+                  xhr.send();
+              } catch(error) {
+                  console.log(error);
+              }
+          } else if(this.state.currentBrowserMode === 'find') {
+              try {
+                  const xhr = new XMLHttpRequest();
+                  xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.props.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
+                  const data = JSON.stringify({
+                      tag: this.state.currentTagString
+                  })
+                  xhr.send(data);
+                  const newImageList = [];
+                  xhr.onload = function() {
+                      console.log('getNextList success');
+                      if(xhr.response) {
+                          const jsonResponse = JSON.parse(xhr.response);
+                          jsonResponse.map((image) => {
+                              newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
+                          })
+                      }
+                      that.setState((state) => {
+                          state.start = state.start - state.num > 0 ? state.start - state.num : 1;
+                          state.selectedImageNum = newImageList.length - 1;
+                          state.tagList = [];
+                          state.imageList = newImageList;
+                      }, function() {
+                          that.refs.tagDaubRoute.refs.selectedDaubImage.initSelectedImage();
+                      })
+                      that.getDaubData(newImageList.length - 1);
+                  }
+              } catch(error) {
+                  console.log(error);
+              }
+          }
+      }
+    }
+
     deleteImage = () => {
         const that = this;
         const result = window.confirm("确定删除这张图片吗?");
@@ -724,6 +796,21 @@ class App extends Component {
         }
     }
 
+    nextImageForDaub = () => {
+      const that = this, preIndex = this.state.selectedImageNum;
+      if(preIndex + 1 < this.state.imageList.length) {
+          this.setState((state) => {
+              state.selectedImageNum = preIndex + 1;
+              if(this.state.saveDaub) that.saveDaubData(preIndex);
+              that.getDaubData(preIndex + 1);
+          }, function() {
+              that.refs.tagDaubRoute.refs.selectedDaubImage.initSelectedImage();
+          })
+      } else if(preIndex + 1 === this.state.imageList.length) {
+          this.nextImageListForDaub();
+      }
+    }
+
     previousImage = () => {
         const that = this, preIndex = this.state.selectedImageNum;
         if(preIndex - 1 >= 0) {
@@ -752,6 +839,21 @@ class App extends Component {
         } else {
             this.previousImageListForShortcutForObject();
         }
+    }
+
+    previousImageForDaub = () => {
+      const that = this, preIndex = this.state.selectedImageNum;
+      if(preIndex - 1 >= 0) {
+          this.setState((state) => {
+              state.selectedImageNum = preIndex - 1;
+              if(this.state.saveDaub) that.saveDaubData(preIndex);
+              that.getDaubData(preIndex - 1);
+          }, function() {
+              that.refs.tagDaubRoute.refs.selectedDaubImage.initSelectedImage();
+          })
+      } else {
+          this.previousImageListForShortcutForDaub();
+      }
     }
 
     clickItem = (url) => {
@@ -829,76 +931,20 @@ class App extends Component {
         }
     }
 
-    decodeDaubData = (data) => {
-      const newData = [];
-      let i,j;
-      for(i=0; i<data.length; i=i+2) {
-        if(data[i] === 0) {
-          for(j=0; j<data[i+1]; j++) {
-            newData.push(0);
-            newData.push(0);
-            newData.push(0);
-            newData.push(0);
-          }
-        } else {
-          const color = this.getTagRGB(data[i]);
-          for(j=0; j<data[i+1]; j++) {
-            newData.push(color[0]);
-            newData.push(color[1]);
-            newData.push(color[2]);
-            newData.push(color[3]);
-          }
-        }
-      }
-      return newData;
-    }
-
-    encodeDaubData = (data) => {
-      const newData = [];
-      let i, j;
-      for(i=0; i<data.length; i++) {
-        let num = data[i];
-        let count = 0;
-        for(j=i; j<data.length; j++) {
-          if(num === data[j]) {
-            count++;
-          } else {
-            break;
-          }
-        }
-        i = j - 1;
-        newData.push(num);
-        newData.push(count);
-      }
-      return newData;
-    }
-
     saveDaubData = (index) => {
       const canvas = document.getElementById('selectedCanvas');
       const ctx = canvas.getContext('2d');
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const data = imageData.data;
-      let theData = [];
-      for(let i=0; i<data.length; i=i+4) {
-        const r = data[i];
-        const g = data[i + 1];
-        const b = data[i + 2];
-        const result = this.getTagNum(r,g,b);
-        theData.push(result);
-      }
-      theData = this.encodeDaubData(theData);
+      const url = canvas.toDataURL();
       fetch(`${this.state.defaultURL}savelabel?usrname=${this.state.userName}&taskname=${this.props.taskName}&filename=${this.state.imageList[index].name}`, {
         method: 'POST',
-        body: JSON.stringify({
-          listName: document.getElementById('mySelectForListName-daub').value,
-          width: imageData.width,
-          height: imageData.height,
-          data: theData
-        })
+        body: JSON.stringify(url)
       }).then(() => {
-        this.setState((state) => {
-          state.imageList[index].labeled = 1;
-        })
+        if(this.state.imageList[index]) {
+          this.setState((state) => {
+            state.imageList[index].labeled = 1;
+          })
+        }
+        this.refs.tagDaubRoute.refs.selectedDaubImage.getTagedFileCount();
       })
     }
 
@@ -907,16 +953,9 @@ class App extends Component {
         .then((response) => response.json())
         .then((result) => {
           if(result.length !== 0) {
-            const data = this.decodeDaubData(result.data);
             const canvas = document.getElementById('selectedCanvas');
             const image = document.getElementById('selectedImage');
             const ctx = canvas.getContext('2d');
-            const imageData = ctx.createImageData(result.width, result.height);
-            imageData.data.set(new Uint8ClampedArray(data));
-            canvas.width = result.width;
-            canvas.height = result.height;
-            ctx.putImageData(imageData, 0, 0);
-            const url = canvas.toDataURL();
             const newImage = new Image();
             newImage.onload = () => {
               ctx.clearRect(0, 0, result.width, result.height);
@@ -924,7 +963,7 @@ class App extends Component {
               canvas.height = image.height;
               ctx.drawImage(newImage, 0, 0, image.width, image.height);
             }
-            newImage.src = url;
+            newImage.src = result;
           }
         })
     }
@@ -1093,6 +1132,8 @@ class App extends Component {
             maxValue = that.refs.tagRoute.refs.selectedImage.state.fileCount;
         } else if(that.refs.tagObjectRoute.refs.selectedObjectImage) {
             maxValue = that.refs.tagObjectRoute.refs.selectedObjectImage.state.fileCount;
+        } else if(that.refs.tagDaubRoute.refs.selectedDaubImage) {
+            maxValue = that.refs.tagDaubRoute.refs.selectedDaubImage.state.fileCount;
         }
         this.setState((state) => {
             if(value.trim() === '' || parseInt(value, 10) <= 0) {
@@ -1487,8 +1528,8 @@ class App extends Component {
                                deleteSameImage={this.autoDeleteSameFiles}
                                getImageList={this.getImageList}
                                getColor={this.getColor}
-                               onNextImage={this.nextImage}
-                               onPreviousImage={this.previousImage}
+                               onNextImage={this.nextImageForDaub}
+                               onPreviousImage={this.previousImageForDaub}
                                num={this.state.num}
                                info={this.state.info}
                                currentTagString={this.state.currentTagString}
