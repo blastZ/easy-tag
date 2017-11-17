@@ -1303,7 +1303,7 @@ class App extends Component {
     }
 
     changeLineWidth = (e) => {
-      let value = e.target.value;
+      let value = parseInt(e.target.value, 10);
       if(value < 2) {
         value = 2;
       }

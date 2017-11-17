@@ -188,7 +188,6 @@ class SelectedDaubImage extends Component {
         })
 
         document.addEventListener('mousemove', (e) => {
-          e.preventDefault();
           if(e.which === 1) {
             if(drawing) {
               this.props.shouldSaveDaub(true);

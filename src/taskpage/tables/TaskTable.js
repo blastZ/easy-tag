@@ -109,14 +109,10 @@ class TaskTable extends Component {
                             {parseInt(task.taskType) === 4
                               ? <i onClick={this.props.onLinkToDaub.bind(this, index)} className="fa fa-tags table-item-button" aria-hidden="true"> 标注</i>
                               : null}
-                            {parseInt(task.taskType, 10) === 0 || parseInt(task.taskType, 10) === 1
-                              ? <i onClick={this.props.showLabelStatistics.bind(this, index)} className="fa fa-area-chart table-item-button w3-margin-left"> 标注统计</i>
-                              : <i className="fa fa-area-chart et-silence-button w3-margin-left"> 标注统计</i>}
+                            <i onClick={this.props.showLabelStatistics.bind(this, index)} className="fa fa-area-chart table-item-button w3-margin-left"> 标注统计</i>
                             {
                                 (userLevel === 2 || userLevel === 3) ?
-                                  parseInt(task.taskType, 10) === 0 || parseInt(task.taskType, 10) === 1
-                                    ? <i onClick={this.props.onStartTask.bind(this, index)} className={`fa fa-play-circle ${task.taskState === '0' ? 'table-item-button' : 'et-silence-button'} ${task.taskState === '3' ? 'table-item-button' : 'et-silence-button'} w3-margin-left`}>{task.taskState === '3' ? ' 重新训练' : ' 开启训练'}</i>
-                                    : <i className={`fa fa-play-circle et-silence-button w3-margin-left`}> 开启训练</i>
+                                  <i onClick={this.props.onStartTask.bind(this, index)} className={`fa fa-play-circle ${task.taskState === '0' ? 'table-item-button' : 'et-silence-button'} ${task.taskState === '3' ? 'table-item-button' : 'et-silence-button'} w3-margin-left`}>{task.taskState === '3' ? ' 重新训练' : ' 开启训练'}</i>
                                 : null
                             }
                             {
@@ -124,14 +120,14 @@ class TaskTable extends Component {
                                 <i onClick={this.props.onStopTask.bind(this, index)} className={`fa fa-stop-circle ${task.taskState === '2' ? 'table-item-button' : 'et-silence-button'} ${task.taskState === '1' ? 'table-item-button' : 'et-silence-button'} w3-margin-left`}> 停止训练</i>
                                 : null
                             }
-                            {task.taskTrained && (parseInt(task.taskType, 10) === 0 || parseInt(task.taskType, 10) === 1)
-                              ? <i onClick={this.props.onLookTrainState.bind(this, index)}
+                            {task.taskTrained ?
+                              <i onClick={this.props.onLookTrainState.bind(this, index)}
                                   className={`fa fa-search table-item-button w3-margin-left`}> 查看训练状态</i>
                               : <i className={`fa fa-search et-silence-button w3-margin-left`}> 查看训练状态</i>}
                             {
                                 (userLevel === 2 || userLevel === 3) ?
                                 <Link style={{cursor: 'context-menu'}} onClick={this.props.onLinkToTest.bind(this, index)} to={task.taskTrained && (parseInt(task.taskType, 10) === 0 || parseInt(task.taskType, 10) === 1) ? "/test" : "/"}>
-                                  <i className={`fa fa-cog ${task.taskTrained && (parseInt(task.taskType, 10) === 0 || parseInt(task.taskType, 10) === 1) ? 'table-item-button' : 'et-silence-button'} w3-margin-left`}> 测试</i>
+                                  <i className={`fa fa-cog ${task.taskTrained ? 'table-item-button' : 'et-silence-button'} w3-margin-left`}> 测试</i>
                                 </Link>
                                 : null
                             }
