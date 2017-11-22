@@ -109,6 +109,12 @@ class TaskTable extends Component {
                             {parseInt(task.taskType) === 4
                               ? <i onClick={this.props.onLinkToDaub.bind(this, index)} className="fa fa-tags table-item-button" aria-hidden="true"> 标注</i>
                               : null}
+                            {parseInt(task.taskType) === 5 ?
+                              <Link onClick={this.props.onLinkToTag.bind(this, index)} to="/tag"><i className="fa fa-tags table-item-button" aria-hidden="true"> 标注</i></Link>
+                              : null}
+                            {parseInt(task.taskType) === 6 ?
+                              <Link onClick={this.props.onLinkToPoint.bind(this, index)} to="/point"><i className="fa fa-tags table-item-button" aria-hidden="true"> 标注</i></Link>
+                              : null}
                             <i onClick={this.props.showLabelStatistics.bind(this, index)} className="fa fa-area-chart table-item-button w3-margin-left"> 标注统计</i>
                             {
                                 (userLevel === 2 || userLevel === 3) ?

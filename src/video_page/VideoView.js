@@ -136,6 +136,7 @@ let video = null;
 class VideoView extends Component {
   state = {
     currentTime: 0,
+    currentSpeed: 1,
     startHour: 0,
     startMinute: 0,
     startSecond: 0,
@@ -445,12 +446,27 @@ class VideoView extends Component {
   }
 
   changePlaySpeed = (value) => {
+    if(value !== this.state.currentSpeed) {
+      this.setState({
+        currentSpeed: value
+      })
+      const video = document.getElementById('my-video');
+      const time = video.currentTime;
+      video.defaultPlaybackRate = value;
+      video.load();
+      video.currentTime = time;
+      video.play();
+    }
+  }
+
+  fastBack = () => {
     const video = document.getElementById('my-video');
-    const time = video.currentTime;
-    video.defaultPlaybackRate = value;
-    video.load();
-    video.currentTime = time;
-    video.play();
+    video.currentTime = video.currentTime - 5 > 0 ? video.currentTime - 5 : 0;
+  }
+
+  fastForward = () => {
+    const video = document.getElementById('my-video');
+    video.currentTime = video.currentTime + 5 < video.duration ? video.currentTime + 5 : video.duration;
   }
 
   render() {
@@ -471,10 +487,12 @@ class VideoView extends Component {
                   <UploadIcon style={{fontSize: '22px'}} />&nbsp;上 传 本 地 视 频
                 </label>
                 <input multiple onChange={this.uploadNewVideo} id="video-file-input" type="file" style={{display: 'none'}}/>
-                <button onClick={() => this.changePlaySpeed(0.5)} className="w3-button w3-green margin-left">{`0.5X`}</button>
-                <button onClick={() => this.changePlaySpeed(1)} className="w3-button w3-green margin-left">{`1X`}</button>
-                <button onClick={() => this.changePlaySpeed(2)} className="w3-button w3-green margin-left">{`2X`}</button>
-                <button onClick={() => this.changePlaySpeed(4)} className="w3-button w3-green margin-left">{`4X`}</button>
+                <button onClick={() => this.changePlaySpeed(0.5)} className={`${this.state.currentSpeed !== 0.5 ? 'w3-button w3-green' : 'et-silence-video-button'} margin-left`}>{`0.5X`}</button>
+                <button onClick={() => this.changePlaySpeed(1)} className={`${this.state.currentSpeed !== 1 ? 'w3-button w3-green' : 'et-silence-video-button'} margin-left`}>{`1X`}</button>
+                <button onClick={() => this.changePlaySpeed(2)} className={`${this.state.currentSpeed !== 2 ? 'w3-button w3-green' : 'et-silence-video-button'} margin-left`}>{`2X`}</button>
+                <button onClick={() => this.changePlaySpeed(4)} className={`${this.state.currentSpeed !== 4 ? 'w3-button w3-green' : 'et-silence-video-button'} margin-left`}>{`4X`}</button>
+                <button onClick={() => this.fastBack()} className={`w3-button w3-green margin-left`}>{`<<`}</button>
+                <button onClick={() => this.fastForward()} className={`w3-button w3-green margin-left`}>{`>>`}</button>
               </div>
             </ContentContainer>
             <ListContainer>

@@ -29,6 +29,10 @@ export function getTaskTypeName(taskTypeID) {
         return ('视频分类');
       case 4:
         return ('缺陷检测');
+      case 5:
+        return ('ReID检测');
+      case 6:
+        return ('特征点标注');
     }
 }
 
@@ -39,6 +43,8 @@ export function getTaskTypeCode(str) {
         case '语义分割': return 2;
         case '视频分类': return 3;
         case '缺陷检测': return 4;
+        case 'ReID检测': return 5;
+        case '特征点标注': return 6;
         default: return 0;
     }
 }

@@ -21,6 +21,9 @@ import SelectedDaubImage from './daub_page/SelectedDaubImage';
 import SelectDaubBar from './daub_page/SelectDaubBar';
 import TagDaubView from './daub_page/TagDaubView';
 import WaitingPage from './WaitingPage';
+import SelectedPointImage from './point_page/SelectedPointImage';
+import TagPointView from './point_page/TagPointView';
+import SelectPointBar from './point_page/SelectPointBar';
 //import { saveAs } from 'file-saver' when you want to save as txt on the localhost
 
 class App extends Component {
@@ -931,6 +934,29 @@ class App extends Component {
         }
     }
 
+    clickPointItem = (url) => {
+        const preIndex = this.state.selectedImageNum;
+        const that = this;
+        for(let i=0; i<this.state.imageList.length; i++) {
+            if(this.state.imageList[i].url === url) {
+                this.setState((state) => {
+                    state.selectedImageNum = i
+                    if(preIndex !== i) {
+                      that.saveTagList(preIndex);
+                      that.getTagList(i);
+                    }
+                    if(state.imageList.length === 1) {
+                      that.saveTagList(preIndex);
+                    }
+                }, function() {
+                    that.refs.tagPointRoute.refs.selectedPointImage.initSelectedImage();
+                    that.refs.tagPointRoute.refs.tagPointView.changeAutoTagStart(that.state.selectedImageNum + that.state.start);
+                })
+                break
+            }
+        }
+    }
+
     saveDaubData = (index) => {
       const canvas = document.getElementById('selectedCanvas');
       const ctx = canvas.getContext('2d');
@@ -1020,7 +1046,8 @@ class App extends Component {
                 saveTagListRequest.send(result);
                 saveTagListRequest.onload = function() {
                     console.log('post taglist success.');
-                    that.refs.tagRoute.refs.selectedImage.getTagedFileCount();
+                    if(that.refs.tagRoute.refs.selectedImage) that.refs.tagRoute.refs.selectedImage.getTagedFileCount();
+                    if(that.refs.tagPointRoute.refs.selectedPointImage) that.refs.tagPointRoute.refs.selectedPointImage.getTagedFileCount();
                 }
                 saveTagListRequest.onerror = function() {
                     console.log('post taglist error.');
@@ -1553,6 +1580,7 @@ class App extends Component {
                         </div>
                         <div className="flex-box flex-column" style={{width: '20%', backgroundColor: '#F0F0F0'}}>
                             <TagDaubView ref="TagDaubView"
+                               shouldSaveDaub={this.shouldSaveDaub}
                                eraseMode={this.state.eraseMode}
                                changeEraseMode={this.changeEraseMode}
                                lineWidth={this.state.lineWidth}
@@ -1584,6 +1612,67 @@ class App extends Component {
                         </div>
                     </div>
                     : null
+                )}/>
+                <Route ref="tagPointRoute" exact path="/point" render={() => (
+                    this.state.login ?
+                    <div className="flex-box full-height">
+                        <div className="flex-box flex-column full-height" style={{flex: '1 1 auto', width: '80%'}}>
+                            <SelectedPointImage ref="selectedPointImage"
+                               bindVideoFileEvent={this.bindVideoFileEvent}
+                               deleteSameImage={this.autoDeleteSameFiles}
+                               getImageList={this.getImageList}
+                               onNextImage={this.nextImage}
+                               onPreviousImage={this.previousImage}
+                               num={this.state.num}
+                               info={this.state.info}
+                               currentTagString={this.state.currentTagString}
+                               onAddTag={this.addTag}
+                               selectedImage={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].url : ''}
+                               selectedImageName={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].name : 'No Image'}
+                               selectedImageNumInAll={parseInt(this.state.start) + this.state.selectedImageNum}
+                               complete={this.state.complete}
+                               onDeleteImage={this.deleteImage}
+                               onUploadImgeFiles={this.uploadImageFiles}
+                               onShowNewImage={this.showNewImage}
+                               boxList={this.state.tagList}
+                               defaultURL={this.state.defaultURL}
+                               userName={this.state.userName}
+                               userLevel={this.state.userLevel}
+                               taskName={this.state.taskName}/>
+                            <SelectPointBar onClickItem={this.clickPointItem}
+                                       selectedImageNum={this.state.selectedImageNum}
+                                       imageList={this.state.imageList}/>
+                        </div>
+                        <div className="flex-box flex-column" style={{width: '20%', backgroundColor: '#F0F0F0'}}>
+                            <TagPointView ref="tagPointView"
+                               selectedImageNum={this.state.selectedImageNum}
+                               getBoxList={this.getTagList}
+                               needPostTagList={this.needPostTagList}
+                               onHandleNumChange={this.handleNumChange}
+                               getImageListByTag={this.getImageListByTag}
+                               editTagString={this.editTagString}
+                               addNewTagToBox={this.addNewTagToBox}
+                               removeTagFromBox={this.removeTagFromBox}
+                               onHandleStartChange={this.handleStartChange}
+                               start={this.state.start}
+                               num={this.state.num}
+                               info={this.state.info}
+                               currentTagString={this.state.currentTagString}
+                               onChangeTagString={this.changeTagString}
+                               onChangeBrowserMode={this.changeBrowserMode}
+                               onGetImageList={this.getImageList}
+                               onNextImageList={this.nextImageList}
+                               onPreviousImageList={this.previousImageList}
+                               boxList={this.state.tagList}
+                               onDeleteBox={this.deleteBox}
+                               onChangeBoxInfo={this.changeBoxInfo}
+                               defaultURL={this.state.defaultURL}
+                               userName={this.state.userName}
+                               userLevel={this.state.userLevel}
+                               taskName={this.state.taskName}
+                               onAutoTagImages={this.autoTagImages} />
+                        </div>
+                    </div> : null
                 )}/>
             </div>
         )

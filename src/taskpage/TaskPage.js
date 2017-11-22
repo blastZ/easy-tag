@@ -89,10 +89,17 @@ class TaskPage extends Component {
       })
     }
 
-    handleRetrainChecked = () => {
-      this.setState({
-        retrainChecked: !this.state.retrainChecked
-      })
+    handleRetrainChecked = (e) => {
+      const value = e.target.checked;
+      if(value) {
+        this.setState({
+          retrainChecked: true
+        })
+      } else {
+        this.setState({
+          retrainChecked: false
+        })
+      }
     }
 
     handleTabChange = (tabIndex) => {
@@ -1085,6 +1092,12 @@ class TaskPage extends Component {
       this.props.history.push('/daub');
     }
 
+    onLinkToPoint = (index) => {
+      this.props.dispatch(changeTaskName(this.state.taskList[index].taskName));
+      this.props.onChangeUserAndTask(this.props.username, this.state.taskList[index].taskName);
+      this.props.onInitStartAndNum();
+    }
+
     getWorkerStateName = (workerStateID) => {
         workerStateID = parseInt(workerStateID);
         switch (workerStateID) {
@@ -1600,6 +1613,8 @@ class TaskPage extends Component {
                                     <option>语义分割</option>
                                     <option>视频分类</option>
                                     <option>缺陷检测</option>
+                                    <option>ReID检测</option>
+                                    <option>特征点标注</option>
                                 </select>
                                 <input placeholder="输入新的任务名称" onChange={this.handleInputChange} value={this.state.newTaskName} className="w3-input" type="text"/>
                                 <button onClick={this.onAddTask} className="w3-button w3-orange">添加</button>
@@ -1762,6 +1777,7 @@ class TaskPage extends Component {
                             onLinkToTest={this.onLinkToTest}
                             onLinkToVideo={this.onLinkToVideo}
                             onLinkToDaub={this.onLinkToDaub}
+                            onLinkToPoint={this.onLinkToPoint}
                             onStartTask={this.onStartTask}
                             onStopTask={this.onStopTask}
                             onLookTrainState={this.onLookTrainState}

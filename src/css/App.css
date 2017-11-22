@@ -328,3 +328,21 @@ a:hover {
 .margin-left {
   margin-left: 5px;
 }
+
+.et-silence-video-button {
+  padding: 8px 16px;
+  color: white;
+  background: gray;
+  border: 0;
+  outline: none;
+}
+
+.et-point {
+  color: white;
+  font-size: 10px;
+  position: absolute;
+  text-shadow: 1px -1px black, 1px 1px black, -1px 1px black, -1px -1px black;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
