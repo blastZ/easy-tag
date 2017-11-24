@@ -215,14 +215,14 @@ class SelectedImage extends Component {
 
     increaseImageSize = () => {
         const theImage = document.getElementById('selectedImage');
-        theImage.height += 10;
+        theImage.height += 20;
         theImage.style.left = (parseInt(theImage.style.left) - 5).toString() + 'px';
         theImage.style.top = (parseInt(theImage.style.top) - 5).toString() + 'px';
     }
 
     decreaseImageSize = () => {
         const theImage = document.getElementById('selectedImage');
-        theImage.height -= 10;
+        theImage.height -= 20;
         theImage.style.left = (parseInt(theImage.style.left) + 5).toString() + 'px';
         theImage.style.top = (parseInt(theImage.style.top) + 5).toString() + 'px';
     }
@@ -285,7 +285,7 @@ class SelectedImage extends Component {
             this.props.boxList.map((box, index) => (
                 <div className="black-white-border" key={box.x_start + box.y_end} style={{width: `${this.getBoxWidth(box.x_start, box.x_end)}px`, height: `${this.getBoxHeight(box.y_start, box.y_end)}px`,
                              position: 'absolute', left: `${this.getBoxX(box.x_start)}px`, top: `${this.getBoxY(box.y_start)}px`}}>
-                             <span className="tag-title"><b>No.{index + 1}<br/>{box.tag[0]}</b></span>
+                             {this.props.boxIndex === index && <span className="tag-title"><b>No.{index + 1}<br/>{box.tag[0]}</b></span>}
                 </div>
             )) : null
         );

@@ -20,6 +20,7 @@ class TagView extends Component {
         autoTagStart: 1,
         showPremodelSelect: false,
         pretrainmodelList: [],
+        boxImgList: {} //use key-value so this is object not array
     }
 
     shouldShowPremodelSelect = () => {
@@ -96,6 +97,18 @@ class TagView extends Component {
               pretrainmodelList: result
             })
           })
+    }
+
+    componentDidUpdate(preProps, preState) {
+      if(this.props.boxList !== preProps.boxList) {
+        this.setState({
+          boxImgList: {}
+        }, () => {
+          for(let i=0; i<this.props.boxList.length; i++) {
+            this.getBoxImg(this.props.boxList[i], i);
+          }
+        })
+      }
     }
 
     pageUpAndDownListener = (e) => {
@@ -206,6 +219,19 @@ class TagView extends Component {
 
     onDeleteBox = (index) => {
         this.props.onDeleteBox(index);
+        const newBoxImgList = this.state.boxImgList;
+        delete newBoxImgList[index];
+        const keyList = Object.keys(newBoxImgList);
+        const max = Math.max(...keyList);
+        let tag = false;
+        for(let i=index + 1; i<=max; i++) {
+          tag = true;
+          newBoxImgList[i - 1] = newBoxImgList[i];
+        }
+        if(tag) delete newBoxImgList[max];
+        this.setState({
+          boxImgList: newBoxImgList
+        })
     }
 
     onChangeBoxInfo(index, e) {
@@ -294,6 +320,31 @@ class TagView extends Component {
       this.props.getBoxList(this.props.selectedImageNum - 1 >= 0 ? this.props.selectedImageNum - 1 : 0);
       this.props.needPostTagList();
       this.shouldShowPremodelSelect();
+    }
+
+    getBoxImg = (box, index) => {
+      const canvas = document.createElement('canvas');
+      const img = new Image();
+      img.onload = () => {
+        const startX = img.width * box.x_start;
+        const endX = img.width * box.x_end;
+        const width = endX - startX;
+        const startY = img.height * box.y_start;
+        const endY = img.height * box.y_end;
+        const height = endY - startY;
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, startX, startY, width, height, 0, 0, canvas.width, canvas.height);
+        this.setState({
+          boxImgList: {
+            ...this.state.boxImgList,
+            [index]: canvas.toDataURL()
+          }
+        })
+      }
+      img.setAttribute('crossOrigin', 'anonymous');
+      img.src = this.props.selectedImage;
     }
 
     render() {
@@ -417,9 +468,9 @@ class TagView extends Component {
                         : <button onClick={this.shouldShowEditView} className="w3-button w3-green w3-card margin-top-5">编辑标签</button>
                     :null
                 }
-                <ul className="w3-ul w3-hoverable margin-top-5"  style={{overflowY: 'auto', flex: '1'}}>{
+                <ul className="w3-ul w3-hoverable margin-top-5"  style={{overflowY: 'auto', flex: '1', padding: '0px 5px'}}>{
                     this.props.boxList.map((box, index) => (
-                        <li className="w3-hover-green" key={box.x_start + box.y_end}>
+                        <li onClick={() => this.props.changeBoxIndex(index)} className="w3-hover-green" key={box.x_start + box.y_end} style={{borderStyle: `${this.props.boxIndex === index ? 'dotted' : 'none'}`}}>
                             <div>
                                 <span>序号: {index + 1}</span>
                                 <i onClick={this.onDeleteBox.bind(this, index)} className="fa fa-times et-tag-button w3-right"></i>
@@ -439,6 +490,7 @@ class TagView extends Component {
                                 </div>
                             </div>
                             <div>额外信息:<input className="w3-input" type="text" onChange={this.onChangeBoxInfo.bind(this, index)} value={this.props.boxList[index].info}/></div>
+                            <img src={this.state.boxImgList[index]} style={{maxWidth: '100%', marginTop: '5px', maxHeight: '80px'}} />
                         </li>
                     ))
                 }</ul>

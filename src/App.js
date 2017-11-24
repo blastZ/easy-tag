@@ -54,7 +54,8 @@ class App extends Component {
         lineWidth: 4,
         saveDaub: false,
         showWaitingPage: false,
-        video: 0
+        video: 0,
+        boxIndex: 0
     }
 
     needPostTagList = () => {
@@ -860,6 +861,7 @@ class App extends Component {
     }
 
     clickItem = (url) => {
+        this.changeBoxIndex(0);
         const preIndex = this.state.selectedImageNum;
         const that = this;
         for(let i=0; i<this.state.imageList.length; i++) {
@@ -1393,6 +1395,12 @@ class App extends Component {
       }
     }
 
+    changeBoxIndex = (index) => {
+      this.setState({
+        boxIndex: index
+      })
+    }
+
     render() {
         return (
             <div className="App full-height">
@@ -1413,6 +1421,7 @@ class App extends Component {
                     <div className="flex-box full-height">
                         <div className="flex-box flex-column full-height" style={{flex: '1 1 auto', width: '80%'}}>
                             <SelectedImage ref="selectedImage"
+                               boxIndex={this.state.boxIndex}
                                bindVideoFileEvent={this.bindVideoFileEvent}
                                deleteSameImage={this.autoDeleteSameFiles}
                                getImageList={this.getImageList}
@@ -1440,6 +1449,9 @@ class App extends Component {
                         </div>
                         <div className="flex-box flex-column" style={{width: '20%', backgroundColor: '#F0F0F0'}}>
                             <TagView ref="tagView"
+                               boxIndex={this.state.boxIndex}
+                               changeBoxIndex={this.changeBoxIndex}
+                               selectedImage={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].url : ''}
                                selectedImageNum={this.state.selectedImageNum}
                                getBoxList={this.getTagList}
                                needPostTagList={this.needPostTagList}
