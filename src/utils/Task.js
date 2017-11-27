@@ -1,5 +1,3 @@
-export const defaultURL = 'http://demo.codvision.com:16831/api/';
-
 export function getTaskStateName(taskStateID) {
     taskStateID = parseInt(taskStateID);
     switch (taskStateID) {

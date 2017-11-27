@@ -107,7 +107,7 @@ class RegisterView extends Component {
 
     render() {
         return (
-            <div className="popup w3-center w3-padding-64 flex-box" style={{alignItems: 'center', justifyContent: 'center', background: 'rgba(0, 0, 0, 0.8)', position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', zIndex: '100'}}>
+            <div className="popup w3-center w3-padding-64 flex-box" style={{alignItems: 'center', justifyContent: 'center', background: 'rgba(0, 0, 0, 0.8)', position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', zIndex: '1000000000'}}>
                 <i onClick={this.props.onCloseRegisterView} className="fa fa-times w3-text-white w3-xxlarge et-hoverable" aria-hidden="true" style={{position: 'absolute', top: '10px', right: '10px'}}></i>
                 <div className="flex-box flex-column" style={{width: '20%'}}>
                     <h3 className="w3-text-white"><b>注册</b></h3>

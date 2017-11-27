@@ -24,6 +24,7 @@ import WaitingPage from './WaitingPage';
 import SelectedPointImage from './point_page/SelectedPointImage';
 import TagPointView from './point_page/TagPointView';
 import SelectPointBar from './point_page/SelectPointBar';
+import { DEFAULT_URL } from './utils/global_config';
 //import { saveAs } from 'file-saver' when you want to save as txt on the localhost
 
 class App extends Component {
@@ -33,7 +34,7 @@ class App extends Component {
         userLevel: 3,
         userGroup: '',
         password: '',
-        defaultURL: 'http://demo.codvision.com:16831/api/',
+        defaultURL: DEFAULT_URL,
         imageList: [
             //{url: 'http://demo.codvision.com:16831/static/user/fj/task1/data/zhong1_12.jpg', name: 'ding1_6.jpg', labeled: 0}
         ],

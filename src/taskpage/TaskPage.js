@@ -12,6 +12,8 @@ import { connect } from 'react-redux';
 import { changeTaskName, getTrainStateLog } from '../actions/app_action';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
+import GlobalSetTable from './tables/GlobalSetTable';
+import { DEFAULT_TAGED_NUM, DEFAULT_TAGED_PROGRESS } from '../utils/global_config';
 
 class TaskPage extends Component {
     state = {
@@ -655,10 +657,10 @@ class TaskPage extends Component {
             const numStr = str.split('/');
             const tagedImageNum = parseInt(numStr[0]);
             const AllImageNum = parseInt(numStr[1]);
-            if(tagedImageNum < 100) {
-                window.alert('标注图片数量不足100');
-            } else if((tagedImageNum / AllImageNum) < 0.5) {
-                window.alert('完成度不足50%');
+            if(tagedImageNum < DEFAULT_TAGED_NUM) {
+                window.alert(`标注图片数量不足${DEFAULT_TAGED_NUM}`);
+            } else if((tagedImageNum / AllImageNum) < DEFAULT_TAGED_PROGRESS) {
+                window.alert(`完成度不足${DEFAULT_TAGED_PROGRESS * 100}%`);
             } else {
                 try {
                     const theValue = document.getElementById('structureSelect').value;
@@ -1766,6 +1768,8 @@ class TaskPage extends Component {
                           {userLevel === 3 &&
                             <Tab>用户组列表</Tab>}
                           <Tab>操作日志</Tab>
+                          {userLevel === 3 &&
+                            <Tab>参数配置</Tab>}
                         </TabList>
                         <TabPanel>
                           <TaskTable
@@ -1822,6 +1826,10 @@ class TaskPage extends Component {
                         <TabPanel>
                           <OperationsTable />
                         </TabPanel>
+                        {userLevel === 3 &&
+                            <TabPanel>
+                              <GlobalSetTable />
+                            </TabPanel>}
                     </Tabs>
                 </div>
             </div>

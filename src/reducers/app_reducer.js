@@ -8,9 +8,10 @@ import { ADD_NEW_IMAGE, CLICK_SELECT_BAR_ITEM,
          SHOULD_UPDATE_IMAGE, CHANGE_START_VALUE,
          CHANGE_NUM_VALUE, GET_HELPER_DOC, CHANGE_PASSWORD,
          GET_MANAGER_DATA, GET_TRAIN_STATE_LOG } from '../actions/app_action';
+import { DEFAULT_URL } from '../utils/global_config';
 
 const initState = {
-    defaultURL: 'http://demo.codvision.com:16831/api/',
+    defaultURL: DEFAULT_URL,
     userName: '',
     password: '',
     taskName: '',
