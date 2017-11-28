@@ -14,6 +14,7 @@ import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
 import GlobalSetTable from './tables/GlobalSetTable';
 import { DEFAULT_TAGED_NUM, DEFAULT_TAGED_PROGRESS } from '../utils/global_config';
+import { Color } from '../utils/global_config';
 
 class TaskPage extends Component {
     state = {
@@ -1079,9 +1080,8 @@ class TaskPage extends Component {
     }
 
     onLinkToTest = (index) => {
-        if(this.state.taskList[index].taskState === '3') {
-            this.props.onChangeUserAndTask(this.props.username, this.state.taskList[index].taskName);
-        }
+      this.props.onChangeUserAndTask(this.props.username, this.state.taskList[index].taskName);
+      this.props.dispatch(changeTaskName(this.state.taskList[index].taskName));
     }
 
     onLinkToVideo = (index) => {
@@ -1130,7 +1130,9 @@ class TaskPage extends Component {
                 this.refs.trainTaskList.getWrappedInstance().updateTrainTaskList();
             }
         }else if(tabIndex === 2) {
-            this.getWorkerList();
+            if(this.refs.workerTable) {
+              this.getWorkerList();
+            }
         }else if(tabIndex === 3) {
             this.getUserManageList();
         }else if(tabIndex === 4) {
@@ -1799,6 +1801,7 @@ class TaskPage extends Component {
                         {(userLevel === 2 || userLevel === 3) &&
                             <TabPanel>
                               <WorkerTable
+                                ref="workerTable"
                                 workerList={this.state.workerList}
                                 getWorkerStateName={this.getWorkerStateName}
                                 editWorkerIndex={this.state.editWorkerIndex}

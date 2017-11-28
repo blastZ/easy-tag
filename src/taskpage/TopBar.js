@@ -7,6 +7,7 @@ import Typography from 'material-ui/Typography';
 import UserIcon from 'material-ui-icons/AccountCircle';
 import { orange, green } from 'material-ui/colors';
 import HelperIcon from 'material-ui-icons/HelpOutline';
+import { Color } from '../utils/global_config';
 
 class TopBar extends Component {
   saveUserLevelLocal = () => {
@@ -15,7 +16,7 @@ class TopBar extends Component {
 
   render() {
       return (
-        <AppBar position="static" style={{backgroundColor: `${orange[400]}`}}>
+        <AppBar position="static" style={{background: `linear-gradient(to right, #43cea2, #185a9d)`}}>
           <Toolbar>
             {this.props.shouldShowPersonPanel
               ? <div className="popup" style={{position: 'absolute', left: '10px', top: '56px'}}>

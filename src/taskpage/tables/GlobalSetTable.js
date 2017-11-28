@@ -44,10 +44,10 @@ class GlobalSetTable extends Component {
     const { userLevel, classes } = this.props;
     return(
       <div>
-        <div className="et-margin-top-32" style={{position: 'relative', display: 'flex', alignItems: 'center'}}>
+        {userLevel >=2 && <div className="et-margin-top-32" style={{position: 'relative', display: 'flex', alignItems: 'center'}}>
             <h3 className="et-table-title">全局训练参数</h3>
-        </div>
-        <table ref="theTaskTable" className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered">
+        </div>}
+        {userLevel >=2 && <table ref="theTaskTable" className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered">
             <tbody>
               <tr>
                 <th className="w3-green" style={{verticalAlign: 'middle'}}>训练张数</th>
@@ -59,7 +59,7 @@ class GlobalSetTable extends Component {
               </tr>
             </tbody>
             <tfoot></tfoot>
-        </table>
+        </table>}
         <div className="et-margin-top-32" style={{position: 'relative', display: 'flex', alignItems: 'center'}}>
             <h3 className="et-table-title">其它参数</h3>
         </div>

@@ -11,6 +11,7 @@ import SettingView from './SettingView';
 import { withStyles } from 'material-ui/styles';
 import Button from 'material-ui/Button';
 import TextField from 'material-ui/TextField';
+import { Color } from '../utils/global_config';
 
 class Login extends Component {
     state = {
@@ -79,22 +80,22 @@ class Login extends Component {
                 <SettingView
                   open={this.state.showSettingView}
                   onRequestClose={this.closeSetView} />
-                <AppBar position="absolute" style={{backgroundColor: `${orange[400]}`}}>
+                <AppBar position="absolute" style={{background: `linear-gradient(to right, #43cea2, #185a9d)`}}>
                   <Toolbar style={{alignItems: 'center'}}>
-                    <img style={{width: '60px', height: '60px', position: 'absolute'}} src={require("../imgs/logo.png")}/>
-                    <h2 style={{paddingLeft: '50px'}}>&nbsp;图像智能分析系统</h2>
+                    <div style={{height: '65px'}}>
+                      <img style={{width: '60px', height: '60px'}} src={require("../imgs/logo.png")}/>
+                    </div>
+                    <h2>图像智能分析系统</h2>
                     <div style={{position: 'absolute', right: '20px'}}>
                       <Link to="/helper/0" target="_blank">
-                        <IconButton color="contrast" aria-label="Menu">
-                          <HelperIcon style={{fontSize: '35px'}}/>
-                        </IconButton>
+                        <HelperIcon style={{width: '35px', height: '35px'}}/>
                       </Link>
                     </div>
                   </Toolbar>
                 </AppBar>
                 <div className="flex-box full-height" style={{justifyContent: 'center', alignItems: 'center'}}>
                     <div onKeyPress={this.handleKeyPress} className="flex-box flex-column" style={{width: '20%'}}>
-                        <h3 className="w3-center w3-text-black"><b>登录</b></h3>
+                        <h3 className="w3-center" style={{letterSpacing: '15px', color: `${Color.TEXT}`}}><b>登录</b></h3>
                         <TextField
                           label="用户名"
                           value={this.state.username}
@@ -108,7 +109,7 @@ class Login extends Component {
                           onChange={this.handlePassword}
                           margin="normal"
                         />
-                        <Button raised color="primary" onClick={this.loginVerify} className="w3-margin-top" style={{backgroundColor: `${green[500]}`}}>登录</Button>
+                        <Button raised color="primary" onClick={this.loginVerify} className="w3-margin-top" style={{background: `linear-gradient(to right, #43cea2, #185a9d)`, letterSpacing: '5px'}}>登录</Button>
                         <div style={{display: 'flex', justifyContent: 'space-between'}}>
                           <p onClick={this.showRegisterView} className="et-register-button">立即注册!</p>
                           <p onClick={this.showSetView} className="et-register-button">登录设置</p>

@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { getTaskStateName, getTaskTypeName } from '../../utils/Task';
 import { Link } from 'react-router-dom';
+import { Color } from '../../utils/global_config';
 
 class TaskTable extends Component {
   state = {

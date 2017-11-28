@@ -10,7 +10,7 @@ import SelectedObjectImage from './SelectedObjectImage';
 import TagObjectView from './TagObjectView';
 import TaskPage from './taskpage/TaskPage'
 import { Route, withRouter } from 'react-router-dom'
-import Demo from './test_page/Demo';
+import Test from './test_page/Test';
 import Login from './login_page/Login';
 import SegmentView from './segment_page/SegmentView';
 import { changeUserName, changeUserLevel, changeTaskName, changePassword, autoTagImages } from './actions/app_action';
@@ -1552,7 +1552,58 @@ class App extends Component {
                     </div> : null
                 )}/>
                 <Route exact path="/test" render={() => (
-                    this.state.login ? <Demo userName={this.state.userName} taskName={this.state.taskName}/> : null
+                    <Test
+                        boxIndex={this.state.boxIndex}
+                        bindVideoFileEvent={this.bindVideoFileEvent}
+                        deleteSameImage={this.autoDeleteSameFiles}
+                        getImageList={this.getImageList}
+                        onNextImage={this.nextImage}
+                        onPreviousImage={this.previousImage}
+                        num={this.state.num}
+                        info={this.state.info}
+                        currentTagString={this.state.currentTagString}
+                        onAddTag={this.addTag}
+                        selectedImage={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].url : ''}
+                        selectedImageName={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].name : 'No Image'}
+                        selectedImageNumInAll={parseInt(this.state.start) + this.state.selectedImageNum}
+                        complete={this.state.complete}
+                        onDeleteImage={this.deleteImage}
+                        onUploadImgeFiles={this.uploadImageFiles}
+                        onShowNewImage={this.showNewImage}
+                        boxList={this.state.tagList}
+                        userName={this.state.userName}
+                        userLevel={this.state.userLevel}
+                        taskName={this.props.taskName}
+                        onClickItem={this.clickItem}
+                        selectedImageNum={this.state.selectedImageNum}
+                        imageList={this.state.imageList}
+                        changeReviewState={this.changeReviewState}
+                        boxIndex={this.state.boxIndex}
+                        changeBoxIndex={this.changeBoxIndex}
+                        selectedImage={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].url : ''}
+                        selectedImageNum={this.state.selectedImageNum}
+                        getBoxList={this.getTagList}
+                        needPostTagList={this.needPostTagList}
+                        onHandleNumChange={this.handleNumChange}
+                        getImageListByTag={this.getImageListByTag}
+                        editTagString={this.editTagString}
+                        addNewTagToBox={this.addNewTagToBox}
+                        removeTagFromBox={this.removeTagFromBox}
+                        onHandleStartChange={this.handleStartChange}
+                        start={this.state.start}
+                        num={this.state.num}
+                        info={this.state.info}
+                        currentTagString={this.state.currentTagString}
+                        onChangeTagString={this.changeTagString}
+                        onChangeBrowserMode={this.changeBrowserMode}
+                        onGetImageList={this.getImageList}
+                        onNextImageList={this.nextImageList}
+                        onPreviousImageList={this.previousImageList}
+                        boxList={this.state.tagList}
+                        onDeleteBox={this.deleteBox}
+                        onChangeBoxInfo={this.changeBoxInfo}
+                        defaultURL={this.state.defaultURL}
+                        onAutoTagImages={this.autoTagImages} />
                 )} />
                 <Route exact path="/segment" render={() => (
                     this.state.login ?
