@@ -5,6 +5,7 @@ import Input, { InputLabel, InputAdornment } from 'material-ui/Input';
 import List, { ListItem } from 'material-ui/List';
 import { DEFAULT_URL, setParams } from '../utils/global_config';
 import { withStyles } from 'material-ui/styles';
+import Button from 'material-ui/Button';
 
 const styles = {
   paper: {
@@ -35,6 +36,10 @@ class SettingView extends Component {
              onChange={this.handleDefaultUrl}
            />
          </FormControl>
+         <div style={{display: 'flex', justifyContent: 'space-between', marginTop: '10px'}}>
+          <Button color="primary" onClick={this.handleRequestClose}>取消</Button>
+          <Button color="primary" onClick={this.changeDefaultUrl}>确定</Button>
+         </div>
        </DialogContent>
      </Dialog>
     )

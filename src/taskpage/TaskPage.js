@@ -1768,8 +1768,7 @@ class TaskPage extends Component {
                           {userLevel === 3 &&
                             <Tab>用户组列表</Tab>}
                           <Tab>操作日志</Tab>
-                          {userLevel === 3 &&
-                            <Tab>参数配置</Tab>}
+                          <Tab>参数配置</Tab>
                         </TabList>
                         <TabPanel>
                           <TaskTable
@@ -1826,10 +1825,9 @@ class TaskPage extends Component {
                         <TabPanel>
                           <OperationsTable />
                         </TabPanel>
-                        {userLevel === 3 &&
-                            <TabPanel>
-                              <GlobalSetTable />
-                            </TabPanel>}
+                        <TabPanel>
+                          <GlobalSetTable />
+                        </TabPanel>
                     </Tabs>
                 </div>
             </div>

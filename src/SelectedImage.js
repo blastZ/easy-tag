@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import $ from 'jquery';
 import UploadImageButton from './UploadImageButton';
-import TopMenu from './TopMenu';
+import ImgTopBar from './ImgTopBar';
 
 var mouseupListener;
 
@@ -294,17 +294,15 @@ class SelectedImage extends Component {
     render() {
         return (
             <div className="w3-center w3-padding-24 flex-box full-width" style={{position: 'relative', justifyContent: 'center', alignItems: 'center', backgroundColor: '#303030', flex: '1'}}>
-                <div style={{position: 'absolute', top: '0', left: '10px'}}>
-                    <p className="w3-text-white">{`标注进度: ${this.state.tagedFileCount}/${this.state.fileCount}`}</p>
-                </div>
-                <div style={{position: 'absolute', top: '0', left: '45%'}}>
-                    <p className="w3-text-white">{`第 ${this.props.selectedImageNumInAll} 张 图片名称: ${this.props.selectedImageName}`}</p>
-                </div>
-                <TopMenu
+                <ImgTopBar
+                  tagedFileCount={this.state.tagedFileCount}
+                  fileCount={this.state.fileCount}
+                  index={this.props.selectedImageNumInAll}
+                  name={this.props.selectedImageName}
                   userLevel={this.props.userLevel}
                   deleteSameImage={this.props.deleteSameImage}
-                  deleteImage={this.props.onDeleteImage} />
-                <div id="selectedImagePanel" style={{position: 'relative', width: '1200px', height: '600px', overflow: 'hidden'}}>
+                  onDeleteImage={this.props.onDeleteImage} />
+                <div id="selectedImagePanel" style={{position: 'relative', width: '1200px', height: '600px', overflow: 'hidden', zIndex:'0'}}>
                     <img draggable="false" id="selectedImage" src={this.props.selectedImage} alt={this.props.selectedImage} style={{position: 'absolute'}}/>
                     {
                         this.state.imgLoaded ? this.drawBoxList() : null

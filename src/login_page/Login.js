@@ -3,11 +3,14 @@ import RegisterView from './RegisterView';
 import { Link } from 'react-router-dom';
 import AppBar from 'material-ui/AppBar';
 import Toolbar from 'material-ui/Toolbar';
-import { orange } from 'material-ui/colors';
+import { orange, green } from 'material-ui/colors';
 import Avatar from 'material-ui/Avatar';
 import IconButton from 'material-ui/IconButton';
-import HelperIcon from 'react-icons/lib/md/help-outline';
+import HelperIcon from 'material-ui-icons/HelpOutline';
 import SettingView from './SettingView';
+import { withStyles } from 'material-ui/styles';
+import Button from 'material-ui/Button';
+import TextField from 'material-ui/TextField';
 
 class Login extends Component {
     state = {
@@ -92,9 +95,20 @@ class Login extends Component {
                 <div className="flex-box full-height" style={{justifyContent: 'center', alignItems: 'center'}}>
                     <div onKeyPress={this.handleKeyPress} className="flex-box flex-column" style={{width: '20%'}}>
                         <h3 className="w3-center w3-text-black"><b>登录</b></h3>
-                        <input onChange={this.handleUsername} value={this.state.username} className="w3-input w3-border" type="text" placeholder="用户名"/>
-                        <input onChange={this.handlePassword} value={this.state.password} className="w3-input w3-border w3-margin-top" type="password" placeholder="密码"/>
-                        <button onClick={this.loginVerify} className="w3-button w3-green w3-margin-top"><b>登录</b></button>
+                        <TextField
+                          label="用户名"
+                          value={this.state.username}
+                          onChange={this.handleUsername}
+                          margin="normal"
+                        />
+                        <TextField
+                          label="密码"
+                          type="password"
+                          value={this.state.password}
+                          onChange={this.handlePassword}
+                          margin="normal"
+                        />
+                        <Button raised color="primary" onClick={this.loginVerify} className="w3-margin-top" style={{backgroundColor: `${green[500]}`}}>登录</Button>
                         <div style={{display: 'flex', justifyContent: 'space-between'}}>
                           <p onClick={this.showRegisterView} className="et-register-button">立即注册!</p>
                           <p onClick={this.showSetView} className="et-register-button">登录设置</p>
