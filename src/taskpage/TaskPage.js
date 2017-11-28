@@ -1767,8 +1767,8 @@ class TaskPage extends Component {
                             <Tab>用户管理列表</Tab>}
                           {userLevel === 3 &&
                             <Tab>用户组列表</Tab>}
-                          <Tab>操作日志</Tab>
                           <Tab>参数配置</Tab>
+                          <Tab>操作日志</Tab>
                         </TabList>
                         <TabPanel>
                           <TaskTable
@@ -1823,10 +1823,10 @@ class TaskPage extends Component {
                                 deleteUserGroup={this.deleteUserGroup} />
                             </TabPanel>}
                         <TabPanel>
-                          <OperationsTable />
+                          <GlobalSetTable />
                         </TabPanel>
                         <TabPanel>
-                          <GlobalSetTable />
+                          <OperationsTable />
                         </TabPanel>
                     </Tabs>
                 </div>

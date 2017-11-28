@@ -39,7 +39,7 @@ class App extends Component {
             //{url: 'http://demo.codvision.com:16831/static/user/fj/task1/data/zhong1_12.jpg', name: 'ding1_6.jpg', labeled: 0}
         ],
         tagList: [
-            // {x_start: 0, y_start: 0, x_end: 10, y_end: 20, tag: ['car', 'white'], info: '浙F1234567'} result format
+            // {x_start: 0, y_start: 0, x_end: 10, y_end: 20, tag: ['car', 'white'], info: '浙F1234567', checked: false} result format
         ],
         currentTagString: '1',
         selectedImageNum: 0,
@@ -56,7 +56,7 @@ class App extends Component {
         saveDaub: false,
         showWaitingPage: false,
         video: 0,
-        boxIndex: 0
+        boxIndex: 0,
     }
 
     needPostTagList = () => {
@@ -1035,14 +1035,7 @@ class App extends Component {
                     "length": ${this.state.tagList.length},
                     "objects": [
                         ${this.state.tagList.map((tag) => (
-                            `{
-                                "x_start": ${tag.x_start},
-                                "y_start": ${tag.y_start},
-                                "x_end": ${tag.x_end},
-                                "y_end": ${tag.y_end},
-                                "tag": ${JSON.stringify(tag.tag)},
-                                "info": "${tag.info ? tag.info : ''}"
-                            }`
+                          JSON.stringify(tag)
                         ))}
                     ]
                 }`
@@ -1267,11 +1260,15 @@ class App extends Component {
     }
 
     removeTagFromBox = (index, index2) => {
-        this.setState((state) => {
-            state.tagList[index].tag.splice(index2, 1);
-            state.shouldPostTagList = true;
-            state.shouldPostObjectTagList = true;
-        });
+        if(this.state.tagList[index].tag.length === 1) {
+          window.alert('不能删除最后一个标签');
+        } else {
+          this.setState((state) => {
+              state.tagList[index].tag.splice(index2, 1);
+              state.shouldPostTagList = true;
+              state.shouldPostObjectTagList = true;
+          });
+        }
     }
 
     changeBrowserMode = (mode) => {
@@ -1402,6 +1399,22 @@ class App extends Component {
       })
     }
 
+    changeReviewState = (value, index) => {
+      let theBox = this.state.tagList[index];
+      theBox.checked = value;
+      theBox.reviewer = this.state.userName;
+      this.setState({
+        tagList: this.state.tagList.map((box, theIndex) => {
+          if(theIndex === index) {
+            return theBox;
+          } else {
+            return box;
+          }
+        }),
+        shouldPostTagList: true
+      })
+    }
+
     render() {
         return (
             <div className="App full-height">
@@ -1450,6 +1463,7 @@ class App extends Component {
                         </div>
                         <div className="flex-box flex-column" style={{width: '20%', backgroundColor: '#F0F0F0'}}>
                             <TagView ref="tagView"
+                               changeReviewState={this.changeReviewState}
                                boxIndex={this.state.boxIndex}
                                changeBoxIndex={this.changeBoxIndex}
                                selectedImage={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].url : ''}

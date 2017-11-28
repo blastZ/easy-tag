@@ -188,7 +188,7 @@ class SelectedImage extends Component {
                       const relative_y_start = ((y_start_int - theImage_top) / img_natural_height).toFixed(3)
                       const relative_x_end = ((x_end - theImage_left) / img_natural_width).toFixed(3)
                       const relative_y_end = ((y_end - theImage_top) / img_natural_height).toFixed(3)
-                      const tag = {x_start: relative_x_start, y_start: relative_y_start, x_end: relative_x_end, y_end: relative_y_end, tag: [that.props.currentTagString], info: that.props.info}
+                      const tag = {x_start: relative_x_start, y_start: relative_y_start, x_end: relative_x_end, y_end: relative_y_end, tag: [that.props.currentTagString], info: that.props.info, tagger: that.props.userName}
                       //console.log(tag)
                       that.props.onAddTag(tag)
                       $('#move-rect').remove()

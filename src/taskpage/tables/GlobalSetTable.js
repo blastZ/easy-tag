@@ -45,19 +45,29 @@ class GlobalSetTable extends Component {
     return(
       <div>
         <div className="et-margin-top-32" style={{position: 'relative', display: 'flex', alignItems: 'center'}}>
-            <h3 className="et-table-title">全局参数配置</h3>
+            <h3 className="et-table-title">全局训练参数</h3>
         </div>
         <table ref="theTaskTable" className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered">
-            <thead className="w3-green">
-                <tr>
-                  <th>开启训练张数</th>
-                  <th>开启训练比例</th>
-                </tr>
-            </thead>
             <tbody>
               <tr>
+                <th className="w3-green" style={{verticalAlign: 'middle'}}>训练张数</th>
                 <td><TextField type="number" InputProps={{classes: { input: classes.centerInput }}} value={this.state.tagedNum} onChange={this.handleTagedNum}/></td>
+              </tr>
+              <tr>
+                <th className="w3-green" style={{verticalAlign: 'middle'}}>训练比例</th>
                 <td><TextField type="number" InputProps={{classes: { input: classes.centerInput }}} value={this.state.tagedProgress} onChange={this.handleTagedProgress} /></td>
+              </tr>
+            </tbody>
+            <tfoot></tfoot>
+        </table>
+        <div className="et-margin-top-32" style={{position: 'relative', display: 'flex', alignItems: 'center'}}>
+            <h3 className="et-table-title">其它参数</h3>
+        </div>
+        <table ref="theTaskTable" className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered">
+            <tbody>
+              <tr>
+                <th className="w3-green" style={{verticalAlign: 'middle', width: '30%'}}>背景颜色</th>
+                <td>gray</td>
               </tr>
             </tbody>
             <tfoot></tfoot>

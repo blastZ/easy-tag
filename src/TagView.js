@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import { autoTagImages } from './actions/app_action';
+import CheckReviewSelector from './CheckReviewSelector';
 
 class TagView extends Component {
     state = {
@@ -20,7 +21,7 @@ class TagView extends Component {
         autoTagStart: 1,
         showPremodelSelect: false,
         pretrainmodelList: [],
-        boxImgList: {} //use key-value so this is object not array
+        boxImgList: {}, //use key-value so this is object not array
     }
 
     shouldShowPremodelSelect = () => {
@@ -491,6 +492,19 @@ class TagView extends Component {
                             </div>
                             <div>额外信息:<input className="w3-input" type="text" onChange={this.onChangeBoxInfo.bind(this, index)} value={this.props.boxList[index].info}/></div>
                             <img src={this.state.boxImgList[index]} style={{maxWidth: '100%', marginTop: '5px', maxHeight: '80px'}} />
+                            {this.props.userLevel > 0 &&
+                              <CheckReviewSelector
+                                value={box.checked ? box.checked : '' }
+                                changeReviewState={this.props.changeReviewState}
+                                index={index}/>}
+                            {this.props.userLevel === 0 &&
+                              <div>
+                                {box.checked
+                                  ? box.checked === 'YES'
+                                    ? <p style={{color: 'green'}}>审核通过</p>
+                                    : <p style={{color: 'red'}}>审核未通过</p>
+                                  : <p style={{color: 'orange'}}>待审核</p>}
+                              </div>}
                         </li>
                     ))
                 }</ul>
