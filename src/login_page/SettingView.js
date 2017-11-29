@@ -22,6 +22,17 @@ class SettingView extends Component {
     this.props.onRequestClose();
   }
 
+  handleDefaultUrl = (e) => {
+    this.setState({
+      defaultUrl: e.target.value.trim()
+    })
+  }
+
+  changeDefaultUrl = () => {
+    setParams('url', this.state.defaultURL);
+    this.props.onRequestClose();
+  }
+
   render() {
     const { classes, ...other } = this.props;
     return (

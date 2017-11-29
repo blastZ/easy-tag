@@ -19,15 +19,18 @@ class CheckReviewSelector extends Component {
       <div>
         <RadioGroup
             style={{
-              flexDirection: 'row'
+              flexDirection: 'row',
+              alignItems: 'center',
+              flexWrap: 'no-wrap'
             }}
             aria-label="review"
             name="review"
             value={this.state.value}
             onChange={this.handleChange}
           >
-            <FormControlLabel value="NO" control={<Radio />} label="审核不通过" />
-            <FormControlLabel value="YES" control={<Radio />} label="审核通过" />
+            <span style={{marginRight: '10px'}}>审核</span>
+            <FormControlLabel value="YES" control={<Radio />} label="通过" />
+            <FormControlLabel value="NO" control={<Radio />} label="不通过" />
         </RadioGroup>
       </div>
     )

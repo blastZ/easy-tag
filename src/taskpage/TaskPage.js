@@ -15,6 +15,21 @@ import 'react-tabs/style/react-tabs.css';
 import GlobalSetTable from './tables/GlobalSetTable';
 import { DEFAULT_TAGED_NUM, DEFAULT_TAGED_PROGRESS } from '../utils/global_config';
 import { Color } from '../utils/global_config';
+import RefreshIcon from 'material-ui-icons/Cached';
+import Button from 'material-ui/Button';
+import { withStyles } from 'material-ui/styles';
+
+const styles = theme => ({
+  refreshButton: {
+    width: 48,
+    height: 48,
+    background: 'linear-gradient(to right, #5B86E5, #4788ca)'
+  },
+  refreshLabel: {
+    width: 30,
+    height: 30
+  }
+});
 
 class TaskPage extends Component {
     state = {
@@ -1489,7 +1504,11 @@ class TaskPage extends Component {
                         userGroup={this.props.userGroup}
                         getUserLevelName={this.getUserLevelName(userLevel)}
                         shouldShowPersonPanel={this.state.showPersonPanel}/>
-                <i onClick={this.refreshTaskPage} className="fa fa-refresh et-refresh-button" aria-hidden="true"></i>
+                <div className="et-refresh-container">
+                  <Button onClick={this.refreshTaskPage} fab color="primary" aria-label="add" className={this.props.classes.refreshButton}>
+                    <RefreshIcon className={this.props.classes.refreshLabel} />
+                  </Button>
+                </div>
                 {
                     this.state.showUserManageEditView ?
                         <div className="popup w3-modal">
@@ -1845,4 +1864,4 @@ const mapStateToProps = ({ appReducer }) => ({
   taskName: appReducer.taskName
 })
 
-export default withRouter(connect(mapStateToProps)(TaskPage));
+export default withStyles(styles)(withRouter(connect(mapStateToProps)(TaskPage)));

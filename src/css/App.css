@@ -189,12 +189,10 @@ a:hover {
     cursor: pointer;
 }
 
-.et-refresh-button {
+.et-refresh-container {
     position: fixed;
-    bottom: 20px;
-    right: 32px;
-    color: orange;
-    font-size: 2.8em !important;
+    bottom: 32px;
+    right: 40px;
 }
 
 .et-refresh-button:hover {
@@ -345,4 +343,12 @@ a:hover {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.normal-cursor {
+  cursor: auto !important;
+}
+
+.normal-cursor:hover {
+  cursor: auto !important;
 }

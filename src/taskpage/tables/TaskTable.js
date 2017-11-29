@@ -3,6 +3,17 @@ import { connect } from 'react-redux';
 import { getTaskStateName, getTaskTypeName } from '../../utils/Task';
 import { Link } from 'react-router-dom';
 import { Color } from '../../utils/global_config';
+import AddIcon from 'material-ui-icons/Add';
+import Button from 'material-ui/Button';
+import { withStyles } from 'material-ui/styles';
+
+const styles = theme => ({
+  button: {
+    width: 36,
+    height: 36,
+    background: 'linear-gradient(to right, #5B86E5, #4788ca)'
+  },
+});
 
 class TaskTable extends Component {
   state = {
@@ -57,13 +68,13 @@ class TaskTable extends Component {
                 <option key={key.name + index} value={key.value}>{key.name}</option>
               ))}
             </select>
-            {
-                (userLevel === 2 || userLevel === 3) ?
-                <div onClick={this.props.popupInputView} style={{position: 'absolute', right: '5px'}}>
-                    <i className="fa fa-plus-circle add-task-button w3-text-black" aria-hidden="true"></i>
+            {(userLevel === 2 || userLevel === 3)
+                ? <div style={{position: 'absolute', right: '5px'}}>
+                  <Button onClick={this.props.popupInputView} fab color="primary" aria-label="add" className={this.props.classes.button}>
+                    <AddIcon />
+                  </Button>
                 </div>
-                : null
-            }
+                : null}
         </div>
         <table ref="theTaskTable" className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered">
             <thead className="w3-green">
@@ -158,4 +169,4 @@ const mapStateToProps = ({ appReducer }) => ({
   userLevel: appReducer.userLevel
 })
 
-export default connect(mapStateToProps)(TaskTable);
+export default withStyles(styles)(connect(mapStateToProps)(TaskTable));

@@ -50,11 +50,11 @@ class GlobalSetTable extends Component {
         {userLevel >=2 && <table ref="theTaskTable" className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered">
             <tbody>
               <tr>
-                <th className="w3-green" style={{verticalAlign: 'middle'}}>训练张数</th>
+                <th className="w3-green" style={{verticalAlign: 'middle'}}>最低图片数量</th>
                 <td><TextField type="number" InputProps={{classes: { input: classes.centerInput }}} value={this.state.tagedNum} onChange={this.handleTagedNum}/></td>
               </tr>
               <tr>
-                <th className="w3-green" style={{verticalAlign: 'middle'}}>训练比例</th>
+                <th className="w3-green" style={{verticalAlign: 'middle'}}>最低标注比例</th>
                 <td><TextField type="number" InputProps={{classes: { input: classes.centerInput }}} value={this.state.tagedProgress} onChange={this.handleTagedProgress} /></td>
               </tr>
             </tbody>

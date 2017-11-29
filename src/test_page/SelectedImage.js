@@ -194,20 +194,12 @@ class SelectedImage extends Component {
         return (
             <div className="w3-center w3-padding-24 flex-box full-width" style={{position: 'relative', justifyContent: 'center', alignItems: 'center', backgroundColor: '#303030', flex: '1'}}>
                 <div id="selectedImagePanel" style={{position: 'relative', width: '1200px', height: '600px', overflow: 'hidden', zIndex:'0'}}>
-                    <img draggable="false" id="selectedImage" src={this.props.selectedImage} alt={this.props.selectedImage} style={{position: 'absolute'}}/>
+                    <img draggable="false" id="selectedImage" className="normal-cursor" src={this.props.selectedImage} alt={this.props.selectedImage} style={{position: 'absolute'}}/>
                     {
                         this.state.imgLoaded ? this.drawBoxList() : null
                     }
                 </div>
-                {this.props.userLevel !== 0 ?
-                    <UploadImageButton
-                      bindVideoFileEvent={this.props.bindVideoFileEvent}
-                      defaultURL={this.props.defaultURL}
-                      userName={this.props.userName}
-                      taskName={this.props.taskName}
-                      getImageList={this.props.getImageList}
-                      bindFileEvent={this.bindFileEvent} />
-                    : null}
+                <UploadImageButton />
             </div>
         )
     }

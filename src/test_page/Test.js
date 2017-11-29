@@ -7,7 +7,8 @@ class Test extends Component {
   state = {
     imageList: [],
     boxList: [],
-    selectedImageNum: 0
+    selectedImageNum: 0,
+    boxIndex: 0,
   }
 
   uploadImageFiles = (files) => {
@@ -37,101 +38,121 @@ class Test extends Component {
   }
 
   autoTagImages = (start, num, pretrainmodel) => {
-    fetch(`${this.props.defaultURL}autolabelimage?usrname=${this.props.userName}&taskname=${this.props.taskName}&start=${start}&num=${num}&pretrainmodel=${pretrainmodel}`)
+    fetch(`${this.props.defaultURL}autolabeltestimage?usrname=${this.props.userName}&taskname=${this.props.taskName}&pretrainmodel=${pretrainmodel}`, {
+      method: 'POST',
+      body: `{"imageList": [${this.state.imageList.splice(start - 1, num).map((image) => (JSON.stringify(image.name)))}]}`
+    })
       .then((response) => (response.text()))
       .then((result) => {
-        console.log(result);
+        setTimeout(() => {
+          this.getBoxList(this.state.selectedImageNum);
+        }, 7000);
+      })
+  }
+
+  getBoxList = (index) => {
+    let boxList = [];
+    fetch(`${encodeURI(`${this.props.defaultURL}loadtestlabel?usrname=${this.props.userName}&taskname=${this.props.taskName}&filename=${this.state.imageList[index].name}`)}`)
+      .then((response) => response.json())
+      .then((result) => {
+        if(result.length > 0) {
+          boxList = result.objects;
+        }
+        this.setState({
+          boxList
+        })
       })
   }
 
   clickItem = (url) => {
-      //this.changeBoxIndex(0);
+      this.changeBoxIndex(0);
       const preIndex = this.state.selectedImageNum;
       const that = this;
       for(let i=0; i<this.state.imageList.length; i++) {
           if(this.state.imageList[i].url === url) {
               this.setState((state) => {
                   state.selectedImageNum = i
-                  //this.getTagList(i);
+                  this.getBoxList(i);
               }, function() {
                   that.refs.selectedImage.initSelectedImage();
-                  //that.tagView.changeAutoTagStart(that.state.selectedImageNum + that.state.start);
+                  //that.refs.tagView.changeAutoTagStart(that.state.selectedImageNum + that.refs.taView.state.start);
               })
               break
           }
       }
   }
 
-  getTagList = (index) => {
+  getBoxList = (index) => {
       const that = this;
       let boxList = [];
-      try {
-          const tagListRequest = new XMLHttpRequest();
-          tagListRequest.open('GET',
-          encodeURI(`${that.props.defaultURL}loadlabel?usrname=${this.props.userName}&taskname=${this.props.taskName}&filename=${this.state.imageList[index].name}`));
-          tagListRequest.send();
-          tagListRequest.onload = function() {
-              const jsonResponse = JSON.parse(tagListRequest.response);
-              if(jsonResponse.length > 0) {
-                  boxList = jsonResponse.objects;
-              }
-              that.setState({boxList})
+      const tagListRequest = new XMLHttpRequest();
+      tagListRequest.open('GET',
+      encodeURI(`${that.props.defaultURL}loadlabel?usrname=${this.props.userName}&taskname=${this.props.taskName}&filename=${this.state.imageList[index].name}`));
+      tagListRequest.send();
+      tagListRequest.onload = function() {
+          const jsonResponse = JSON.parse(tagListRequest.response);
+          if(jsonResponse.length > 0) {
+              boxList = jsonResponse.objects;
           }
-          tagListRequest.onerror = function() {
-              console.log('get boxList error.');
-              that.setState({boxList: []});
-          }
-      } catch(error) {
-          console.log(error);
+          that.setState({boxList})
+      }
+      tagListRequest.onerror = function() {
+          that.setState({boxList: []});
       }
   }
 
-  bindVideoFileEvent = (interval, e) => {
-    if(interval === '') {
-      window.alert('时间间隔不能为空');
-    } else {
-      const file = e.target.files[0];
-      if(file) {
-        this.shouldShowWaitingPage();
-        const name = file.name;
-        const type = name.split('.')[1];
-        if(type === 'mp4' || type === 'MP4' || type === 'avi' || type === 'AVI' || type === 'MTS' || type === 'mts' || type === 'mov' || type === 'MOV' || type === 'wmv' || type === 'WMV' || type === 'mpg' || type === 'MPG' || type === 'ts' || type === 'TS') {
-          const formData = new FormData();
-          formData.append('file', file);
-          fetch(`${this.state.defaultURL}uploadtestvideo2image?usrname=${this.props.userName}&taskname=${this.props.taskName}&filename=${file.name}&interval=${interval}`, {
-            method: 'POST',
-            body: formData
-          }).then((response) => response.text())
-            .then((result) => {
-              // setTimeout(() => {
-              //   this.getImageList();
-              //   this.shouldShowWaitingPage();
-              // }, 6000)
-            })
-        } else {
-          window.alert('视频格式错误');
-        }
-      }
+  previousImage = () => {
+    this.changeBoxIndex(0);
+    const that = this, preIndex = this.state.selectedImageNum;
+    if(preIndex - 1 >= 0) {
+        this.setState((state) => {
+            state.selectedImageNum = preIndex - 1;
+            that.getBoxList(preIndex - 1);
+        }, function() {
+            that.refs.selectedImage.initSelectedImage();
+        })
     }
+  }
+
+  nextImage = () => {
+    this.changeBoxIndex(0);
+    const that = this, preIndex = this.state.selectedImageNum;
+    if(preIndex + 1 < this.state.imageList.length) {
+        this.setState((state) => {
+            state.selectedImageNum = preIndex + 1;
+            that.getBoxList(preIndex + 1);
+        }, function() {
+            that.refs.selectedImage.initSelectedImage();
+        })
+    }
+  }
+
+  changeBoxIndex = (boxIndex) => {
+    this.setState({
+      boxIndex
+    })
   }
 
   render() {
     return (
       <div className="flex-box full-height">
-          <div className="flex-box flex-column full-height" style={{flex: '1 1 auto', width: '80%'}}>
+          <div className="flex-box flex-column full-height" style={{flex: '1 1 auto', width: '80%', position: 'relative'}}>
+              <div style={{zIndex: '100000', height: '47px', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '5px 0px', position: 'absolute', top: '0px', left: '0px', width: '100%', background: 'rgb(48,48,48)', color: 'white'}}>
+                {this.state.imageList.length > 0
+                  ? `第 ${this.state.selectedImageNum + 1} 张 ${this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].name : ''}`
+                  : ''}
+              </div>
               <SelectedImage
                  ref="selectedImage"
-                 boxIndex={this.props.boxIndex}
-                 bindVideoFileEvent={this.bindVideoFileEvent}
+                 boxIndex={this.state.boxIndex}
                  getImageList={this.getImageList}
-                 onNextImage={this.props.nextImage}
-                 onPreviousImage={this.props.previousImage}
+                 onNextImage={this.nextImage}
+                 onPreviousImage={this.previousImage}
                  selectedImage={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].url : ''}
-                 selectedImageNumInAll={this.props.selectedImageNumInAll}
                  complete={this.props.complete}
                  uploadImageFiles={this.uploadImageFiles}
                  onShowNewImage={this.showNewImage}
-                 boxList={this.props.boxList}
+                 boxList={this.state.boxList}
                  defaultURL={this.props.defaultURL}
                  userName={this.props.userName}
                  userLevel={this.props.userLevel}
@@ -143,22 +164,17 @@ class Test extends Component {
           </div>
           <div className="flex-box flex-column" style={{width: '20%', backgroundColor: '#F0F0F0'}}>
               <TagView ref="tagView"
-                 boxIndex={this.props.boxIndex}
+                 imageList={this.state.imageList}
+                 boxIndex={this.state.boxIndex}
                  changeBoxIndex={this.changeBoxIndex}
                  selectedImage={this.props.selectedImage}
                  selectedImageNum={this.props.selectedImageNum}
                  getBoxList={this.props.getTagList}
                  onHandleNumChange={this.props.handleNumChange}
-                 getImageListByTag={this.props.getImageListByTag}
                  onHandleStartChange={this.props.handleStartChange}
                  start={this.props.start}
                  num={this.props.num}
                  info={this.props.info}
-                 currentTagString={this.props.currentTagString}
-                 onChangeBrowserMode={this.changeBrowserMode}
-                 onGetImageList={this.onGetImageList}
-                 onNextImageList={this.onNextImageList}
-                 onPreviousImageList={this.onPreviousImageList}
                  boxList={this.state.boxList}
                  defaultURL={this.props.defaultURL}
                  userName={this.props.userName}
