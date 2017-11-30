@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import SelectedImage from './SelectedImage';
 import SelectBar from './SelectBar';
 import TagView from './TagView';
+import WaitingPage from '../WaitingPage';
 
 class Test extends Component {
   state = {
@@ -9,6 +10,7 @@ class Test extends Component {
     boxList: [],
     selectedImageNum: 0,
     boxIndex: 0,
+    showWaitingPage: false
   }
 
   uploadImageFiles = (files) => {
@@ -38,6 +40,9 @@ class Test extends Component {
   }
 
   autoTagImages = (start, num, pretrainmodel) => {
+    this.setState({
+      showWaitingPage: true
+    })
     fetch(`${this.props.defaultURL}autolabeltestimage?usrname=${this.props.userName}&taskname=${this.props.taskName}&pretrainmodel=${pretrainmodel}`, {
       method: 'POST',
       body: `{"imageList": [${this.state.imageList.splice(start - 1, num).map((image) => (JSON.stringify(image.name)))}]}`
@@ -45,8 +50,11 @@ class Test extends Component {
       .then((response) => (response.text()))
       .then((result) => {
         setTimeout(() => {
+          this.setState({
+            showWaitingPage: false
+          })
           this.getBoxList(this.state.selectedImageNum);
-        }, 7000);
+        }, 5000);
       })
   }
 
@@ -136,6 +144,7 @@ class Test extends Component {
   render() {
     return (
       <div className="flex-box full-height">
+          {this.state.showWaitingPage && <WaitingPage text="检测中" />}
           <div className="flex-box flex-column full-height" style={{flex: '1 1 auto', width: '80%', position: 'relative'}}>
               <div style={{zIndex: '100000', height: '47px', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '5px 0px', position: 'absolute', top: '0px', left: '0px', width: '100%', background: 'rgb(48,48,48)', color: 'white'}}>
                 {this.state.imageList.length > 0

@@ -31,6 +31,8 @@ export function getTaskTypeName(taskTypeID) {
         return ('ReID检测');
       case 6:
         return ('特征点标注');
+      case 7:
+        return ('OCR识别');
     }
 }
 
@@ -43,6 +45,7 @@ export function getTaskTypeCode(str) {
         case '缺陷检测': return 4;
         case 'ReID检测': return 5;
         case '特征点标注': return 6;
+        case 'OCR识别': return 7;
         default: return 0;
     }
 }

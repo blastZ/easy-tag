@@ -295,6 +295,10 @@ class SelectedImage extends Component {
         return (
             <div className="w3-center w3-padding-24 flex-box full-width" style={{position: 'relative', justifyContent: 'center', alignItems: 'center', backgroundColor: '#303030', flex: '1'}}>
                 <ImgTopBar
+                  userName={this.props.userName}
+                  taskName={this.props.taskName}
+                  setImgList={this.props.setImgList}
+                  boxList={this.props.boxList}
                   tagedFileCount={this.state.tagedFileCount}
                   fileCount={this.state.fileCount}
                   index={this.props.selectedImageNumInAll}

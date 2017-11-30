@@ -474,7 +474,11 @@ class TagView extends Component {
                         <li onClick={() => this.props.changeBoxIndex(index)} className="w3-hover-green" key={box.x_start + box.y_end} style={{borderStyle: `${this.props.boxIndex === index ? 'dotted' : 'none'}`}}>
                             <div>
                                 <span>序号: {index + 1}</span>
-                                <i onClick={this.onDeleteBox.bind(this, index)} className="fa fa-times et-tag-button w3-right"></i>
+                                {box.checked
+                                  ? box.checked === 'YES'
+                                    ? null
+                                    : <i onClick={this.onDeleteBox.bind(this, index)} className="fa fa-times et-tag-button w3-right"></i>
+                                  : <i onClick={this.onDeleteBox.bind(this, index)} className="fa fa-times et-tag-button w3-right"></i>}
                             </div>
                             <div>
                                 <div className="flex-box" style={{alignItems: 'center', padding: '5px 0px'}}>
@@ -484,7 +488,11 @@ class TagView extends Component {
                                         box.tag.map((tag, index2) => (
                                             <div key={tag + index2} className="flex-box" style={{border: '2px solid black', alignItems: 'center', marginLeft: '2px', paddingLeft: '3px', paddingRight: '3px', whiteSpace: 'nowrap'}}>
                                                 {tag}
-                                                <i onClick={this.props.removeTagFromBox.bind(this, index, index2)} className="fa fa-times et-tag-button"></i>
+                                                {box.checked
+                                                  ? box.checked === 'YES'
+                                                    ? null
+                                                    : <i onClick={this.props.removeTagFromBox.bind(this, index, index2)} className="fa fa-times et-tag-button"></i>
+                                                  : <i onClick={this.props.removeTagFromBox.bind(this, index, index2)} className="fa fa-times et-tag-button"></i>}
                                             </div>
                                         ))
                                     }</div>

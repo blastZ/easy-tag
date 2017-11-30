@@ -8,6 +8,8 @@ import Button from 'material-ui/Button';
 import { withStyles } from 'material-ui/styles';
 import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
 import Paper from 'material-ui/Paper';
+import Select from 'material-ui/Select';
+import Input from 'material-ui/Input';
 
 const styles = theme => ({
   button: {
@@ -30,6 +32,13 @@ const styles = theme => ({
       padding: '8px',
       fontSize: '14px'
     }
+  },
+  select: {
+    paddingBottom: 0
+  },
+  input: {
+    width: 150,
+    paddingBottom: 7
   }
 });
 
@@ -74,18 +83,43 @@ class TaskTable extends Component {
     }
   }
 
+  /*<select value={this.state.currentSearchKey} onChange={this.handleSearchKeyChange} style={{position: 'absolute', left: '109px', borderRadius: '40px 0 0 40px', outline: 'none', height: '34px', width: '104px', paddingLeft: '15px', border: 'none', borderRight: '1px solid #f1f1f1'}}>
+    {this.state.searchKey.map((key, index) => (
+      <option key={key.name + index} value={key.value}>{key.name}</option>
+    ))}
+  </select>
+  <input className="w3-input"
+    style={{width: '236px', borderRadius: '40px', outline: 'none', height: '100%', marginLeft: '13px', paddingLeft: '110px', paddingRight: '14px'}}
+    value={this.state.keyword} onChange={this.handleKeyword} />*/
+
   render() {
     const { userLevel, classes } = this.props;
     return(
       <div>
         <div className="et-margin-top-32" style={{position: 'relative', display: 'flex', alignItems: 'center'}}>
           <h3 className="et-table-title">任务列表</h3>
-          <input className="w3-input" style={{width: '236px', borderRadius: '40px', outline: 'none', height: '100%', marginLeft: '13px', paddingLeft: '110px', paddingRight: '14px'}} value={this.state.keyword} onChange={this.handleKeyword} />
-          <select value={this.state.currentSearchKey} onChange={this.handleSearchKeyChange} style={{position: 'absolute', left: '109px', borderRadius: '40px 0 0 40px', outline: 'none', height: '34px', width: '104px', paddingLeft: '15px', border: 'none', borderRight: '1px solid #f1f1f1'}}>
+          <Select
+            style={{marginLeft: '10px'}}
+            classes={{
+              select: classes.select
+            }}
+            native
+            value={this.state.currentSearchKey}
+            onChange={this.handleSearchKeyChange}>
             {this.state.searchKey.map((key, index) => (
               <option key={key.name + index} value={key.value}>{key.name}</option>
             ))}
-          </select>
+          </Select>
+          <Input
+            style={{marginLeft: '5px'}}
+            classes={{
+              input: classes.input
+            }}
+            inputProps={{
+              'aria-label': 'Description',
+            }}
+            value={this.state.keyword}
+            onChange={this.handleKeyword} />
           {(userLevel === 2 || userLevel === 3)
               ? <div style={{position: 'absolute', right: '5px'}}>
                 <Button onClick={this.props.popupInputView} fab color="primary" aria-label="add" className={this.props.classes.button}>
@@ -126,7 +160,7 @@ class TaskTable extends Component {
                           : null
                       }
                       {
-                          parseInt(task.taskType) === 1 ?
+                          parseInt(task.taskType) === 1 || parseInt(task.taskType) === 7 ?
                           <Link onClick={this.props.onLinkToTag.bind(this, index)} to="/tagobject"><i className="fa fa-tags table-item-button" aria-hidden="true"> 标注</i></Link>
                           : null
                       }

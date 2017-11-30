@@ -94,7 +94,7 @@ class Login extends Component {
                   </Toolbar>
                 </AppBar>
                 <div className="flex-box full-height" style={{justifyContent: 'center', alignItems: 'center'}}>
-                    <div onKeyPress={this.handleKeyPress} className="flex-box flex-column" style={{width: '20%'}}>
+                    <div onKeyPress={this.handleKeyPress} className="flex-box flex-column" style={{width: '20%', minWidth: '250px'}}>
                         <h3 className="w3-center" style={{letterSpacing: '15px', color: `${Color.TEXT}`}}><b>登录</b></h3>
                         <TextField
                           label="用户名"

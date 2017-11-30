@@ -1415,6 +1415,20 @@ class App extends Component {
       })
     }
 
+    setImgList = (list) => {
+      this.setState({
+        imageList: list,
+        tagList: []
+      }, () => {
+        if(this.state.imageList.length > 0) {
+          setTimeout(() => {
+            this.clickItem(list[0].url);
+            this.getTagList(0);
+          }, 300)
+        }
+      })
+    }
+
     render() {
         return (
             <div className="App full-height">
@@ -1435,6 +1449,7 @@ class App extends Component {
                     <div className="flex-box full-height">
                         <div className="flex-box flex-column full-height" style={{flex: '1 1 auto', width: '80%'}}>
                             <SelectedImage ref="selectedImage"
+                               setImgList={this.setImgList}
                                boxIndex={this.state.boxIndex}
                                bindVideoFileEvent={this.bindVideoFileEvent}
                                deleteSameImage={this.autoDeleteSameFiles}
@@ -1501,6 +1516,7 @@ class App extends Component {
                     <div className="flex-box full-height">
                         <div className="flex-box flex-column full-height" style={{flex: '1 1 auto', width: '80%'}}>
                             <SelectedObjectImage ref="selectedObjectImage"
+                               setImgList={this.setImgList}
                                bindVideoFileEvent={this.bindVideoFileEvent}
                                deleteSameImage={this.autoDeleteSameFiles}
                                getImageList={this.getImageList}
