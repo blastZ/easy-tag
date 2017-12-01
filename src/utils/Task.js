@@ -60,3 +60,13 @@ export  function getUserLevelCode(str) {
     }
     return userLevel;
 }
+
+export const getUserLevelName = (code) => {
+  const level = parseInt(code, 10);
+  switch (level) {
+    case 0: return '普通用户';
+    case 1: return '编辑用户';
+    case 2: return '管理用户';
+    case 3: return '超级用户';
+  }
+}

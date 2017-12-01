@@ -1,5 +1,41 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { withStyles } from 'material-ui/styles';
+import Table, { TableBody, TableCell, TableHead, TableRow, TableFooter, TablePagination } from 'material-ui/Table';
+import Paper from 'material-ui/Paper';
+import Select from 'material-ui/Select';
+import Input from 'material-ui/Input';
+
+const styles = theme => ({
+  button: {
+    width: 36,
+    height: 36,
+    background: 'linear-gradient(to right, #5B86E5, #4788ca)'
+  },
+  root: {
+    width: '100%'
+  },
+  table: {
+    width: '100%',
+    '& tr th': {
+      textAlign: 'center',
+      padding: '8px',
+      fontSize: '14px'
+    },
+    '& tr td': {
+      textAlign: 'center',
+      padding: '8px',
+      fontSize: '14px'
+    }
+  },
+  select: {
+    paddingBottom: 0
+  },
+  input: {
+    width: 150,
+    paddingBottom: 7
+  },
+});
 
 class WorkerTable extends Component {
   state = {
@@ -12,7 +48,21 @@ class WorkerTable extends Component {
       { name: '更新时间', value: 'updateTime' },
       { name: '拥有者', value: 'owner' },
     ],
-    currentSearchKey: 'workerName'
+    currentSearchKey: 'workerName',
+    page: 0,
+    rowsPerPage: 5,
+  }
+
+  handleChangePage = (e, page) => {
+    this.setState({
+      page: page
+    })
+  }
+
+  handleChangeRowsPerPage = (e) => {
+    this.setState({
+      rowsPerPage: e.target.value
+    })
   }
 
   handleKeyword = (e) => {
@@ -51,71 +101,93 @@ class WorkerTable extends Component {
   }
 
   render() {
-    const { userLevel } = this.props;
+    const { userLevel, workerList, classes } = this.props;
+    const { page, rowsPerPage } = this.state;
     return (
       <div>
         <div className="et-margin-top-32" style={{position: 'relative', display: 'flex', alignItems: 'center'}}>
           <h3 className="et-table-title">Worker列表</h3>
-          <input className="w3-input" style={{width: '236px', borderRadius: '40px', outline: 'none', height: '100%', marginLeft: '13px', paddingLeft: '110px', paddingRight: '14px'}} value={this.state.keyword} onChange={this.handleKeyword} />
-          <select value={this.state.currentSearchKey} onChange={this.handleSearchKeyChange} style={{position: 'absolute', left: '138px', borderRadius: '40px 0 0 40px', outline: 'none', height: '34px', width: '104px', paddingLeft: '15px', border: 'none', borderRight: '1px solid #f1f1f1'}}>
+          <Select
+            style={{marginLeft: '10px'}}
+            classes={{
+              select: classes.select
+            }}
+            native
+            value={this.state.currentSearchKey}
+            onChange={this.handleSearchKeyChange}>
             {this.state.searchKey.map((key, index) => (
               <option key={key.name + index} value={key.value}>{key.name}</option>
             ))}
-          </select>
+          </Select>
+          <Input
+            style={{marginLeft: '5px'}}
+            classes={{
+              input: classes.input
+            }}
+            inputProps={{
+              'aria-label': 'Description',
+            }}
+            value={this.state.keyword}
+            onChange={this.handleKeyword} />
         </div>
-        <table ref="theWorkerTable" className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered">
-            <thead className="w3-green">
-                <tr>
-                    <th>编号</th>
-                    <th>worker名称</th>
-                    <th>worker状态</th>
-                    <th>显卡使用情况</th>
-                    <th style={{width: '9%'}}>正在服务的任务名称</th>
-                    <th>更新时间</th>
-                    <th>拥有者</th>
-                    {
-                        userLevel === 3 ?
-                        <th>操作</th>
-                        : null
-                    }
-                </tr>
-            </thead>
-            <tbody>{
-                this.props.workerList.map((worker, index) => (
-                    (new RegExp(this.state.keyword, 'i')).test(this.getTestString(worker)) &&
-                    <tr key={worker.workerName + index}>
-                        <td>{index + 1}</td>
-                        <td>{worker.workerName}</td>
-                        <td>{this.props.getWorkerStateName(worker.workerState)}</td>
-                        <td>{worker.GPU}</td>
-                        <td>{worker.taskName}</td>
-                        <td>{worker.updateTime}</td>
-                        <td>{
-                            this.props.editWorkerIndex === index && this.props.showEditWorkerOwner ?
-                                <select id="workerOwnerSelect">{
-                                    this.props.workerOwnerList.map((owner, index) => (
-                                        <option key={owner + index}>{owner}</option>
-                                    ))
-                                }</select>
-                                : worker.owner
-                        }</td>
-                        {
-                            userLevel === 3 ?
-                            <td>{
-                                !this.props.showEditWorkerOwner ?
-                                <i onClick={this.props.shouldShowEditWorkerOwner.bind(this, index)} className="fa fa-address-book table-item-button"> 修改拥有者</i>
-                                :<div>
-                                <i onClick={this.props.saveWorkerOwnerChange.bind(this, index)} className="fa fa-minus-square table-item-button"> 保存</i>
-                                <i onClick={this.props.shouldShowEditWorkerOwner.bind(this, index)} className="fa fa-minus-square table-item-button w3-margin-left"> 取消</i>
-                                </div>
-                            }</td>
-                            : null
-                        }
-                    </tr>
-                ))
-            }</tbody>
-            <tfoot></tfoot>
-        </table>
+        <Paper className={classes.root}>
+          <Table className={classes.table}>
+            <TableHead>
+              <TableRow>
+                <TableCell>编号</TableCell>
+                <TableCell>worker名称</TableCell>
+                <TableCell>worker状态</TableCell>
+                <TableCell>显卡使用情况</TableCell>
+                <TableCell>正在服务的任务名称</TableCell>
+                <TableCell>更新时间</TableCell>
+                <TableCell>拥有者</TableCell>
+                {userLevel === 3 && <TableCell>操作</TableCell>}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {workerList.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((worker, index) => (
+                (new RegExp(this.state.keyword, 'i')).test(this.getTestString(worker)) &&
+                <TableRow key={worker.workerName}>
+                  <TableCell>{index + 1}</TableCell>
+                  <TableCell>{worker.workerName}</TableCell>
+                  <TableCell>{this.props.getWorkerStateName(worker.workerState)}</TableCell>
+                  <TableCell>{worker.GPU}</TableCell>
+                  <TableCell>{worker.taskName}</TableCell>
+                  <TableCell>{worker.updateTime}</TableCell>
+                  <TableCell>{
+                    this.props.editWorkerIndex === index && this.props.showEditWorkerOwner ?
+                        <select id="workerOwnerSelect">{
+                            this.props.workerOwnerList.map((owner, index) => (
+                                <option key={owner + index}>{owner}</option>
+                            ))
+                        }</select>
+                        : worker.owner
+                  }</TableCell>
+                  {userLevel === 3 && <TableCell>{
+                    !this.props.showEditWorkerOwner ?
+                      <i onClick={this.props.shouldShowEditWorkerOwner.bind(this, index)} className="fa fa-address-book table-item-button"> 修改拥有者</i>
+                    :<div>
+                      <i onClick={this.props.saveWorkerOwnerChange.bind(this, index)} className="fa fa-minus-square table-item-button"> 保存</i>
+                      <i onClick={this.props.shouldShowEditWorkerOwner.bind(this, index)} className="fa fa-minus-square table-item-button w3-margin-left"> 取消</i>
+                    </div>
+                  }</TableCell>}
+                </TableRow>
+              ))}
+            </TableBody>
+            <TableFooter>
+              <TableRow>
+                <TablePagination
+                  labelRowsPerPage="每页数量"
+                  count={workerList.length}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  onChangePage={this.handleChangePage}
+                  onChangeRowsPerPage={this.handleChangeRowsPerPage}
+                />
+              </TableRow>
+            </TableFooter>
+          </Table>
+        </Paper>
       </div>
     )
   }
@@ -125,4 +197,4 @@ const mapStateToProps = ({ appReducer }) => ({
   userLevel: appReducer.userLevel
 })
 
-export default connect(mapStateToProps)(WorkerTable);
+export default withStyles(styles)(connect(mapStateToProps)(WorkerTable));

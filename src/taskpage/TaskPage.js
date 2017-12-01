@@ -10,7 +10,7 @@ import UserManageTable from './tables/UserManageTable';
 import UserGroupTable from './tables/UserGroupTable';
 import { connect } from 'react-redux';
 import { changeTaskName, getTrainStateLog } from '../actions/app_action';
-import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
+// import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
 import GlobalSetTable from './tables/GlobalSetTable';
 import { DEFAULT_TAGED_NUM, DEFAULT_TAGED_PROGRESS } from '../utils/global_config';
@@ -20,6 +20,9 @@ import Button from 'material-ui/Button';
 import { withStyles } from 'material-ui/styles';
 import DistriTaskView from './popups/DistriTaskView';
 import NewTaskView from './popups/NewTaskView';
+import Paper from 'material-ui/Paper';
+import Divider from 'material-ui/Divider';
+import Tabs, { Tab } from 'material-ui/Tabs';
 
 const styles = theme => ({
   refreshButton: {
@@ -121,7 +124,7 @@ class TaskPage extends Component {
       }
     }
 
-    handleTabChange = (tabIndex) => {
+    handleTabChange = (e, tabIndex) => {
         this.setState({tabIndex});
         if(this.props.userLevel === 2) {
           switch(tabIndex) {
@@ -1499,6 +1502,7 @@ class TaskPage extends Component {
 
     render() {
       const { userLevel } = this.props;
+      const { tabIndex } = this.state;
         return (
             <div className="w3-light-grey full-height">
                 <TopBar onLogout={this.props.onLogout}
@@ -1718,81 +1722,69 @@ class TaskPage extends Component {
                           <button onClick={this.outputTagData} className="w3-button w3-orange w3-text-white w3-margin-top" style={{borderRadius: '5px'}}>输出标记数据</button>
                       </div>
                   </div>}
-                <div className={`et-content ${userLevel === 3 ? 'et-padding-128' : 'w3-padding-64'}`}>
-                    <Tabs selectedIndex={this.state.tabIndex} onSelect={(tabIndex) => this.handleTabChange(tabIndex)}>
-                        <TabList>
-                          <Tab>任务列表</Tab>
-                          {userLevel === 3 &&
-                            <Tab>训练任务列表</Tab>}
-                          {(userLevel === 2 || userLevel === 3) &&
-                            <Tab>Worker列表</Tab>}
-                          {userLevel === 3 &&
-                            <Tab>用户管理列表</Tab>}
-                          {userLevel === 3 &&
-                            <Tab>用户组列表</Tab>}
-                          <Tab>参数配置</Tab>
-                          <Tab>操作日志</Tab>
-                        </TabList>
-                        <TabPanel>
-                          <TaskTable
-                            popupInputView={this.popupInputView}
-                            taskList={this.state.taskList}
-                            showDistributeTaskView={this.showDistributeTaskView}
-                            onLinkToTag={this.onLinkToTag}
-                            onLinkToSegment={this.onLinkToSegment}
-                            onLinkToTest={this.onLinkToTest}
-                            onLinkToVideo={this.onLinkToVideo}
-                            onLinkToDaub={this.onLinkToDaub}
-                            onLinkToPoint={this.onLinkToPoint}
-                            onStartTask={this.onStartTask}
-                            onStopTask={this.onStopTask}
-                            onLookTrainState={this.onLookTrainState}
-                            onDeleteTask={this.onDeleteTask}
-                            showLabelStatistics={this.showLabelStatistics} />
-                        </TabPanel>
-                        {userLevel === 3 &&
-                            <TabPanel>
-                              <TrainTaskTable
-                                ref="trainTaskList"
-                                showLabelStatistics={this.showLabelStatisticsForTrainTask}
-                                onStopTask={this.onStopTaskForTrainTask}
-                                onLookTrainState={this.onLookTrainStateForTrainTask}
-                                onDeleteTask={this.onDeleteTaskForTrainTask} />
-                            </TabPanel>}
-                        {(userLevel === 2 || userLevel === 3) &&
-                            <TabPanel>
-                              <WorkerTable
-                                ref="workerTable"
-                                workerList={this.state.workerList}
-                                getWorkerStateName={this.getWorkerStateName}
-                                editWorkerIndex={this.state.editWorkerIndex}
-                                showEditWorkerOwner={this.state.showEditWorkerOwner}
-                                workerOwnerList={this.state.workerOwnerList}
-                                shouldShowEditWorkerOwner={this.shouldShowEditWorkerOwner}
-                                saveWorkerOwnerChange={this.saveWorkerOwnerChange} />
-                            </TabPanel>}
-                        {userLevel === 3 &&
-                            <TabPanel>
-                              <UserManageTable
-                                userManageList={this.state.userManageList}
-                                getUserLevelName={this.getUserLevelName}
-                                deleteUser={this.deleteUser}
-                                shouldShowUserManageEditView={this.shouldShowUserManageEditView} />
-                            </TabPanel>}
-                        {userLevel === 3 &&
-                            <TabPanel>
-                              <UserGroupTable
-                                addUserGroup={this.addUserGroup}
-                                userGroupList={this.state.userGroupList}
-                                deleteUserGroup={this.deleteUserGroup} />
-                            </TabPanel>}
-                        <TabPanel>
-                          <GlobalSetTable />
-                        </TabPanel>
-                        <TabPanel>
-                          <OperationsTable />
-                        </TabPanel>
-                    </Tabs>
+                <div className={`et-content`}>
+                  <Tabs
+                    value={tabIndex}
+                    onChange={this.handleTabChange}
+                    indicatorColor="primary"
+                    textColor="primary"
+                    centered
+                  >
+                    <Tab label="任务列表" />
+                    {userLevel === 3 && <Tab label="训练任务列表" />}
+                    {(userLevel === 2 || userLevel === 3) && <Tab label="Worker列表" />}
+                    {userLevel === 3 && <Tab label="用户管理列表" />}
+                    {userLevel === 3 && <Tab label="用户组列表" />}
+                    <Tab label="参数配置" />
+                    <Tab label="操作日志" />
+                  </Tabs>
+                  <Divider />
+                  {tabIndex === 0 &&
+                    <TaskTable
+                      popupInputView={this.popupInputView}
+                      taskList={this.state.taskList}
+                      showDistributeTaskView={this.showDistributeTaskView}
+                      onLinkToTag={this.onLinkToTag}
+                      onLinkToSegment={this.onLinkToSegment}
+                      onLinkToTest={this.onLinkToTest}
+                      onLinkToVideo={this.onLinkToVideo}
+                      onLinkToDaub={this.onLinkToDaub}
+                      onLinkToPoint={this.onLinkToPoint}
+                      onStartTask={this.onStartTask}
+                      onStopTask={this.onStopTask}
+                      onLookTrainState={this.onLookTrainState}
+                      onDeleteTask={this.onDeleteTask}
+                      showLabelStatistics={this.showLabelStatistics} />}
+                  {(userLevel === 3 && tabIndex === 1) &&
+                    <TrainTaskTable
+                      ref="trainTaskList"
+                      showLabelStatistics={this.showLabelStatisticsForTrainTask}
+                      onStopTask={this.onStopTaskForTrainTask}
+                      onLookTrainState={this.onLookTrainStateForTrainTask}
+                      onDeleteTask={this.onDeleteTaskForTrainTask} />}
+                  {((userLevel === 2 && tabIndex === 1) || (userLevel === 3 && tabIndex === 2)) &&
+                    <WorkerTable
+                      ref="workerTable"
+                      workerList={this.state.workerList}
+                      getWorkerStateName={this.getWorkerStateName}
+                      editWorkerIndex={this.state.editWorkerIndex}
+                      showEditWorkerOwner={this.state.showEditWorkerOwner}
+                      workerOwnerList={this.state.workerOwnerList}
+                      shouldShowEditWorkerOwner={this.shouldShowEditWorkerOwner}
+                      saveWorkerOwnerChange={this.saveWorkerOwnerChange} />}
+                  {(userLevel === 3 && tabIndex === 3) &&
+                    <UserManageTable
+                      userManageList={this.state.userManageList}
+                      getUserLevelName={this.getUserLevelName}
+                      deleteUser={this.deleteUser}
+                      shouldShowUserManageEditView={this.shouldShowUserManageEditView} />}
+                  {(userLevel === 3 && tabIndex === 4) &&
+                    <UserGroupTable
+                      addUserGroup={this.addUserGroup}
+                      userGroupList={this.state.userGroupList}
+                      deleteUserGroup={this.deleteUserGroup} />}
+                  {((userLevel === 3 && tabIndex === 5) || (userLevel === 2 && tabIndex === 2) || (userLevel === 1 && tabIndex === 1) || (userLevel === 0 && tabIndex === 1)) && <GlobalSetTable />}
+                  {((userLevel === 3 && tabIndex === 6) || (userLevel === 2 && tabIndex === 3) || (userLevel === 1 && tabIndex === 2) || (userLevel === 0 && tabIndex === 2)) && <OperationsTable />}
                 </div>
             </div>
         )

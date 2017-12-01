@@ -5,6 +5,42 @@ import { Link } from 'react-router-dom';
 import { getOperationsTaskList, getOperationsCount } from '../../actions/task_action';
 import FirstPageIcon from 'react-icons/lib/md/skip-previous';
 import LastPageIcon from 'react-icons/lib/md/skip-next';
+import { withStyles } from 'material-ui/styles';
+import Table, { TableBody, TableCell, TableHead, TableRow, TableFooter, TablePagination } from 'material-ui/Table';
+import Paper from 'material-ui/Paper';
+import Select from 'material-ui/Select';
+import Input from 'material-ui/Input';
+
+const styles = theme => ({
+  button: {
+    width: 36,
+    height: 36,
+    background: 'linear-gradient(to right, #5B86E5, #4788ca)'
+  },
+  root: {
+    width: '100%'
+  },
+  table: {
+    width: '100%',
+    '& tr th': {
+      textAlign: 'center',
+      padding: '8px',
+      fontSize: '14px'
+    },
+    '& tr td': {
+      textAlign: 'center',
+      padding: '8px',
+      fontSize: '14px'
+    }
+  },
+  select: {
+    paddingBottom: 0
+  },
+  input: {
+    width: 150,
+    paddingBottom: 7
+  },
+});
 
 class OperationsTable extends Component {
   state = {
@@ -18,21 +54,34 @@ class OperationsTable extends Component {
     ],
     currentSearchKey: 'userName',
     mode: 'current',
-    start: 0,
-    num: 20,
-    pageList: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-    currentPage: 1,
-    showStart: 1,
-    showEnd: 10
+    page: 0,
+    rowsPerPage: 5,
+  }
+
+  handleChangePage = (e, page) => {
+    this.setState({
+      page: page
+    }, () => {
+      this.getOperationsTaskList();
+    })
+  }
+
+  handleChangeRowsPerPage = (e) => {
+    this.setState({
+      rowsPerPage: e.target.value
+    }, () => {
+      this.getOperationsTaskList();
+    })
   }
 
   getOperationsTaskList = () => {
+    const { page, rowsPerPage } = this.state;
     if(this.state.mode === 'current') {
       this.props.dispatch(getOperationsCount(this.props.userName));
-      this.props.dispatch(getOperationsTaskList(this.props.userName, this.state.start, this.state.num));
+      this.props.dispatch(getOperationsTaskList(this.props.userName, page * rowsPerPage, rowsPerPage));
     } else {
       this.props.dispatch(getOperationsCount('all'));
-      this.props.dispatch(getOperationsTaskList('all', this.state.start, this.state.num))
+      this.props.dispatch(getOperationsTaskList('all', page * rowsPerPage, rowsPerPage))
     }
   }
 
@@ -51,10 +100,8 @@ class OperationsTable extends Component {
   changeMode = (mode) => {
     this.setState({
       mode,
-      showStart: 1,
-      showEnd: 10,
-      currentPage: 1,
-      start: 0,
+      page: 0,
+      rowsPerPage: 5
     }, () => {
       this.getOperationsTaskList();
     })
@@ -96,117 +143,78 @@ class OperationsTable extends Component {
     }
   }
 
-  previousList = () => {
-    if(this.state.currentPage > 1) {
-      this.changePage(this.state.currentPage - 1);
-    }
-  }
-
-  nextList = () => {
-    if(this.state.currentPage < this.props.pageCount) {
-      this.changePage(this.state.currentPage + 1);
-    }
-  }
-
-  goFirstPage = () => {
-    this.setState({
-      currentPage: 1,
-      start: 0,
-      showStart: 1,
-      showEnd: 10
-    }, () => {
-      this.getOperationsTaskList();
-    })
-  }
-
-  goLastPage = () => {
-    this.setState({
-      currentPage: this.props.pageCount,
-      start: this.props.pageCount - 10,
-      showStart: this.props.pageCount - 10,
-      showEnd: this.props.pageCount
-    }, () => {
-      this.getOperationsTaskList();
-    })
-  }
-
-  changePage = (page) => {
-    this.setState({
-      currentPage: page,
-      start: ((page - 1) * this.state.num)
-    }, () => {
-      if(this.state.currentPage > this.state.showEnd) {
-        this.setState({
-          showStart: this.state.showStart + 10,
-          showEnd: this.state.showEnd + 10
-        })
-      }
-      if(this.state.currentPage < this.state.showStart) {
-        this.setState({
-          showStart: this.state.showStart - 10,
-          showEnd: this.state.showEnd - 10
-        })
-      }
-      this.getOperationsTaskList();
-    })
-  }
-
   render() {
-    const { userLevel } = this.props;
+    const { userLevel, operationsTaskList, classes, operationsCount } = this.props;
+    const { page, rowsPerPage } = this.state;
     return(
       <div>
         <div className="et-margin-top-32" style={{position: 'relative', display: 'flex', alignItems: 'center'}}>
             <h3 className="et-table-title">操作日志</h3>
-            <input className="w3-input" style={{width: '236px', borderRadius: '40px', outline: 'none', height: '100%', marginLeft: '13px', paddingLeft: '110px', paddingRight: '14px'}} value={this.state.keyword} onChange={this.handleKeyword} />
-            <select value={this.state.currentSearchKey} onChange={this.handleSearchKeyChange} style={{position: 'absolute', left: '109px', borderRadius: '40px 0 0 40px', outline: 'none', height: '34px', width: '104px', paddingLeft: '15px', border: 'none', borderRight: '1px solid #f1f1f1'}}>
+            <Select
+              style={{marginLeft: '10px'}}
+              classes={{
+                select: classes.select
+              }}
+              native
+              value={this.state.currentSearchKey}
+              onChange={this.handleSearchKeyChange}>
               {this.state.searchKey.map((key, index) => (
                 <option key={key.name + index} value={key.value}>{key.name}</option>
               ))}
-            </select>
+            </Select>
+            <Input
+              style={{marginLeft: '5px'}}
+              classes={{
+                input: classes.input
+              }}
+              inputProps={{
+                'aria-label': 'Description',
+              }}
+              value={this.state.keyword}
+              onChange={this.handleKeyword} />
             {this.props.userLevel === 3 && <div style={{position: 'absolute', right: '10px'}}>
               <span className={`et-hoverable ${this.state.mode === 'current' && 'et-font-select'}`} onClick={() => this.changeMode('current')}>当前</span>
               <span style={{margin: '0 5px'}}>/</span>
               <span className={`et-hoverable ${this.state.mode === 'all' && 'et-font-select'}`} onClick={() => this.changeMode('all')}>全部</span>
             </div>}
         </div>
-        <table ref="theTaskTable" className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered" style={{tableLayout: 'fixed'}}>
-            <thead className="w3-green">
-                <tr>
-                    <th style={{width: '110px'}}>操作者名称</th>
-                    <th>操作者IP</th>
-                    <th>操作时间</th>
-                    <th>操作类型</th>
-                    <th>操作详细描述</th>
-                </tr>
-            </thead>
-            <tbody>{
-                this.props.operationsTaskList.map((task, index) => (
-                    (new RegExp(this.state.keyword, 'i')).test(this.getTestString(task)) &&
-                    <tr key={task.time + index}>
-                        <td>{task.userName}</td>
-                        <td>{task.ip}</td>
-                        <td>{task.time}</td>
-                        <td>{task.operationType}</td>
-                        <td style={{whiteSpace: 'nowrap', overflowY: 'auto'}}>{task.operationDetail}</td>
-                    </tr>
-                ))
-            }</tbody>
-        </table>
-        <div style={{display: 'flex', justifyContent: 'space-around', marginTop: '20px', alignItems: 'center'}}>
-          <button className="w3-button w3-green et-change-page-button" onClick={this.previousList}>上一页</button>
-          <FirstPageIcon onClick={this.goFirstPage} className="et-hoverable" style={{fontSize: '30px'}} />
-          <div style={{display: 'flex', width: '50%', justifyContent: 'space-around'}}>
-            {this.state.pageList.map((page) => (
-              parseInt(page, 10) >= this.state.showStart && parseInt(page, 10) <= this.state.showEnd &&
-              <div
-                key={page}
-                onClick={() => this.changePage(page)}
-                className={`et-normal-index ${this.state.currentPage === parseInt(page, 10) ? 'et-selected-index' : ''}`}>{page}</div>
-            ))}
-          </div>
-          <LastPageIcon onClick={this.goLastPage} className="et-hoverable" style={{fontSize: '30px'}} />
-          <button className="w3-button w3-green et-change-page-button" onClick={this.nextList}>下一页</button>
-        </div>
+        <Paper className={classes.root}>
+          <Table className={classes.table}>
+            <TableHead>
+              <TableRow>
+                <TableCell>操作者名称</TableCell>
+                <TableCell>操作者IP</TableCell>
+                <TableCell>操作时间</TableCell>
+                <TableCell>操作类型</TableCell>
+                <TableCell>操作详细描述</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {operationsTaskList.map((task, index) => (
+                (new RegExp(this.state.keyword, 'i')).test(this.getTestString(task)) &&
+                <TableRow key={task.time + index}>
+                  <TableCell>{task.userName}</TableCell>
+                  <TableCell>{task.ip}</TableCell>
+                  <TableCell>{task.time}</TableCell>
+                  <TableCell>{task.operationType}</TableCell>
+                  <TableCell>{task.operationDetail}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+            <TableFooter>
+              <TableRow>
+                <TablePagination
+                  labelRowsPerPage="每页数量"
+                  count={operationsCount}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  onChangePage={this.handleChangePage}
+                  onChangeRowsPerPage={this.handleChangeRowsPerPage}
+                />
+              </TableRow>
+            </TableFooter>
+          </Table>
+        </Paper>
       </div>
     )
   }
@@ -220,4 +228,4 @@ const mapStateToProps = ({ appReducer, taskReducer }) => ({
   pageCount: taskReducer.pageCount
 })
 
-export default connect(mapStateToProps)(OperationsTable);
+export default withStyles(styles)(connect(mapStateToProps)(OperationsTable));

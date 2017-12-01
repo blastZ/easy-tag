@@ -10,16 +10,23 @@ import { ADD_NEW_IMAGE, CLICK_SELECT_BAR_ITEM,
          GET_MANAGER_DATA, GET_TRAIN_STATE_LOG } from '../actions/app_action';
 import { DEFAULT_URL } from '../utils/global_config';
 
+const test = {
+  userName: 'fj',
+  userLevel: 3,
+  password: '1q2w3e4r',
+  login: true
+}
+
 const initState = {
     defaultURL: DEFAULT_URL,
-    userName: '',
-    password: '',
+    userName: test ? test.userName : '',
+    password: test ? test.password : '',
     taskName: '',
     start: 1,
     num: 10,
     fileCount: 0,
     taggedFileCount: 0,
-    userLevel: -1,
+    userLevel: test ? test.userLevel : -1,
     imageList: [], //{url: image.url, name: image.name, labeled: image.labeled}
     selectedImageNum: 0,
     segmentAnnotatorList: [], // {labels: [{name: 'bacground', color: [255, 255, 255]}], annotation: "string"}

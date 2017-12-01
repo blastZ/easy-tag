@@ -6,7 +6,7 @@ import { Color } from '../../utils/global_config';
 import AddIcon from 'material-ui-icons/Add';
 import Button from 'material-ui/Button';
 import { withStyles } from 'material-ui/styles';
-import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
+import Table, { TableBody, TableCell, TableHead, TableRow, TableFooter, TablePagination } from 'material-ui/Table';
 import Paper from 'material-ui/Paper';
 import Select from 'material-ui/Select';
 import Input from 'material-ui/Input';
@@ -39,7 +39,7 @@ const styles = theme => ({
   input: {
     width: 150,
     paddingBottom: 7
-  }
+  },
 });
 
 class TaskTable extends Component {
@@ -51,7 +51,9 @@ class TaskTable extends Component {
       { name: '任务状态', value: 'taskState' },
       { name: '任务类型', value: 'taskType' },
     ],
-    currentSearchKey: 'taskName'
+    currentSearchKey: 'taskName',
+    page: 0,
+    rowsPerPage: 5,
   }
 
   handleKeyword = (e) => {
@@ -83,17 +85,21 @@ class TaskTable extends Component {
     }
   }
 
-  /*<select value={this.state.currentSearchKey} onChange={this.handleSearchKeyChange} style={{position: 'absolute', left: '109px', borderRadius: '40px 0 0 40px', outline: 'none', height: '34px', width: '104px', paddingLeft: '15px', border: 'none', borderRight: '1px solid #f1f1f1'}}>
-    {this.state.searchKey.map((key, index) => (
-      <option key={key.name + index} value={key.value}>{key.name}</option>
-    ))}
-  </select>
-  <input className="w3-input"
-    style={{width: '236px', borderRadius: '40px', outline: 'none', height: '100%', marginLeft: '13px', paddingLeft: '110px', paddingRight: '14px'}}
-    value={this.state.keyword} onChange={this.handleKeyword} />*/
+  handleChangePage = (e, page) => {
+    this.setState({
+      page: page
+    })
+  }
+
+  handleChangeRowsPerPage = (e) => {
+    this.setState({
+      rowsPerPage: e.target.value
+    })
+  }
 
   render() {
-    const { userLevel, classes } = this.props;
+    const { userLevel, classes, taskList } = this.props;
+    const { page, rowsPerPage } = this.state;
     return(
       <div>
         <div className="et-margin-top-32" style={{position: 'relative', display: 'flex', alignItems: 'center'}}>
@@ -141,7 +147,7 @@ class TaskTable extends Component {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {this.props.taskList.map((task, index) => (
+                {taskList.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((task, index) => (
                   (new RegExp(this.state.keyword, 'i')).test(this.getTestString(task)) &&
                   <TableRow key={task.taskName}>
                     <TableCell>{index + 1}</TableCell>
@@ -211,6 +217,18 @@ class TaskTable extends Component {
                   </TableRow>
                 ))}
               </TableBody>
+              <TableFooter>
+                <TableRow>
+                  <TablePagination
+                    labelRowsPerPage="每页数量"
+                    count={taskList.length}
+                    rowsPerPage={rowsPerPage}
+                    page={page}
+                    onChangePage={this.handleChangePage}
+                    onChangeRowsPerPage={this.handleChangeRowsPerPage}
+                  />
+                </TableRow>
+              </TableFooter>
             </Table>
           </Paper>
       </div>
