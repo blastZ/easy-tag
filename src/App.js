@@ -27,20 +27,20 @@ import SelectPointBar from './point_page/SelectPointBar';
 import { DEFAULT_URL } from './utils/global_config';
 //import { saveAs } from 'file-saver' when you want to save as txt on the localhost
 
-const test = {
-  userName: 'fj',
-  userLevel: 3,
-  password: '1q2w3e4r',
-  login: true
-}
+// const test = {
+//   userName: 'fj',
+//   userLevel: 3,
+//   password: '1q2w3e4r',
+//   login: true
+// }
 
 class App extends Component {
     state = {
-        userName: test ? test.userName : '',
+        userName: '',
         taskName: '',
-        userLevel: test ? test.userLevel : 0,
+        userLevel: 0,
         userGroup: '',
-        password: test ? test.password : '',
+        password: '',
         defaultURL: DEFAULT_URL,
         imageList: [
             //{url: 'http://demo.codvision.com:16831/static/user/fj/task1/data/zhong1_12.jpg', name: 'ding1_6.jpg', labeled: 0}
@@ -53,7 +53,7 @@ class App extends Component {
         start: 1,
         num: 10,
         complete: 0,
-        login: test ? test.login : false,
+        login: false,
         shouldPostTagList: false,
         shouldPostObjectTagList: false,
         currentBrowserMode: 'normal', //'normal', 'find',

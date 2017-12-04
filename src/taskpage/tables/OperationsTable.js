@@ -10,6 +10,8 @@ import Table, { TableBody, TableCell, TableHead, TableRow, TableFooter, TablePag
 import Paper from 'material-ui/Paper';
 import Select from 'material-ui/Select';
 import Input from 'material-ui/Input';
+import { FormControlLabel } from 'material-ui/Form';
+import Switch from 'material-ui/Switch';
 
 const styles = theme => ({
   button: {
@@ -172,10 +174,16 @@ class OperationsTable extends Component {
               }}
               value={this.state.keyword}
               onChange={this.handleKeyword} />
-            {this.props.userLevel === 3 && <div style={{position: 'absolute', right: '10px'}}>
-              <span className={`et-hoverable ${this.state.mode === 'current' && 'et-font-select'}`} onClick={() => this.changeMode('current')}>当前</span>
-              <span style={{margin: '0 5px'}}>/</span>
-              <span className={`et-hoverable ${this.state.mode === 'all' && 'et-font-select'}`} onClick={() => this.changeMode('all')}>全部</span>
+            {this.props.userLevel === 3 && <div style={{position: 'absolute', right: '-10px', top: '13px'}}>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={this.state.mode === 'current' ? false : true}
+                    onChange={(event, checked) => {checked ? this.changeMode('all') : this.changeMode('current')}}
+                  />
+                }
+                label="全部"
+              />
             </div>}
         </div>
         <Paper className={classes.root}>

@@ -96,6 +96,10 @@ class UserManageTable extends Component {
     }
   }
 
+  getIndex = (index) => {
+    return (index + (this.state.page * this.state.rowsPerPage));
+  }
+
   render() {
     const { userLevel, userManageList, classes } = this.props;
     const { page, rowsPerPage } = this.state;
@@ -148,8 +152,8 @@ class UserManageTable extends Component {
                   <TableCell>{this.props.getUserLevelName(user.userLevel)}</TableCell>
                   <TableCell>{user.userGroup}</TableCell>
                   <TableCell>
-                    <i onClick={this.props.deleteUser.bind(this, index)} className="fa fa-minus-square table-item-button"> 删除用户</i>
-                    <i onClick={this.props.shouldShowUserManageEditView.bind(this, index)} className="fa fa-cog table-item-button w3-margin-left"> 编辑用户</i>
+                    <i onClick={this.props.deleteUser.bind(this, this.getIndex(index))} className="fa fa-minus-square table-item-button"> 删除用户</i>
+                    <i onClick={this.props.shouldShowUserManageEditView.bind(this, this.getIndex(index))} className="fa fa-cog table-item-button w3-margin-left"> 编辑用户</i>
                   </TableCell>
                 </TableRow>
               ))}

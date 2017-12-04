@@ -100,6 +100,10 @@ class WorkerTable extends Component {
     }
   }
 
+  getIndex = (index) => {
+    return (index + (this.state.page * this.state.rowsPerPage));
+  }
+
   render() {
     const { userLevel, workerList, classes } = this.props;
     const { page, rowsPerPage } = this.state;
@@ -167,7 +171,7 @@ class WorkerTable extends Component {
                     !this.props.showEditWorkerOwner ?
                       <i onClick={this.props.shouldShowEditWorkerOwner.bind(this, index)} className="fa fa-address-book table-item-button"> 修改拥有者</i>
                     :<div>
-                      <i onClick={this.props.saveWorkerOwnerChange.bind(this, index)} className="fa fa-minus-square table-item-button"> 保存</i>
+                      <i onClick={this.props.saveWorkerOwnerChange.bind(this, this.getIndex(index))} className="fa fa-minus-square table-item-button"> 保存</i>
                       <i onClick={this.props.shouldShowEditWorkerOwner.bind(this, index)} className="fa fa-minus-square table-item-button w3-margin-left"> 取消</i>
                     </div>
                   }</TableCell>}

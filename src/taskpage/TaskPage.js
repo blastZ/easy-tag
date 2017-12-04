@@ -9,7 +9,7 @@ import WorkerTable from './tables/WorkerTable';
 import UserManageTable from './tables/UserManageTable';
 import UserGroupTable from './tables/UserGroupTable';
 import { connect } from 'react-redux';
-import { changeTaskName, getTrainStateLog } from '../actions/app_action';
+import { changeTaskName, getTrainStateLog, getManagerData } from '../actions/app_action';
 // import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
 import GlobalSetTable from './tables/GlobalSetTable';
@@ -23,6 +23,7 @@ import NewTaskView from './popups/NewTaskView';
 import Paper from 'material-ui/Paper';
 import Divider from 'material-ui/Divider';
 import Tabs, { Tab } from 'material-ui/Tabs';
+import { getTrainTaskList } from '../actions/task_action';
 
 const styles = theme => ({
   refreshButton: {
@@ -1133,7 +1134,8 @@ class TaskPage extends Component {
             this.getTaskList();
         }else if(tabIndex === 1) {
             if(this.refs.trainTaskList) {
-                this.refs.trainTaskList.getWrappedInstance().updateTrainTaskList();
+              this.props.dispatch(getManagerData());
+              this.props.dispatch(getTrainTaskList());
             }
         }else if(tabIndex === 2) {
             if(this.refs.workerTable) {
@@ -1252,7 +1254,7 @@ class TaskPage extends Component {
         }
     }
 
-    getDistrableUserList = () => {
+    getDistrableUserList = (cb=null) => {
         const that = this;
         try{
             const request = new XMLHttpRequest();
@@ -1261,6 +1263,7 @@ class TaskPage extends Component {
             request.onload = function() {
                 const distrableUserList = that.getFormatAbleUserList(request.response);
                 that.setState({distrableUserList});
+                if(cb) cb(distrableUserList);
             }
         } catch(error) {
             console.log(error);
@@ -1741,6 +1744,7 @@ class TaskPage extends Component {
                   <Divider />
                   {tabIndex === 0 &&
                     <TaskTable
+                      getDistrableUserList={this.getDistrableUserList}
                       popupInputView={this.popupInputView}
                       taskList={this.state.taskList}
                       showDistributeTaskView={this.showDistributeTaskView}

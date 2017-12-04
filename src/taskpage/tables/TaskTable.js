@@ -10,6 +10,8 @@ import Table, { TableBody, TableCell, TableHead, TableRow, TableFooter, TablePag
 import Paper from 'material-ui/Paper';
 import Select from 'material-ui/Select';
 import Input from 'material-ui/Input';
+import CopyIcon from 'material-ui-icons/ContentCopy';
+import TransferView from '../popups/TransferView';
 
 const styles = theme => ({
   button: {
@@ -54,6 +56,19 @@ class TaskTable extends Component {
     currentSearchKey: 'taskName',
     page: 0,
     rowsPerPage: 5,
+    showTransferView: false
+  }
+
+  closeTransferView = () => {
+    this.setState({
+      showTransferView: false
+    })
+  }
+
+  openTransferView = () => {
+    this.setState({
+      showTransferView: true
+    })
   }
 
   handleKeyword = (e) => {
@@ -97,11 +112,19 @@ class TaskTable extends Component {
     })
   }
 
+  getIndex = (index) => {
+    return (index + (this.state.page * this.state.rowsPerPage));
+  }
+
   render() {
     const { userLevel, classes, taskList } = this.props;
     const { page, rowsPerPage } = this.state;
     return(
       <div>
+        <TransferView
+          open={this.state.showTransferView}
+          closeView={this.closeTransferView}
+          getDistrableUserList={this.props.getDistrableUserList} />
         <div className="et-margin-top-32" style={{position: 'relative', display: 'flex', alignItems: 'center'}}>
           <h3 className="et-table-title">任务列表</h3>
           <Select
@@ -127,9 +150,12 @@ class TaskTable extends Component {
             value={this.state.keyword}
             onChange={this.handleKeyword} />
           {(userLevel === 2 || userLevel === 3)
-              ? <div style={{position: 'absolute', right: '5px'}}>
-                <Button onClick={this.props.popupInputView} fab color="primary" aria-label="add" className={this.props.classes.button}>
+              ? <div style={{position: 'absolute', right: '0px'}}>
+                <Button style={{marginRight: '10px'}} onClick={this.props.popupInputView} fab color="primary" aria-label="add" className={this.props.classes.button}>
                   <AddIcon />
+                </Button>
+                <Button onClick={this.openTransferView} fab color="primary" aria-label="copy" className={this.props.classes.button}>
+                  <CopyIcon style={{width: '20px', height: '20px'}} />
                 </Button>
               </div>
               : null}
@@ -153,7 +179,7 @@ class TaskTable extends Component {
                     <TableCell>{index + 1}</TableCell>
                     {(userLevel === 2 || userLevel === 3)
                         ? <TableCell>
-                          <div className="et-taskname-button" onClick={this.props.showDistributeTaskView.bind(this, index)}>{task.taskName}</div>
+                          <div className="et-taskname-button" onClick={this.props.showDistributeTaskView.bind(this, this.getIndex(index))}>{task.taskName}</div>
                         </TableCell>
                         : <TableCell>{task.taskName}</TableCell>}
                     <TableCell>{task.time}</TableCell>
@@ -162,55 +188,55 @@ class TaskTable extends Component {
                     <TableCell>
                       {
                           parseInt(task.taskType) === 0 ?
-                          <Link onClick={this.props.onLinkToTag.bind(this, index)} to="/tag"><i className="fa fa-tags table-item-button" aria-hidden="true"> 标注</i></Link>
+                          <Link onClick={this.props.onLinkToTag.bind(this, this.getIndex(index))} to="/tag"><i className="fa fa-tags table-item-button" aria-hidden="true"> 标注</i></Link>
                           : null
                       }
                       {
                           parseInt(task.taskType) === 1 || parseInt(task.taskType) === 7 ?
-                          <Link onClick={this.props.onLinkToTag.bind(this, index)} to="/tagobject"><i className="fa fa-tags table-item-button" aria-hidden="true"> 标注</i></Link>
+                          <Link onClick={this.props.onLinkToTag.bind(this, this.getIndex(index))} to="/tagobject"><i className="fa fa-tags table-item-button" aria-hidden="true"> 标注</i></Link>
                           : null
                       }
                       {parseInt(task.taskType) === 2
-                        ? <i onClick={this.props.onLinkToSegment.bind(this, index)} className="fa fa-tags table-item-button" aria-hidden="true"> 标注</i>
+                        ? <i onClick={this.props.onLinkToSegment.bind(this, this.getIndex(index))} className="fa fa-tags table-item-button" aria-hidden="true"> 标注</i>
                         : null
                       }
                       {parseInt(task.taskType) === 3
-                        ? <i onClick={this.props.onLinkToVideo.bind(this, index)} className="fa fa-tags table-item-button" aria-hidden="true"> 标注</i>
+                        ? <i onClick={this.props.onLinkToVideo.bind(this, this.getIndex(index))} className="fa fa-tags table-item-button" aria-hidden="true"> 标注</i>
                         : null}
                       {parseInt(task.taskType) === 4
-                        ? <i onClick={this.props.onLinkToDaub.bind(this, index)} className="fa fa-tags table-item-button" aria-hidden="true"> 标注</i>
+                        ? <i onClick={this.props.onLinkToDaub.bind(this, this.getIndex(index))} className="fa fa-tags table-item-button" aria-hidden="true"> 标注</i>
                         : null}
                       {parseInt(task.taskType) === 5 ?
-                        <Link onClick={this.props.onLinkToTag.bind(this, index)} to="/tag"><i className="fa fa-tags table-item-button" aria-hidden="true"> 标注</i></Link>
+                        <Link onClick={this.props.onLinkToTag.bind(this, this.getIndex(index))} to="/tag"><i className="fa fa-tags table-item-button" aria-hidden="true"> 标注</i></Link>
                         : null}
                       {parseInt(task.taskType) === 6 ?
-                        <Link onClick={this.props.onLinkToPoint.bind(this, index)} to="/point"><i className="fa fa-tags table-item-button" aria-hidden="true"> 标注</i></Link>
+                        <Link onClick={this.props.onLinkToPoint.bind(this, this.getIndex(index))} to="/point"><i className="fa fa-tags table-item-button" aria-hidden="true"> 标注</i></Link>
                         : null}
-                      <i onClick={this.props.showLabelStatistics.bind(this, index)} className="fa fa-area-chart table-item-button w3-margin-left"> 标注统计</i>
+                      <i onClick={this.props.showLabelStatistics.bind(this, this.getIndex(index))} className="fa fa-area-chart table-item-button w3-margin-left"> 标注统计</i>
                       {
                           (userLevel === 2 || userLevel === 3) ?
-                            <i onClick={this.props.onStartTask.bind(this, index)} className={`fa fa-play-circle ${task.taskState === '0' ? 'table-item-button' : 'et-silence-button'} ${task.taskState === '3' ? 'table-item-button' : 'et-silence-button'} w3-margin-left`}>{task.taskState === '3' ? ' 重新训练' : ' 开启训练'}</i>
+                            <i onClick={this.props.onStartTask.bind(this, this.getIndex(index))} className={`fa fa-play-circle ${task.taskState === '0' ? 'table-item-button' : 'et-silence-button'} ${task.taskState === '3' ? 'table-item-button' : 'et-silence-button'} w3-margin-left`}>{task.taskState === '3' ? ' 重新训练' : ' 开启训练'}</i>
                           : null
                       }
                       {
                           (userLevel === 2 || userLevel === 3) ?
-                          <i onClick={this.props.onStopTask.bind(this, index)} className={`fa fa-stop-circle ${task.taskState === '2' ? 'table-item-button' : 'et-silence-button'} ${task.taskState === '1' ? 'table-item-button' : 'et-silence-button'} w3-margin-left`}> 停止训练</i>
+                          <i onClick={this.props.onStopTask.bind(this, this.getIndex(index))} className={`fa fa-stop-circle ${task.taskState === '2' ? 'table-item-button' : 'et-silence-button'} ${task.taskState === '1' ? 'table-item-button' : 'et-silence-button'} w3-margin-left`}> 停止训练</i>
                           : null
                       }
                       {task.taskTrained ?
-                        <i onClick={this.props.onLookTrainState.bind(this, index)}
+                        <i onClick={this.props.onLookTrainState.bind(this, this.getIndex(index))}
                             className={`fa fa-search table-item-button w3-margin-left`}> 查看训练状态</i>
                         : <i className={`fa fa-search et-silence-button w3-margin-left`}> 查看训练状态</i>}
                       {
                           (userLevel === 2 || userLevel === 3) ?
-                          <Link style={{cursor: 'context-menu'}} onClick={this.props.onLinkToTest.bind(this, index)} to={task.taskTrained && (parseInt(task.taskType, 10) === 0 || parseInt(task.taskType, 10) === 1) ? "/test" : "/"}>
+                          <Link style={{cursor: 'context-menu'}} onClick={this.props.onLinkToTest.bind(this, this.getIndex(index))} to={task.taskTrained && (parseInt(task.taskType, 10) === 0 || parseInt(task.taskType, 10) === 1) ? "/test" : "/"}>
                             <i className={`fa fa-cog ${task.taskTrained ? 'table-item-button' : 'et-silence-button'} w3-margin-left`}> 测试</i>
                           </Link>
                           : null
                       }
                       {
                           (this.props.userLevel === 2 || this.props.userLevel === 3) ?
-                          <i onClick={this.props.onDeleteTask.bind(this, index)} className="fa fa-trash table-item-button w3-margin-left" aria-hidden="true"> 删除</i>
+                          <i onClick={this.props.onDeleteTask.bind(this, this.getIndex(index))} className="fa fa-trash table-item-button w3-margin-left" aria-hidden="true"> 删除</i>
                           : null
                       }
                     </TableCell>

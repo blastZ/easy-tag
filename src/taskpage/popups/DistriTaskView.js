@@ -9,7 +9,6 @@ import FilterListIcon from 'material-ui-icons/FilterList';
 import Typography from 'material-ui/Typography';
 import Divider from 'material-ui/Divider';
 import { getUserLevelName } from '../../utils/Task';
-import Tabs, { Tab } from 'material-ui/Tabs';
 import Select from 'material-ui/Select';
 
 const styles = theme => ({
@@ -92,33 +91,21 @@ class DistriTaskView extends Component {
     })
   }
 
+  getIndex = (index) => {
+    return (index + (this.state.page * this.state.rowsPerPage));
+  }
+
   render() {
     const { page1, page2, rowsPerPage1, rowsPerPage2 } = this.state;
     const { classes, showDistributeTaskView, taskName, distredUserList, distrableUserList, distributeTaskToUser, ...other } = this.props;
     return (
       <Dialog classes={{paper: classes.paper}} onRequestClose={this.props.closeDistributeTaskView} {...other}>
-        <Tabs
-          value={this.state.modeIndex}
-          onChange={this.handleModeChange}
-          textColor="primary"
-          centered
-          indicatorClassName={classes.indicator}
-        >
-          <Tab classes={{
-            root: classes.tabRoot,
-            rootPrimarySelected: classes.rootPrimarySelected
-          }} label="分配任务" />
-          <Tab classes={{
-            root: classes.tabRoot,
-            rootPrimarySelected: classes.rootPrimarySelected
-          }} label="复制数据" />
-        </Tabs>
+        <Typography style={{color: 'white'}} type="title">{`当前任务(${taskName})`}</Typography>
         <div>
         </div>
         <div>
           <div style={{marginTop: '32px'}}>
             <Toolbar style={{background: '#fff'}}>
-              <Typography type="title">{`当前任务(${taskName})`}</Typography>
               <div className={classes.title} style={{marginLeft: '10px'}}>
                 <Select
                   native
@@ -148,7 +135,7 @@ class DistriTaskView extends Component {
                       <TableCell numeric>{getUserLevelName(user.level)}</TableCell>
                       <TableCell numeric>{user.taskName}</TableCell>
                       <TableCell numeric>{user.tagedNum}</TableCell>
-                      <TableCell numeric><i onClick={this.props.unDistributeTaskToUser.bind(this, index)} className="fa fa-calendar-times-o table-item-button" aria-hidden="true"> 取消分配</i></TableCell>
+                      <TableCell numeric><i onClick={this.props.unDistributeTaskToUser.bind(this, this.getIndex(index))} className="fa fa-calendar-times-o table-item-button" aria-hidden="true"> 取消分配</i></TableCell>
                     </TableRow>
                   )
                 )}
@@ -180,7 +167,7 @@ class DistriTaskView extends Component {
                     <TableRow key={user.name}>
                       <TableCell>{user.name}</TableCell>
                       <TableCell numeric>{getUserLevelName(user.level)}</TableCell>
-                      <TableCell numeric><i onClick={this.props.distributeTaskToUser.bind(this, index)} className="fa fa-calendar-check-o table-item-button"> 分配任务</i></TableCell>
+                      <TableCell numeric><i onClick={this.props.distributeTaskToUser.bind(this, this.getIndex(index))} className="fa fa-calendar-check-o table-item-button"> 分配任务</i></TableCell>
                     </TableRow>
                   )
                 )}

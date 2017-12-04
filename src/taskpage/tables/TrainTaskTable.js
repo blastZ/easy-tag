@@ -123,6 +123,10 @@ class TrainTaskTable extends Component {
         this.props.onDeleteTask(this.props.trainTaskList[index]);
     }
 
+    getIndex = (index) => {
+      return (index + (this.state.page * this.state.rowsPerPage));
+    }
+
     render() {
         const { trainTaskList, classes } = this.props;
         const { page, rowsPerPage } = this.state;
@@ -177,10 +181,10 @@ class TrainTaskTable extends Component {
                           <TableCell>{getTaskStateName(task.taskState)}</TableCell>
                           <TableCell>{getTaskTypeName(task.taskType)}</TableCell>
                           <TableCell>
-                            <i onClick={this.showLabelStatistics.bind(this, index)} className="fa fa-area-chart table-item-button"> 标注统计</i>
-                            <i onClick={this.onStopTask.bind(this, index)} className={`fa fa-stop-circle ${task.taskState === '2' ? 'table-item-button' : 'et-silence-button'} ${task.taskState === '1' ? 'table-item-button' : 'et-silence-button'} w3-margin-left`}> 停止训练</i>
-                            <i onClick={this.onLookTrainState.bind(this, index)} className={`fa fa-search ${(task.taskState === '2' || task.taskState === '3') ? 'table-item-button' : 'et-silence-button'} w3-margin-left`}> 查看训练状态</i>
-                            <i onClick={this.onDeleteTask.bind(this, index)} className="fa fa-trash table-item-button w3-margin-left"> 删除</i>
+                            <i onClick={this.showLabelStatistics.bind(this, this.getIndex(index))} className="fa fa-area-chart table-item-button"> 标注统计</i>
+                            <i onClick={this.onStopTask.bind(this, this.getIndex(index))} className={`fa fa-stop-circle ${task.taskState === '2' ? 'table-item-button' : 'et-silence-button'} ${task.taskState === '1' ? 'table-item-button' : 'et-silence-button'} w3-margin-left`}> 停止训练</i>
+                            <i onClick={this.onLookTrainState.bind(this, this.getIndex(index))} className={`fa fa-search ${(task.taskState === '2' || task.taskState === '3') ? 'table-item-button' : 'et-silence-button'} w3-margin-left`}> 查看训练状态</i>
+                            <i onClick={this.onDeleteTask.bind(this, this.getIndex(index))} className="fa fa-trash table-item-button w3-margin-left"> 删除</i>
                           </TableCell>
                         </TableRow>
                       ))}

@@ -1,7 +1,4 @@
 import React, { Component } from 'react';
-import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
-import { autoTagImages } from './actions/app_action';
 import CheckReviewSelector from './CheckReviewSelector';
 
 class TagView extends Component {
@@ -88,7 +85,6 @@ class TagView extends Component {
     }
 
     componentDidMount() {
-        const that = this;
         this.loadTagList();
         document.addEventListener('keyup', this.pageUpAndDownListener);
         fetch(`${this.props.defaultURL}getpretrainmodelall?usrname=${this.props.userName}&taskname=${this.props.taskName}`)
@@ -192,7 +188,6 @@ class TagView extends Component {
     saveTagList = () => {
         const request = new XMLHttpRequest();
         request.open('POST', `${this.props.defaultURL}savetag?usrname=${this.props.userName}&taskname=${this.props.taskName}`);
-        const data = JSON.stringify(this.state.tagStringList);
         request.send(JSON.stringify({
             listname: this.state.listNameList,
             taglist: this.state.tagStringListAll
@@ -499,7 +494,7 @@ class TagView extends Component {
                                 </div>
                             </div>
                             <div>额外信息:<input className="w3-input" type="text" onChange={this.onChangeBoxInfo.bind(this, index)} value={this.props.boxList[index].info}/></div>
-                            <img src={this.state.boxImgList[index]} style={{maxWidth: '100%', marginTop: '5px', maxHeight: '80px'}} />
+                            <img src={this.state.boxImgList[index]} style={{maxWidth: '100%', marginTop: '5px', maxHeight: '80px'}} alt="tag-image" />
                             {this.props.userLevel > 0 &&
                               <CheckReviewSelector
                                 value={box.checked ? box.checked : '' }

@@ -64,6 +64,10 @@ class UserGroupTable extends Component {
     })
   }
 
+  getIndex = (index) => {
+    return (index + (this.state.page * this.state.rowsPerPage));
+  }
+
   render() {
     const { userLevel, userGroupList, classes } = this.props;
     const { page, rowsPerPage } = this.state;
@@ -101,7 +105,7 @@ class UserGroupTable extends Component {
                 <TableRow key={group}>
                   <TableCell>{group}</TableCell>
                   <TableCell>
-                    <i onClick={this.props.deleteUserGroup.bind(this, index)} className="fa fa-minus-circle table-item-button"> 删除</i>
+                    <i onClick={this.props.deleteUserGroup.bind(this, this.getIndex(index))} className="fa fa-minus-circle table-item-button"> 删除</i>
                   </TableCell>
                 </TableRow>
               ))}
