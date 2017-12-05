@@ -25,14 +25,6 @@ import SelectedPointImage from './point_page/SelectedPointImage';
 import TagPointView from './point_page/TagPointView';
 import SelectPointBar from './point_page/SelectPointBar';
 import { DEFAULT_URL } from './utils/global_config';
-//import { saveAs } from 'file-saver' when you want to save as txt on the localhost
-
-// const test = {
-//   userName: 'fj',
-//   userLevel: 3,
-//   password: '1q2w3e4r',
-//   login: true
-// }
 
 class App extends Component {
     state = {
@@ -142,7 +134,7 @@ class App extends Component {
         }
     }
 
-    getImageList = () => {
+    getImageList = (cb=null) => {
         this.setState({selectedImageNum: 0, tagList: []});
         fetch(`${this.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.props.taskName}&start=${this.state.start}&num=${this.state.num}&video=${this.state.video}`)
           .then((response) => response.json())
@@ -156,6 +148,9 @@ class App extends Component {
             }, () => {
               this.getTagList(0)
             })
+            if(cb) {
+              cb();
+            }
           })
     }
 
@@ -1485,6 +1480,9 @@ class App extends Component {
                         </div>
                         <div className="flex-box flex-column" style={{width: '20%', backgroundColor: '#F0F0F0'}}>
                             <TagView ref="tagView"
+                               imageList={this.state.imageList}
+                               clickItem={this.clickItem}
+                               getImageList={this.getImageList}
                                changeReviewState={this.changeReviewState}
                                boxIndex={this.state.boxIndex}
                                changeBoxIndex={this.changeBoxIndex}

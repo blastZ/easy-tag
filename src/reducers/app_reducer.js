@@ -10,13 +10,6 @@ import { ADD_NEW_IMAGE, CLICK_SELECT_BAR_ITEM,
          GET_MANAGER_DATA, GET_TRAIN_STATE_LOG } from '../actions/app_action';
 import { DEFAULT_URL } from '../utils/global_config';
 
-// const test = {
-//   userName: 'fj',
-//   userLevel: 3,
-//   password: '1q2w3e4r',
-//   login: true
-// }
-
 const initState = {
     defaultURL: DEFAULT_URL,
     userName: '',

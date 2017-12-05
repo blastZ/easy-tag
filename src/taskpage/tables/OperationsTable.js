@@ -24,6 +24,7 @@ const styles = theme => ({
   },
   table: {
     width: '100%',
+    maxWidth: '100%',
     '& tr th': {
       textAlign: 'center',
       padding: '8px',
@@ -32,7 +33,9 @@ const styles = theme => ({
     '& tr td': {
       textAlign: 'center',
       padding: '8px',
-      fontSize: '14px'
+      fontSize: '14px',
+      maxWidth: '800px',
+      overflowX: 'auto'
     }
   },
   select: {

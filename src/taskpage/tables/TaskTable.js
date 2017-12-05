@@ -187,12 +187,12 @@ class TaskTable extends Component {
                     <TableCell>{getTaskTypeName(task.taskType)}</TableCell>
                     <TableCell>
                       {
-                          parseInt(task.taskType) === 0 ?
+                          parseInt(task.taskType) === 0 || parseInt(task.taskType) === 7 ?
                           <Link onClick={this.props.onLinkToTag.bind(this, this.getIndex(index))} to="/tag"><i className="fa fa-tags table-item-button" aria-hidden="true"> 标注</i></Link>
                           : null
                       }
                       {
-                          parseInt(task.taskType) === 1 || parseInt(task.taskType) === 7 ?
+                          parseInt(task.taskType) === 1 ?
                           <Link onClick={this.props.onLinkToTag.bind(this, this.getIndex(index))} to="/tagobject"><i className="fa fa-tags table-item-button" aria-hidden="true"> 标注</i></Link>
                           : null
                       }

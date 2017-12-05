@@ -5,11 +5,29 @@ import { Link } from 'react-router-dom';
 import { DEFAULT_TAGED_NUM, DEFAULT_TAGED_PROGRESS, setParams } from '../../utils/global_config';
 import TextField from 'material-ui/TextField';
 import { withStyles } from 'material-ui/styles';
+import Table, { TableBody, TableCell, TableHead, TableRow, TableFooter, TablePagination } from 'material-ui/Table';
+import Paper from 'material-ui/Paper';
 
 const styles = {
   centerInput: {
     textAlign: 'center'
-  }
+  },
+  root: {
+    width: '100%'
+  },
+  table: {
+    width: '100%',
+    '& tr th': {
+      textAlign: 'center',
+      padding: '8px',
+      fontSize: '14px'
+    },
+    '& tr td': {
+      textAlign: 'center',
+      padding: '8px',
+      fontSize: '14px'
+    }
+  },
 }
 
 class GlobalSetTable extends Component {
@@ -47,31 +65,34 @@ class GlobalSetTable extends Component {
         {userLevel >=2 && <div className="et-margin-top-32" style={{position: 'relative', display: 'flex', alignItems: 'center'}}>
             <h3 className="et-table-title">全局训练参数</h3>
         </div>}
-        {userLevel >=2 && <table ref="theTaskTable" className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered">
-            <tbody>
-              <tr>
-                <th className="w3-green" style={{verticalAlign: 'middle'}}>最低图片数量</th>
-                <td><TextField type="number" InputProps={{classes: { input: classes.centerInput }}} value={this.state.tagedNum} onChange={this.handleTagedNum}/></td>
-              </tr>
-              <tr>
-                <th className="w3-green" style={{verticalAlign: 'middle'}}>最低标注比例</th>
-                <td><TextField type="number" InputProps={{classes: { input: classes.centerInput }}} value={this.state.tagedProgress} onChange={this.handleTagedProgress} /></td>
-              </tr>
-            </tbody>
-            <tfoot></tfoot>
-        </table>}
+        {userLevel >=2 &&
+          <Paper className={classes.root}>
+            <Table className={classes.table}>
+              <TableBody>
+                <TableRow>
+                  <TableCell style={{borderRight: '1px solid rgba(0, 0, 0, 0.075)'}}>最低图片数量</TableCell>
+                  <TableCell><TextField type="number" InputProps={{classes: { input: classes.centerInput }}} value={this.state.tagedNum} onChange={this.handleTagedNum}/></TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell style={{borderRight: '1px solid rgba(0, 0, 0, 0.075)'}}>最低标注比例</TableCell>
+                  <TableCell><TextField type="number" InputProps={{classes: { input: classes.centerInput }}} value={this.state.tagedProgress} onChange={this.handleTagedProgress} /></TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </Paper>}
         <div className="et-margin-top-32" style={{position: 'relative', display: 'flex', alignItems: 'center'}}>
             <h3 className="et-table-title">其它参数</h3>
         </div>
-        <table ref="theTaskTable" className="w3-table w3-bordered w3-white w3-border w3-card-2 w3-centered">
-            <tbody>
-              <tr>
-                <th className="w3-green" style={{verticalAlign: 'middle', width: '30%'}}>背景颜色</th>
-                <td>gray</td>
-              </tr>
-            </tbody>
-            <tfoot></tfoot>
-        </table>
+        <Paper className={classes.root}>
+          <Table className={classes.table}>
+            <TableBody>
+              <TableRow>
+                <TableCell style={{borderRight: '1px solid rgba(0, 0, 0, 0.075)'}}>背景颜色</TableCell>
+                <TableCell>gray</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </Paper>
       </div>
     )
   }

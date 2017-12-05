@@ -37,12 +37,20 @@ class TransferView extends Component {
   }
 
   componentDidMount() {
-    let userNameList = this.props.getDistrableUserList((result) => {
-      const userNameList = result.concat({name: this.props.userName, level: this.props.userLevel});
-      this.setState({
-        userNameList
-      })
-    });
+    if(this.props.userLevel === 3) {
+      this.getAllUser((result) => {
+        this.setState({
+          userNameList: result
+        })
+      });
+    } else {
+      this.props.getDistrableUserList((result) => {
+        const userNameList = result.concat({name: this.props.userName, level: this.props.userLevel});
+        this.setState({
+          userNameList
+        })
+      });
+    }
   }
 
   handleIsLabel = (e) => {
@@ -96,6 +104,29 @@ class TransferView extends Component {
     })
   }
 
+  getAllUser = (cb=null) => {
+    fetch(`${this.props.defaultURL}getuserlist`, {
+      method: 'POST',
+      body: JSON.stringify({
+        name: this.props.userName,
+        passwd: this.props.password
+      })
+    }).then((response) => response.text())
+      .then((result) => {
+        const userNameList = [];
+        const arrayData = result.split(',');
+        if(arrayData.length > 3) {
+          for(let i=0; i<arrayData.length; i=i+5) {
+            const userName = arrayData[i].slice(3, arrayData[i].length - 1);
+            userNameList.push({
+              name: userName
+            })
+          }
+        }
+        if(cb) cb(userNameList);
+      })
+  }
+
   getTaskNameList = (userName, type) => {
     fetch(`${this.props.defaultURL}gettasklist?usrname=${userName}`)
       .then((response) => response.text())
@@ -127,26 +158,30 @@ class TransferView extends Component {
   }
 
   transferData = () => {
-    this.props.closeView();
     const { fromUserName, fromTaskName, start, num, transferUserName, transferTaskName, isLabel, isCopy} = this.state;
-    fetch(`${this.props.defaultURL}transfertaskdata?`, {
-      method: 'POST',
-      body: JSON.stringify({
-        name: this.props.userName,
-        passwd: this.props.password,
-        fromusrname: fromUserName,
-        fromtaskname: fromTaskName,
-        start: start,
-        num: num,
-        trasferusrname: transferUserName,
-        trasfertaskname: transferTaskName,
-        isLabel: isLabel ? 1 : 0,
-        isCopy: isCopy ? 1: 0
+    if(fromUserName === '' || fromTaskName === '' || start === '' || num === '' || transferUserName === '' || transferTaskName === '') {
+      window.alert('请完善信息后，再次确认。');
+    } else {
+      this.props.closeView();
+      fetch(`${this.props.defaultURL}transfertaskdata?`, {
+        method: 'POST',
+        body: JSON.stringify({
+          name: this.props.userName,
+          passwd: this.props.password,
+          fromusrname: fromUserName,
+          fromtaskname: fromTaskName,
+          start: start,
+          num: num,
+          trasferusrname: transferUserName,
+          trasfertaskname: transferTaskName,
+          isLabel: isLabel ? 1 : 0,
+          isCopy: isCopy ? 1: 0
+        })
+      }).then((response) => response.text())
+      .then((result) => {
+        console.log(result);
       })
-    }).then((response) => response.text())
-    .then((result) => {
-      console.log(result);
-    })
+    }
   }
 
   render() {

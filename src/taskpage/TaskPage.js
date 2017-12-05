@@ -24,6 +24,7 @@ import Paper from 'material-ui/Paper';
 import Divider from 'material-ui/Divider';
 import Tabs, { Tab } from 'material-ui/Tabs';
 import { getTrainTaskList } from '../actions/task_action';
+import TrainSettingView from './popups/TrainSettingView';
 
 const styles = theme => ({
   refreshButton: {
@@ -77,28 +78,6 @@ class TaskPage extends Component {
             password: '',
             rePassword: ''
         },
-        trainParamsForObject: {
-            structure: '',
-            epoch: 200,
-            batchsize: 64,
-            learningrate: 0.05,
-            weightdecay: 0.0005,
-            momentum: 0.9,
-        },
-        trainParams: {
-            structure: '',
-            epoch: 5000,
-            batchsize: 32,
-            learningrate: 0.0001,
-            weightdecay: 0.0005,
-            momentum: 0.9,
-        },
-        retrainChecked: false,
-        structureList : [],
-        structureListForObject: [],
-        optimizerList: [],
-        optimizerListForObject: [],
-        pretrainmodelList: [],
         theRefreshInterval: null,
         tabIndex: 0,
         taskStructureList: [],
@@ -110,19 +89,6 @@ class TaskPage extends Component {
       this.setState({
         showLabelStatisticsLoading: !this.state.showLabelStatisticsLoading
       })
-    }
-
-    handleRetrainChecked = (e) => {
-      const value = e.target.checked;
-      if(value) {
-        this.setState({
-          retrainChecked: true
-        })
-      } else {
-        this.setState({
-          retrainChecked: false
-        })
-      }
     }
 
     handleTabChange = (e, tabIndex) => {
@@ -143,38 +109,16 @@ class TaskPage extends Component {
         }
     }
 
-    shouldShowTrainSettingView = () => {
-        this.setState({showTrainSettingView: !this.state.showTrainSettingView}, () => {
-            if(this.state.showTrainSettingView === true) {
-                const select = document.getElementById('structureSelect');
-                const optimizerSelect = document.getElementById('optimizerSelect');
-                const pretrainmodelSelect = document.getElementById('pretrainmodelSelect');
-                if(this.state.currentTaskType === 0) {
-                    if(this.state.trainParams.structure !== '') {
-                        select.value = this.state.trainParams.structure;
-                        optimizerSelect.value = this.state.trainParams.optimizer;
-                    }
-                    if(this.state.trainParams.Retrain && this.state.trainParams.Retrain === 1) {
-                      pretrainmodelSelect.value = this.state.trainParams.pretrainmodel;
-                    }
-                } else if(this.state.currentTaskType === 1) {
-                    if(this.state.trainParamsForObject.structure !== '') {
-                        select.value = this.state.trainParamsForObject.structure;
-                        optimizerSelect.value = this.state.trainParamsForObject.optimizer;
-                    }
-                    if(this.state.trainParamsForObject.Retrain && this.state.trainParamsForObject.Retrain === 1) {
-                      pretrainmodelSelect.value = this.state.trainParamsForObject.pretrainmodel;
-                    }
-                }
-                fetch(`${this.props.defaultURL}getpretrainmodel?usrname=${this.props.username}&taskname=${this.state.currentTaskName}&structure=${select.value}`)
-                  .then((response) => (response.json()))
-                  .then((result) => {
-                    this.setState({
-                      pretrainmodelList: result
-                    })
-                  })
-            }
-        });
+    openTrainSettingView = () => {
+      this.setState({
+        showTrainSettingView: true
+      })
+    }
+
+    closeTrainSettingView = () => {
+      this.setState({
+        showTrainSettingView: false
+      })
     }
 
     outputTagData = () => {
@@ -658,10 +602,9 @@ class TaskPage extends Component {
         }
     }
 
-    verifyTagProgress = (index) => {
-        const that = this;
-        this.getTagProgress(this.state.currentTaskName, function(){
-            const str = that.state.taskList.filter((task) => (task.taskName === that.state.currentTaskName))[0].tagProgress;
+    startTrain = (trainParams) => {
+        this.getTagProgress(this.state.currentTaskName, () => {
+            const str = this.state.taskList.filter((task) => (task.taskName === this.state.currentTaskName))[0].tagProgress;
             const numStr = str.split('/');
             const tagedImageNum = parseInt(numStr[0]);
             const AllImageNum = parseInt(numStr[1]);
@@ -670,330 +613,26 @@ class TaskPage extends Component {
             } else if((tagedImageNum / AllImageNum) < DEFAULT_TAGED_PROGRESS) {
                 window.alert(`完成度不足${DEFAULT_TAGED_PROGRESS * 100}%`);
             } else {
-                try {
-                    const theValue = document.getElementById('structureSelect').value;
-                    const theOptimizerValue = document.getElementById('optimizerSelect').value;
-                    let thePretrainmodelValue = '';
-                    if(that.state.retrainChecked) {
-                      thePretrainmodelValue = document.getElementById('pretrainmodelSelect').value;
-                    }
-                    that.shouldShowTrainSettingView();
-                    const request = new XMLHttpRequest();
-                    request.open('POST', `${that.props.defaultURL}savetrainparams?usrname=${that.props.username}&taskname=${that.state.currentTaskName}`)
-                    let data = '';
-                    if(that.state.currentTaskType === 1) {
-                        const structureList = that.state.trainParamsForObject;
-                        structureList.structure = theValue;
-                        structureList.optimizer = theOptimizerValue;
-                        if(that.state.retrainChecked) {
-                          structureList.Retrain = 1;
-                          structureList.pretrainmodel = thePretrainmodelValue
-                        } else {
-                          structureList.Retrain = 0;
-                          delete structureList.pretrainmodel
-                        }
-                        data = JSON.stringify(structureList);
-                    } else if(that.state.currentTaskType === 0) {
-                        const structureList = that.state.trainParams;
-                        structureList.structure = theValue;
-                        structureList.optimizer = theOptimizerValue;
-                        if(that.state.retrainChecked) {
-                          structureList.Retrain = 1;
-                          structureList.pretrainmodel = thePretrainmodelValue
-                        } else {
-                          structureList.Retrain = 0;
-                          delete structureList.pretrainmodel
-                        }
-                        data = JSON.stringify(structureList);
-                    }
-                    request.send(data);
-                    request.onload = function() {
-                        setTimeout(() => {
-                          const startTask = new XMLHttpRequest();
-                          startTask.open('GET', `${that.props.defaultURL}starttask?usrname=${that.props.username}&taskname=${that.state.currentTaskName}`);
-                          startTask.send();
-                          startTask.onload = function() {
-                              const arrayData = that.getArrayData(startTask.response);
-                              that.addTask(arrayData);
-                          }
-                        }, 1000)
-                    }
-                } catch(error) {
-                    console.log(error);
-                }
+              this.closeTrainSettingView();
+              fetch(`${this.props.defaultURL}savetrainparams?usrname=${this.props.username}&taskname=${this.state.currentTaskName}`, {
+                method: 'POST',
+                body: JSON.stringify(trainParams)
+              }).then((response) => response.text())
+                .then((result) => {
+                  fetch(`${this.props.defaultURL}starttask?usrname=${this.props.username}&taskname=${this.state.currentTaskName}`)
+                    .then((response) => response.text())
+                    .then((result) => {
+                      const arrayData = this.getArrayData(result);
+                      this.addTask(arrayData);
+                    })
+                })
             }
         });
     }
 
-    handleTrainSetEpoch = (e) => {
-        let value = e.target.value;
-        if(parseInt(this.state.currentTaskType, 10) === 0) {
-            if(value.trim() === '') {
-                value = 5000;
-            }
-            if(parseInt(value, 10) > 10000) {
-                value = 10000;
-            }
-            if(parseInt(value, 10) <= 0) {
-                value = 0;
-            }
-            value = parseInt(value, 10);
-            this.setState({
-                trainParams: {
-                    ...this.state.trainParams,
-                    epoch: value
-                }
-            })
-        } else if(parseInt(this.state.currentTaskType, 10) === 1){
-            if(value.trim() === '') {
-                value = 200;
-            }
-            if(parseInt(value, 10) > 500) {
-                value = 500;
-            }
-            if(parseInt(value, 10) <= 0) {
-                value = 0;
-            }
-            this.setState({
-                trainParamsForObject: {
-                    ...this.state.trainParamsForObject,
-                    epoch: parseInt(value, 10)
-                }
-            })
-        }
-    }
-
-    handleTrainSetBatchsize = (e) => {
-        let value = e.target.value;
-        if(parseInt(this.state.currentTaskType, 10) === 0) {
-            if(value.trim() === '') {
-                value = 32;
-            }
-            if(parseInt(value, 10) > 64) {
-                value = 64;
-            }
-            if(parseInt(value, 10) <= 0) {
-                value = 0;
-            }
-            this.setState({
-                trainParams: {
-                    ...this.state.trainParams,
-                    batchsize: parseInt(value, 10)
-                }
-            })
-        } else if(parseInt(this.state.currentTaskType, 10) === 1){
-            if(value.trim() === '') {
-                value = 64;
-            }
-            if(parseInt(value, 10) > 128) {
-                value = 128;
-            }
-            if(parseInt(value, 10) <= 0) {
-                value = 0;
-            }
-            this.setState({
-                trainParamsForObject: {
-                    ...this.state.trainParamsForObject,
-                    batchsize: parseInt(value, 10)
-                }
-            })
-        }
-    }
-
-    handleTrainSetLearningRate = (e) => {
-        let value = e.target.value;
-        if(parseInt(this.state.currentTaskType, 10) === 0) {
-            if(value.trim() === '') {
-                value = 0.0001;
-            }
-
-            if(parseFloat(value, 10) <= 0) {
-                value = 0;
-            }
-            this.setState({
-                trainParams: {
-                    ...this.state.trainParams,
-                    learningrate: value
-                }
-            })
-        } else if(parseInt(this.state.currentTaskType, 10) === 1){
-            if(value.trim() === '') {
-                value = 0.05;
-            }
-
-            if(parseFloat(value, 10) <= 0) {
-                value = 0;
-            }
-            this.setState({
-                trainParamsForObject: {
-                    ...this.state.trainParamsForObject,
-                    learningrate: parseFloat(value)
-                }
-            })
-        }
-    }
-
-    handleTrainSetWeightDecay = (e) => {
-        let value = e.target.value;
-        if(parseInt(this.state.currentTaskType, 10) === 0) {
-            if(value.trim() === '') {
-                value = 0.0005;
-            }
-
-            if(parseFloat(value, 10) <= 0) {
-                value = 0;
-            }
-            this.setState({
-                trainParams: {
-                    ...this.state.trainParams,
-                    weightdecay: value
-                }
-            })
-        } else if(parseInt(this.state.currentTaskType, 10) === 1){
-            if(value.trim() === '') {
-                value = 0.0005;
-            }
-
-            if(parseFloat(value, 10) <= 0) {
-                value = 0;
-            }
-            this.setState({
-                trainParamsForObject: {
-                    ...this.state.trainParamsForObject,
-                    weightdecay: value
-                }
-            })
-        }
-    }
-
-    handleTrainSetMomentum = (e) => {
-        let value = e.target.value;
-        if(parseInt(this.state.currentTaskType, 10) === 0) {
-            if(value.trim() === '') {
-                value = 0.9;
-            }
-
-            if(parseFloat(value, 10) <= 0) {
-                value = 0;
-            }
-            this.setState({
-                trainParams: {
-                    ...this.state.trainParams,
-                    momentum: value
-                }
-            })
-        } else if(parseInt(this.state.currentTaskType, 10) === 1){
-            if(value.trim() === '') {
-                value = 0.9;
-            }
-
-            if(parseFloat(value, 10) <= 0) {
-                value = 0;
-            }
-            this.setState({
-                trainParamsForObject: {
-                    ...this.state.trainParamsForObject,
-                    momentum: value
-                }
-            })
-        }
-    }
-
     onStartTask = (index) => {
-        try {
-          const request = new XMLHttpRequest();
-          request.open('GET', `${this.props.defaultURL}gettrainparams?usrname=${this.props.username}&taskname=${this.state.taskList[index].taskName}`);
-          request.send();
-          request.onload = () => {
-              this.setState({currentTaskName: this.state.taskList[index].taskName, currentTaskType: parseInt(this.state.taskList[index].taskType, 10)}, () => {
-                  if(parseInt(this.state.currentTaskType, 10) === 0) {
-                      fetch(`${this.props.defaultURL}getdetstructure`)
-                        .then((response) => response.json())
-                        .then((result) => {
-                          this.setState({structureList: result}, () => {
-                            this.shouldShowTrainSettingView();
-                            if(request.response !== '{}') {
-                                const trainParams = JSON.parse(request.response);
-                                if(trainParams.Retrain && trainParams.Retrain === 1) {
-                                  this.setState({retrainChecked: true})
-                                } else {
-                                  this.setState({retrainChecked: false})
-                                }
-                                this.setState({trainParams})
-                            } else {
-                                fetch(`${this.props.defaultURL}getdefaulttrainparams?usrname=${this.props.userName}&taskname=${this.state.currentTaskName}&structure=${this.state.structureList[0]}`)
-                                  .then((response) => response.json())
-                                  .then((result) => {
-                                    document.getElementById('optimizerSelect').value = result.optimizer;
-                                    this.setState({
-                                      trainParams: {
-                                        structure: result.structure,
-                                        epoch: result.epoch,
-                                        batchsize: result.batchsize,
-                                        learningrate: parseFloat(result.learningrate, 10),
-                                        weightdecay: result.weightdecay,
-                                        momentum: result.momentum,
-                                        optimizer: result.optimizer
-                                      },
-                                      retrainChecked: false
-                                    })
-                                  })
-                            }
-                          })
-                          fetch(`${this.props.defaultURL}getoptmethod`)
-                            .then((response) => response.json())
-                            .then((result) => {
-                              this.setState({optimizerList: result})
-                            })
-                        })
-                  } else if(parseInt(this.state.currentTaskType, 10) === 1) {
-                    fetch(`${this.props.defaultURL}getclsstructure`)
-                      .then((response) => response.json())
-                      .then((result) => {
-                        this.setState({structureListForObject: result}, () => {
-                          this.shouldShowTrainSettingView();
-                          if(request.response !== '{}') {
-                              const trainParamsForObject = JSON.parse(request.response);
-                              if(trainParamsForObject.Retrain && trainParamsForObject.Retrain === 1) {
-                                this.setState({retrainChecked: true})
-                              } else {
-                                this.setState({retrainChecked: false})
-                              }
-                              this.setState({trainParamsForObject})
-                          } else {
-                              fetch(`${this.props.defaultURL}getdefaulttrainparams?usrname=${this.props.userName}&taskname=${this.state.currentTaskName}&structure=${this.state.structureListForObject[0]}`)
-                                .then((response) => response.json())
-                                .then((result) => {
-                                  document.getElementById('optimizerSelect').value = result.optimizer;
-                                  this.setState({
-                                    trainParamsForObject: {
-                                      structure: result.structure,
-                                      epoch: result.epoch,
-                                      batchsize: result.batchsize,
-                                      learningrate: parseFloat(result.learningrate, 10),
-                                      weightdecay: result.weightdecay,
-                                      momentum: result.momentum,
-                                      optimizer: result.optimizer
-                                    },
-                                    retrainChecked: false
-                                  })
-                                })
-                          }
-                        })
-                        fetch(`${this.props.defaultURL}getoptmethod`)
-                          .then((response) => response.json())
-                          .then((result) => {
-                            this.setState({optimizerListForObject: result})
-                          })
-                      })
-                  }
-              })
-          }
-        } catch(error) {
-            console.log(error);
-        }
-
-        //this.verifyTagProgress(index);
+      this.setState({currentTaskName: this.state.taskList[index].taskName, currentTaskType: parseInt(this.state.taskList[index].taskType, 10)});
+      this.openTrainSettingView();
     }
 
     onStopTask = (index) => {
@@ -1474,35 +1113,6 @@ class TaskPage extends Component {
         });
     }
 
-    changePretrainmodelList = () => {
-      const theValue = document.getElementById('structureSelect').value;
-
-      fetch(`${this.props.defaultURL}getpretrainmodel?usrname=${this.props.username}&taskname=${this.state.currentTaskName}&structure=${theValue}`)
-        .then((response) => (response.json()))
-        .then((result) => {
-          this.setState({
-            pretrainmodelList: result
-          })
-        })
-
-      fetch(`${this.props.defaultURL}getdefaulttrainparams?usrname=${this.props.userName}&taskname=${this.state.currentTaskName}&structure=${theValue}`)
-        .then((response) => response.json())
-        .then((result) => {
-          this.setState({
-            trainParams: {
-              structure: result.structure,
-              epoch: result.epoch,
-              batchsize: result.batchsize,
-              learningrate: parseFloat(result.learningrate, 10),
-              weightdecay: result.weightdecay,
-              momentum: result.momentum,
-              optimizer: result.optimizer
-            },
-            retrainChecked: false
-          })
-        })
-    }
-
     render() {
       const { userLevel } = this.props;
       const { tabIndex } = this.state;
@@ -1562,80 +1172,12 @@ class TaskPage extends Component {
                         </div>
                         : null
                 }
-                {
-                    this.state.showTrainSettingView ?
-                        <div className="popup w3-modal" style={{paddingBottom: '100px'}}>
-                            <div className="w3-modal-content w3-container w3-text-white" style={{width: '600px', padding: '0px 0px 36px 0px', background: 'rgba(0, 0, 0, 0.7)', borderRadius: '10px'}}>
-                                <div className="w3-container">
-                                    <p>网络结构:</p>
-                                    <select onChange={this.changePretrainmodelList} id="structureSelect" className="w3-select">{
-                                        this.state.currentTaskType === 1 ?
-                                        this.state.structureListForObject.map((item, index) => (
-                                            <option key={item + index}>{item}</option>
-                                        ))
-                                        :
-                                        this.state.structureList.map((item, index) => (
-                                            <option key={item + index}>{item}</option>
-                                        ))
-
-                                    }</select>
-                                </div>
-                                <div className="w3-container">
-                                    <p>迭代次数:</p>
-                                    <input onChange={this.handleTrainSetEpoch} value={this.state.currentTaskType === 1 ? this.state.trainParamsForObject.epoch : this.state.trainParams.epoch} className="w3-input" type="number"/>
-                                </div>
-                                <div className="w3-container">
-                                    <p>optimizer:</p>
-                                    <select id="optimizerSelect" className="w3-select">{
-                                        this.state.currentTaskType === 1 ?
-                                        this.state.optimizerListForObject.map((item, index) => (
-                                            <option key={item + index}>{item}</option>
-                                        ))
-                                        :
-                                        this.state.optimizerList.map((item, index) => (
-                                            <option key={item + index}>{item}</option>
-                                        ))
-
-                                    }</select>
-                                </div>
-                                <div className="w3-container">
-                                    <p>batch size:</p>
-                                    <input onChange={this.handleTrainSetBatchsize} value={this.state.currentTaskType === 1 ? this.state.trainParamsForObject.batchsize : this.state.trainParams.batchsize} className="w3-input" type="number"/>
-                                </div>
-                                <div className="w3-container">
-                                    <p>learning rate:</p>
-                                    <input onChange={this.handleTrainSetLearningRate} value={this.state.currentTaskType === 1 ? this.state.trainParamsForObject.learningrate : this.state.trainParams.learningrate} className="w3-input" type="number"/>
-                                </div>
-                                <div className="w3-container">
-                                    <p>weight decay:</p>
-                                    <input onChange={this.handleTrainSetWeightDecay} value={this.state.currentTaskType === 1 ? this.state.trainParamsForObject.weightdecay : this.state.trainParams.weightdecay} className="w3-input" type="number"/>
-                                </div>
-                                <div className="w3-container">
-                                    <p>momentum:</p>
-                                    <input onChange={this.handleTrainSetMomentum} value={this.state.currentTaskType === 1 ? this.state.trainParamsForObject.momentum : this.state.trainParams.momentum} className="w3-input" type="number"/>
-                                </div>
-                                <div className="w3-container" style={{display: 'flex', alignItems: 'center', marginTop: '16px'}}>
-                                  <input style={{margin: '3px'}} type="checkbox" defaultChecked={this.state.retrainChecked} onChange={this.handleRetrainChecked} />Retrain<br />
-                                </div>
-                                {
-                                  this.state.retrainChecked &&
-                                  <div className="w3-container">
-                                      <p>pretrainmodel:</p>
-                                      <select id="pretrainmodelSelect" className="w3-select">{
-                                        this.state.pretrainmodelList.map((item, index) => (
-                                            <option key={item + index}>{item}</option>
-                                        ))
-                                      }</select>
-                                  </div>
-                                }
-                                <div className="w3-container" style={{marginTop: '20px'}}>
-                                    <button onClick={this.shouldShowTrainSettingView} className="w3-button w3-orange w3-left w3-text-white" style={{width: '90px', borderRadius: '5px'}}>取消</button>
-                                    <button onClick={this.verifyTagProgress} className="w3-button w3-orange w3-right w3-text-white" style={{width: '90px', borderRadius: '5px'}}>确定</button>
-                                </div>
-                            </div>
-                        </div>
-                        : null
-                }
+                {this.state.showTrainSettingView && <TrainSettingView
+                  open={this.state.showTrainSettingView}
+                  closeView={this.closeTrainSettingView}
+                  taskType={this.state.currentTaskType}
+                  currentTaskName={this.state.currentTaskName}
+                  startTrain={this.startTrain} />}
                 <NewTaskView
                   open={this.state.showInputView}
                   addNewTask={this.addNewTask}

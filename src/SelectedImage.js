@@ -284,7 +284,7 @@ class SelectedImage extends Component {
             this.props.boxList.length > 0 ?
             this.props.boxList.map((box, index) => (
                 <div className="black-white-border" key={box.x_start + box.y_end} style={{width: `${this.getBoxWidth(box.x_start, box.x_end)}px`, height: `${this.getBoxHeight(box.y_start, box.y_end)}px`,
-                             position: 'absolute', left: `${this.getBoxX(box.x_start)}px`, top: `${this.getBoxY(box.y_start)}px`}}>
+                             position: 'absolute', left: `${this.getBoxX(box.x_start)}px`, top: `${this.getBoxY(box.y_start)}px`, cursor: 'crosshair'}}>
                              {this.props.boxIndex === index && <span className="tag-title"><b>No.{index + 1}<br/>{box.tag[0]}</b></span>}
                 </div>
             )) : null
