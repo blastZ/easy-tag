@@ -16,7 +16,8 @@ class CheckReviewSelector extends Component {
 
   render() {
     return (
-      <div>
+      <div style={{display: 'flex', alignItems: 'center'}}>
+        <span style={{marginRight: '10px'}}>审核</span>
         <RadioGroup
             style={{
               flexDirection: 'row',
@@ -28,7 +29,6 @@ class CheckReviewSelector extends Component {
             value={this.state.value}
             onChange={this.handleChange}
           >
-            <span style={{marginRight: '10px'}}>审核</span>
             <FormControlLabel value="YES" control={<Radio />} label="通过" />
             <FormControlLabel value="NO" control={<Radio />} label="不通过" />
         </RadioGroup>

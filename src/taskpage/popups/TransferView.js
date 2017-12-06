@@ -24,13 +24,14 @@ const styles = {
 class TransferView extends Component {
   state = {
     userNameList: [],
-    taskNameList: [],
-    transferTaskNameList: [],
+    taskList: [],
+    transferTaskList: [],
     fromUserName: '',
     fromTaskName: '',
+    fromTaskType: '',
     transferUserName: '',
     transferTaskName: '',
-    start: 0,
+    start: 1,
     num: 0,
     isLabel: true,
     isCopy: true
@@ -66,7 +67,7 @@ class TransferView extends Component {
   }
 
   handleFromUserName = (e) => {
-    this.getTaskNameList(e.target.value, 'from');
+    this.getTaskList(e.target.value, 'from');
     this.setState({
       fromUserName: e.target.value
     })
@@ -80,7 +81,7 @@ class TransferView extends Component {
   }
 
   handleTransferUserName = (e) => {
-    this.getTaskNameList(e.target.value, 'transfer');
+    this.getTaskList(e.target.value, 'transfer');
     this.setState({
       transferUserName: e.target.value
     })
@@ -93,8 +94,10 @@ class TransferView extends Component {
   }
 
   handleStart = (e) => {
+    let value = e.target.value;
+    if(value < 1) value = 1;
     this.setState({
-      start: e.target.value
+      start: value
     })
   }
 
@@ -127,21 +130,22 @@ class TransferView extends Component {
       })
   }
 
-  getTaskNameList = (userName, type) => {
+  getTaskList = (userName, type) => {
     fetch(`${this.props.defaultURL}gettasklist?usrname=${userName}`)
       .then((response) => response.text())
       .then((result) => {
         const arrayData = result.split(',');
-        const taskNameList = [];
+        const taskList = [];
         if(arrayData.length > 4) {
             for(let i=0; i<arrayData.length; i=i+6) {
                 const taskName = arrayData[i].slice(4, arrayData[i].length - 1);
-                taskNameList.push(taskName);
+                const taskType = arrayData[i + 4].slice(1, 2);
+                taskList.push({taskName, taskType});
             }
             if(type === 'from') {
-              this.setState({taskNameList});
+              this.setState({taskList});
             } else if(type === 'transfer') {
-              this.setState({transferTaskNameList: taskNameList});
+              this.setState({transferTaskList: taskList});
             }
         }
       })
@@ -157,10 +161,20 @@ class TransferView extends Component {
       })
   }
 
+  sameTaskType = () => {
+    const { taskList, transferTaskList, fromTaskName, transferTaskName } = this.state;
+    const taskType = taskList.filter((task) => (task.taskName === fromTaskName))[0].taskType;
+    const transferTaskType = transferTaskList.filter((task) => (task.taskName === transferTaskName))[0].taskType;
+    if(taskType === transferTaskType) return true;
+    return false;
+  }
+
   transferData = () => {
     const { fromUserName, fromTaskName, start, num, transferUserName, transferTaskName, isLabel, isCopy} = this.state;
     if(fromUserName === '' || fromTaskName === '' || start === '' || num === '' || transferUserName === '' || transferTaskName === '') {
       window.alert('请完善信息后，再次确认。');
+    } else if(isLabel && !this.sameTaskType()) {
+      window.alert('任务类型不同不能复制标注数据');
     } else {
       this.props.closeView();
       fetch(`${this.props.defaultURL}transfertaskdata?`, {
@@ -185,9 +199,9 @@ class TransferView extends Component {
   }
 
   render() {
-    const { classes, closeView, open } = this.props;
+    const { classes, closeView } = this.props;
     return (
-      <Dialog onRequestClose={closeView} open={open}>
+      <Dialog onRequestClose={closeView} open={true}>
         <DialogTitle>复制数据</DialogTitle>
         <DialogContent>
           <div style={{display: 'flex', justifyContent: 'space-between'}}>
@@ -206,8 +220,8 @@ class TransferView extends Component {
               <Select
                 value={this.state.fromTaskName}
                 onChange={this.handleFromTaskName}>
-                {this.state.taskNameList.map((taskName) => (
-                  <MenuItem key={taskName} value={`${taskName}`}>{taskName}</MenuItem>
+                {this.state.taskList.map((task) => (
+                  <MenuItem key={task.taskName} value={`${task.taskName}`}>{task.taskName}</MenuItem>
                 ))}
               </Select>
             </FormControl>
@@ -245,8 +259,8 @@ class TransferView extends Component {
               <Select
                 value={this.state.transferTaskName}
                 onChange={this.handleTransferTaskName}>
-                {this.state.transferTaskNameList.map((taskName) => (
-                  <MenuItem key={taskName} value={`${taskName}`}>{taskName}</MenuItem>
+                {this.state.transferTaskList.map((task) => (
+                  <MenuItem key={task.taskName} value={`${task.taskName}`}>{task.taskName}</MenuItem>
                 ))}
               </Select>
             </FormControl>

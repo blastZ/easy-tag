@@ -105,32 +105,46 @@ class App extends Component {
 
     }
 
-    getImageListByTag = () => {
+    getImageListByTag = (mode='') => {
         this.setState({selectedImageNum: 0, tagList: []});
         const that = this;
         //load imageList from server
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start}&num=${this.state.num}`);
-        const data = JSON.stringify({
-            tag: this.state.currentTagString
-        })
-        xhr.send(data);
-        xhr.onload = function() {
-            console.log('getImageList by tag success');
-            const newImageList = [];
-            if(xhr.response) {
-                const jsonResponse = JSON.parse(xhr.response);
-                jsonResponse.map((image) => {
-                    newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
-                })
-            }
-            that.setState({imageList: newImageList}, () => {
-                that.getTagList(0)
-            });
-        }
-        xhr.onerror = function() {
-            console.log('get imageList by tag failed');
-            that.getTagList(0);
+        if(mode === '' || mode === 'label') {
+          const xhr = new XMLHttpRequest();
+          xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start}&num=${this.state.num}`);
+          const data = JSON.stringify({
+              tag: mode === '' ? this.state.currentTagString : ""
+          })
+          xhr.send(data);
+          xhr.onload = function() {
+              console.log('getImageList by tag success');
+              const newImageList = [];
+              if(xhr.response) {
+                  const jsonResponse = JSON.parse(xhr.response);
+                  jsonResponse.map((image) => {
+                      newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
+                  })
+              }
+              that.setState({imageList: newImageList}, () => {
+                  that.getTagList(0)
+              });
+          }
+          xhr.onerror = function() {
+              console.log('get imageList by tag failed');
+              that.getTagList(0);
+          }
+        } else if(mode === 'noLabel') {
+          const newImageList = [];
+          fetch(`${this.state.defaultURL}getdirwithouttag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start}&num=${this.state.num}`)
+            .then((response) => response.json())
+            .then((result) => {
+              result.map((image) => {
+                newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
+              })
+              this.setState({imageList: newImageList}, () => {
+                  this.getTagList(0)
+              });
+            })
         }
     }
 
@@ -215,6 +229,49 @@ class App extends Component {
                 })
                 that.getTagList(0);
             }
+        } else if(this.state.currentBrowserMode === 'findLabel') {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start + this.state.num}&num=${this.state.num}`);
+            const data = JSON.stringify({
+                tag: ""
+            })
+            xhr.send(data);
+            xhr.onload = function() {
+                const newImageList = [];
+                if(xhr.response) {
+                    const jsonResponse = JSON.parse(xhr.response);
+                    jsonResponse.map((image) => {
+                        newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
+                    })
+                }
+                that.setState((state) => {
+                    state.start = state.start + state.num > maxValue ? maxValue : state.start + state.num;
+                    state.selectedImageNum = 0;
+                    state.tagList = [];
+                    state.imageList = newImageList;
+                }, function() {
+                    that.refs.tagRoute.refs.selectedImage.initSelectedImage();
+                })
+                that.getTagList(0);
+            }
+        } else if(this.state.currentBrowserMode === 'findNoLabel') {
+          const newImageList = [];
+          fetch(`${this.state.defaultURL}getdirwithouttag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start}&num=${this.state.num}`)
+            .then((response) => response.json())
+            .then((result) => {
+              result.map((image) => {
+                newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
+              })
+              this.setState((state) => {
+                  state.start = state.start + state.num > maxValue ? maxValue : state.start + state.num;
+                  state.selectedImageNum = 0;
+                  state.tagList = [];
+                  state.imageList = newImageList;
+              }, function() {
+                  that.refs.tagRoute.refs.selectedImage.initSelectedImage();
+              })
+              that.getTagList(0);
+            })
         }
     }
 
@@ -279,6 +336,49 @@ class App extends Component {
                 })
                 that.getTagList(0);
             }
+        } else if(this.state.currentBrowserMode === 'findLabel') {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start + this.state.num}&num=${this.state.num}`);
+            const data = JSON.stringify({
+                tag: ""
+            })
+            xhr.send(data);
+            xhr.onload = function() {
+                const newImageList = [];
+                if(xhr.response) {
+                    const jsonResponse = JSON.parse(xhr.response);
+                    jsonResponse.map((image) => {
+                        newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
+                    })
+                }
+                that.setState((state) => {
+                    state.start = state.start + state.num > maxValue ? maxValue : state.start + state.num;
+                    state.selectedImageNum = 0;
+                    state.tagList = [];
+                    state.imageList = newImageList;
+                }, function() {
+                    that.refs.tagObjectRoute.refs.selectedObjectImage.initSelectedImage();
+                })
+                that.getTagList(0);
+            }
+        } else if(this.state.currentBrowserMode === 'findNoLabel') {
+            const newImageList = [];
+            fetch(`${this.state.defaultURL}getdirwithouttag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start}&num=${this.state.num}`)
+              .then((response) => response.json())
+              .then((result) => {
+                result.map((image) => {
+                  newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
+                })
+                that.setState((state) => {
+                    state.start = state.start + state.num > maxValue ? maxValue : state.start + state.num;
+                    state.selectedImageNum = 0;
+                    state.tagList = [];
+                    state.imageList = newImageList;
+                }, function() {
+                    that.refs.tagObjectRoute.refs.selectedObjectImage.initSelectedImage();
+                })
+                that.getTagList(0);
+              })
         }
     }
 
@@ -335,6 +435,53 @@ class App extends Component {
                 that.getDaubData(0);
               }, 300)
           }
+      } else if(this.state.currentBrowserMode === 'findLabel') {
+          const xhr = new XMLHttpRequest();
+          xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.props.taskName}&start=${this.state.start + this.state.num}&num=${this.state.num}`);
+          const data = JSON.stringify({
+              tag: ""
+          })
+          xhr.send(data);
+          xhr.onload = function() {
+              const newImageList = [];
+              if(xhr.response) {
+                  const jsonResponse = JSON.parse(xhr.response);
+                  jsonResponse.map((image) => {
+                      newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
+                  })
+              }
+              that.setState((state) => {
+                  state.start = state.start + state.num > maxValue ? maxValue : state.start + state.num;
+                  state.selectedImageNum = 0;
+                  state.tagList = [];
+                  state.imageList = newImageList;
+              }, function() {
+                  that.refs.tagDaubRoute.refs.selectedDaubImage.initSelectedImage();
+              })
+              setTimeout(() => {
+                that.getDaubData(0);
+              }, 300)
+          }
+      } else if(this.state.currentBrowserMode === 'findNoLabel') {
+          const newImageList = [];
+          fetch(`${this.state.defaultURL}getdirwithouttag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start}&num=${this.state.num}`)
+            .then((response) => response.json())
+            .then((result) => {
+              result.map((image) => {
+                newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
+              })
+              that.setState((state) => {
+                  state.start = state.start + state.num > maxValue ? maxValue : state.start + state.num;
+                  state.selectedImageNum = 0;
+                  state.tagList = [];
+                  state.imageList = newImageList;
+              }, function() {
+                  that.refs.tagDaubRoute.refs.selectedDaubImage.initSelectedImage();
+              })
+              setTimeout(() => {
+                that.getDaubData(0);
+              }, 300)
+            })
       }
     }
 
@@ -394,6 +541,49 @@ class App extends Component {
                 })
                 that.getTagList(0);
             }
+        } else if(this.state.currentBrowserMode === 'findLabel') {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
+            const data = JSON.stringify({
+                tag: ""
+            })
+            xhr.send(data);
+            xhr.onload = function() {
+                const newImageList = [];
+                if(xhr.response) {
+                    const jsonResponse = JSON.parse(xhr.response);
+                    jsonResponse.map((image) => {
+                        newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
+                    })
+                }
+                that.setState((state) => {
+                    state.start = state.start - state.num > 0 ? state.start - state.num : 1;
+                    state.selectedImageNum = 0;
+                    state.tagList = [];
+                    state.imageList = newImageList;
+                }, function() {
+                    that.refs.tagRoute.refs.selectedImage.initSelectedImage();
+                })
+                that.getTagList(0);
+            }
+        } else if(this.state.currentBrowserMode === 'findNoLabel') {
+            const newImageList = [];
+            fetch(`${this.state.defaultURL}getdirwithouttag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start}&num=${this.state.num}`)
+              .then((response) => response.json())
+              .then((result) => {
+                result.map((image) => {
+                  newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
+                })
+                that.setState((state) => {
+                    state.start = state.start - state.num > 0 ? state.start - state.num : 1;
+                    state.selectedImageNum = 0;
+                    state.tagList = [];
+                    state.imageList = newImageList;
+                }, function() {
+                    that.refs.tagRoute.refs.selectedImage.initSelectedImage();
+                })
+                that.getTagList(0);
+              })
         }
     }
 
@@ -453,6 +643,49 @@ class App extends Component {
                 })
                 that.getTagList(0);
             }
+        } else if(this.state.currentBrowserMode === 'findLabel') {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
+            const data = JSON.stringify({
+                tag: ""
+            })
+            xhr.send(data);
+            xhr.onload = function() {
+                const newImageList = [];
+                if(xhr.response) {
+                    const jsonResponse = JSON.parse(xhr.response);
+                    jsonResponse.map((image) => {
+                        newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
+                    })
+                }
+                that.setState((state) => {
+                    state.start = state.start - state.num > 0 ? state.start - state.num : 1;
+                    state.selectedImageNum = 0;
+                    state.tagList = [];
+                    state.imageList = newImageList;
+                }, function() {
+                    that.refs.tagObjectRoute.refs.selectedObjectImage.initSelectedImage();
+                })
+                that.getTagList(0);
+            }
+        } else if(this.state.currentBrowserMode === 'findNoLabel') {
+            const newImageList = [];
+            fetch(`${this.state.defaultURL}getdirwithouttag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start}&num=${this.state.num}`)
+              .then((response) => response.json())
+              .then((result) => {
+                result.map((image) => {
+                  newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
+                })
+                that.setState((state) => {
+                    state.start = state.start - state.num > 0 ? state.start - state.num : 1;
+                    state.selectedImageNum = 0;
+                    state.tagList = [];
+                    state.imageList = newImageList;
+                }, function() {
+                    that.refs.tagObjectRoute.refs.selectedObjectImage.initSelectedImage();
+                })
+                that.getTagList(0);
+              })
         }
     }
 
@@ -506,6 +739,53 @@ class App extends Component {
                 that.getDaubData(0);
               }, 300)
           }
+      } else if(this.state.currentBrowserMode === 'findLabel') {
+          const xhr = new XMLHttpRequest();
+          xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.props.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
+          const data = JSON.stringify({
+              tag: ""
+          })
+          xhr.send(data);
+          xhr.onload = function() {
+              const newImageList = [];
+              if(xhr.response) {
+                  const jsonResponse = JSON.parse(xhr.response);
+                  jsonResponse.map((image) => {
+                      newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
+                  })
+              }
+              that.setState((state) => {
+                  state.start = state.start - state.num > 0 ? state.start - state.num : 1;
+                  state.selectedImageNum = 0;
+                  state.tagList = [];
+                  state.imageList = newImageList;
+              }, function() {
+                  that.refs.tagDaubRoute.refs.selectedDaubImage.initSelectedImage();
+              })
+              setTimeout(() => {
+                that.getDaubData(0);
+              }, 300)
+          }
+      } else if(this.state.currentBrowserMode === 'findNoLabel') {
+          const newImageList = [];
+          fetch(`${this.state.defaultURL}getdirwithouttag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start}&num=${this.state.num}`)
+            .then((response) => response.json())
+            .then((result) => {
+              result.map((image) => {
+                newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
+              })
+              that.setState((state) => {
+                  state.start = state.start - state.num > 0 ? state.start - state.num : 1;
+                  state.selectedImageNum = 0;
+                  state.tagList = [];
+                  state.imageList = newImageList;
+              }, function() {
+                  that.refs.tagDaubRoute.refs.selectedDaubImage.initSelectedImage();
+              })
+              setTimeout(() => {
+                that.getDaubData(0);
+              }, 300)
+            })
       }
     }
 
@@ -574,6 +854,58 @@ class App extends Component {
                         })
                         that.getTagList(newImageList.length - 1);
                     }
+                } catch(error) {
+                    console.log(error);
+                }
+            } else if(this.state.currentBrowserMode === 'findLabel') {
+                try {
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
+                    const data = JSON.stringify({
+                        tag: ""
+                    })
+                    xhr.send(data);
+                    const newImageList = [];
+                    xhr.onload = function() {
+                        console.log('getNextList success');
+                        if(xhr.response) {
+                            const jsonResponse = JSON.parse(xhr.response);
+                            jsonResponse.map((image) => {
+                                newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
+                            })
+                        }
+                        that.setState((state) => {
+                            state.start = state.start - state.num > 0 ? state.start - state.num : 1;
+                            state.selectedImageNum = newImageList.length - 1;
+                            state.tagList = [];
+                            state.imageList = newImageList;
+                        }, function() {
+                            that.refs.tagRoute.refs.selectedImage.initSelectedImage();
+                        })
+                        that.getTagList(newImageList.length - 1);
+                    }
+                } catch(error) {
+                    console.log(error);
+                }
+            } else if(this.state.currentBrowserMode === 'findNoLabel') {
+                try {
+                    const newImageList = [];
+                    fetch(`${this.state.defaultURL}getdirwithouttag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start}&num=${this.state.num}`)
+                      .then((response) => response.json())
+                      .then((result) => {
+                        result.map((image) => {
+                          newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
+                        })
+                        that.setState((state) => {
+                            state.start = state.start - state.num > 0 ? state.start - state.num : 1;
+                            state.selectedImageNum = newImageList.length - 1;
+                            state.tagList = [];
+                            state.imageList = newImageList;
+                        }, function() {
+                            that.refs.tagRoute.refs.selectedImage.initSelectedImage();
+                        })
+                        that.getTagList(newImageList.length - 1);
+                      })
                 } catch(error) {
                     console.log(error);
                 }
@@ -649,6 +981,58 @@ class App extends Component {
                 } catch(error) {
                     console.log(error);
                 }
+            } else if(this.state.currentBrowserMode === 'findLabel') {
+                try {
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
+                    const data = JSON.stringify({
+                        tag: ""
+                    })
+                    xhr.send(data);
+                    const newImageList = [];
+                    xhr.onload = function() {
+                        console.log('getNextList success');
+                        if(xhr.response) {
+                            const jsonResponse = JSON.parse(xhr.response);
+                            jsonResponse.map((image) => {
+                                newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
+                            })
+                        }
+                        that.setState((state) => {
+                            state.start = state.start - state.num > 0 ? state.start - state.num : 1;
+                            state.selectedImageNum = newImageList.length - 1;
+                            state.tagList = [];
+                            state.imageList = newImageList;
+                        }, function() {
+                            that.refs.tagObjectRoute.refs.selectedObjectImage.initSelectedImage();
+                        })
+                        that.getTagList(newImageList.length - 1);
+                    }
+                } catch(error) {
+                    console.log(error);
+                }
+            } else if(this.state.currentBrowserMode === 'findNoLabel') {
+                try {
+                    const newImageList = [];
+                    fetch(`${this.state.defaultURL}getdirwithouttag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start}&num=${this.state.num}`)
+                      .then((response) => response.json())
+                      .then((result) => {
+                        result.map((image) => {
+                          newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
+                        })
+                        that.setState((state) => {
+                            state.start = state.start - state.num > 0 ? state.start - state.num : 1;
+                            state.selectedImageNum = newImageList.length - 1;
+                            state.tagList = [];
+                            state.imageList = newImageList;
+                        }, function() {
+                            that.refs.tagObjectRoute.refs.selectedObjectImage.initSelectedImage();
+                        })
+                        that.getTagList(newImageList.length - 1);
+                      })
+                } catch(error) {
+                    console.log(error);
+                }
             }
         }
     }
@@ -718,6 +1102,58 @@ class App extends Component {
                       })
                       that.getDaubData(newImageList.length - 1);
                   }
+              } catch(error) {
+                  console.log(error);
+              }
+          } else if(this.state.currentBrowserMode === 'findLabel') {
+              try {
+                  const xhr = new XMLHttpRequest();
+                  xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.props.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
+                  const data = JSON.stringify({
+                      tag: ""
+                  })
+                  xhr.send(data);
+                  const newImageList = [];
+                  xhr.onload = function() {
+                      console.log('getNextList success');
+                      if(xhr.response) {
+                          const jsonResponse = JSON.parse(xhr.response);
+                          jsonResponse.map((image) => {
+                              newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
+                          })
+                      }
+                      that.setState((state) => {
+                          state.start = state.start - state.num > 0 ? state.start - state.num : 1;
+                          state.selectedImageNum = newImageList.length - 1;
+                          state.tagList = [];
+                          state.imageList = newImageList;
+                      }, function() {
+                          that.refs.tagDaubRoute.refs.selectedDaubImage.initSelectedImage();
+                      })
+                      that.getDaubData(newImageList.length - 1);
+                  }
+              } catch(error) {
+                  console.log(error);
+              }
+          } else if(this.state.currentBrowserMode === 'findNoLabel') {
+              try {
+                  const newImageList = [];
+                  fetch(`${this.state.defaultURL}getdirwithouttag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start}&num=${this.state.num}`)
+                    .then((response) => response.json())
+                    .then((result) => {
+                      result.map((image) => {
+                        newImageList.push({url: image.url, name: image.name, labeled: image.labeled});
+                      })
+                      that.setState((state) => {
+                          state.start = state.start - state.num > 0 ? state.start - state.num : 1;
+                          state.selectedImageNum = newImageList.length - 1;
+                          state.tagList = [];
+                          state.imageList = newImageList;
+                      }, function() {
+                          that.refs.tagDaubRoute.refs.selectedDaubImage.initSelectedImage();
+                      })
+                      that.getDaubData(newImageList.length - 1);
+                    })
               } catch(error) {
                   console.log(error);
               }
@@ -1279,6 +1715,10 @@ class App extends Component {
                 this.setState({start: 1, num: 10}, () => {this.getImageList()})
             } else if(this.state.currentBrowserMode === 'find') {
                 this.setState({start: 1, num: 10}, () => {this.getImageListByTag()})
+            } else if(this.state.currentBrowserMode === 'findLabel') {
+                this.setState({start: 1, num: 10}, () => {this.getImageListByTag('label')})
+            } else if(this.state.currentBrowserMode === 'findNoLabel') {
+                this.setState({start: 1, num: 10}, () => {this.getImageListByTag('noLabel')})
             }
         });
     }
@@ -1488,6 +1928,7 @@ class App extends Component {
                                changeBoxIndex={this.changeBoxIndex}
                                selectedImage={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].url : ''}
                                selectedImageNum={this.state.selectedImageNum}
+                               selectedImageNumInAll={parseInt(this.state.start) + this.state.selectedImageNum}
                                getBoxList={this.getTagList}
                                needPostTagList={this.needPostTagList}
                                onHandleNumChange={this.handleNumChange}
@@ -1779,7 +2220,8 @@ class App extends Component {
 }
 
 const mapStateToProps = ({ appReducer }) => ({
-  taskName: appReducer.taskName
+  taskName: appReducer.taskName,
+  showImageMode: appReducer.showImageMode
 })
 
 export default withRouter(connect(mapStateToProps)(App));

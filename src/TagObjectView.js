@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import $ from 'jquery'
+import SearchButton from './SearchButton';
 
 class TagObjectView extends Component {
     state = {
@@ -13,7 +13,6 @@ class TagObjectView extends Component {
         showListNameEditView: false,
         showAddNewTagStringView: false,
         showAddNewListNameView: false,
-        showFindModeView: false,
         autoTagNum: 1,
         autoTagStart: 1,
         showPremodelSelect: false,
@@ -44,15 +43,6 @@ class TagObjectView extends Component {
       })
     }
 
-    shouldShowFindModeView = () => {
-        if(this.state.showFindModeView) {
-            this.props.onChangeBrowserMode('normal');
-        } else {
-            this.props.onChangeBrowserMode('find');
-        }
-        this.setState({showFindModeView: !this.state.showFindModeView});
-    }
-
     shouldShowEditView = () => {
         this.setState({showEditView: !this.state.showEditView});
     }
@@ -78,7 +68,6 @@ class TagObjectView extends Component {
     }
 
     componentDidMount() {
-        const that = this;
         this.loadTagList();
         document.addEventListener('keyup', this.pageUpAndDownListener);
         fetch(`${this.props.defaultURL}getpretrainmodelall?usrname=${this.props.userName}&taskname=${this.props.taskName}`)
@@ -170,7 +159,6 @@ class TagObjectView extends Component {
     saveTagList = () => {
         const request = new XMLHttpRequest();
         request.open('POST', `${this.props.defaultURL}savetag?usrname=${this.props.userName}&taskname=${this.props.taskName}`);
-        const data = JSON.stringify(this.state.tagStringList);
         request.send(JSON.stringify({
             listname: this.state.listNameList,
             taglist: this.state.tagStringListAll
@@ -282,6 +270,22 @@ class TagObjectView extends Component {
       this.shouldShowPremodelSelect();
     }
 
+    exitFindMode = () => {
+      this.props.onChangeBrowserMode('normal');
+    }
+
+    findByTag = () => {
+      this.props.onChangeBrowserMode('find');
+    }
+
+    findByLabel = () => {
+      this.props.onChangeBrowserMode('findLabel');
+    }
+
+    findByNoLabel = () => {
+      this.props.onChangeBrowserMode('findNoLabel');
+    }
+
     render() {
         return (
             <div className="flex-box flex-column" style={{justifyContent: 'center', height: '100%'}}>
@@ -300,13 +304,13 @@ class TagObjectView extends Component {
                     </div>
                   </div>
                 </div>}
-                {
-                    this.props.userLevel === 3 || this.props.userLevel === 2 ?
-                        this.state.showFindModeView ?
-                        <button onClick={this.shouldShowFindModeView} className="w3-button w3-card w3-green">退出查找模式</button>
-                        : <button onClick={this.shouldShowFindModeView} className="w3-button w3-card w3-green">查找当前标签</button>
-                    : null
-                }
+                {this.props.userLevel === 3 || this.props.userLevel === 2
+                  ? <SearchButton
+                    exitFindMode={this.exitFindMode}
+                    findByTag={this.findByTag}
+                    findByLabel={this.findByLabel}
+                    findByNoLabel={this.findByNoLabel} />
+                  : null}
                 <div className="flex-box margin-top-5">
                     <select onChange={this.changeTagStringList} id="mySelectForListName" className="w3-select" style={{width: '50%'}}>
                     {

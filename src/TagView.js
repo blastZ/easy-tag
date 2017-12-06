@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import CheckReviewSelector from './CheckReviewSelector';
 import AutoTagView from './AutoTagView';
+import SearchButton from './SearchButton';
 
 class TagView extends Component {
     state = {
@@ -14,7 +15,6 @@ class TagView extends Component {
         showListNameEditView: false,
         showAddNewTagStringView: false,
         showAddNewListNameView: false,
-        showFindModeView: false,
         autoTagNum: 1,
         autoTagStart: 1,
         showAutoTagView: false,
@@ -50,15 +50,6 @@ class TagView extends Component {
       this.setState({
         autoTagStart: e.target.value
       })
-    }
-
-    shouldShowFindModeView = () => {
-        if(this.state.showFindModeView) {
-            this.props.onChangeBrowserMode('normal');
-        } else {
-            this.props.onChangeBrowserMode('find');
-        }
-        this.setState({showFindModeView: !this.state.showFindModeView});
     }
 
     shouldShowEditView = () => {
@@ -346,22 +337,38 @@ class TagView extends Component {
       img.src = this.props.selectedImage;
     }
 
+    exitFindMode = () => {
+      this.props.onChangeBrowserMode('normal');
+    }
+
+    findByTag = () => {
+      this.props.onChangeBrowserMode('find');
+    }
+
+    findByLabel = () => {
+      this.props.onChangeBrowserMode('findLabel');
+    }
+
+    findByNoLabel = () => {
+      this.props.onChangeBrowserMode('findNoLabel');
+    }
+
     render() {
         return (
             <div className="flex-box flex-column" style={{justifyContent: 'center', height: '100%'}}>
                 <AutoTagView
                   open={this.state.showAutoTagView}
                   closeView={this.closeAutoTagView}
-                  index={(this.props.selectedImageNum + 1)}
+                  index={(this.props.selectedImageNumInAll)}
                   autoTagImages={this.autoTagImages}
                   inferLabel={this.inferLabel} />
-                {
-                    this.props.userLevel === 3 || this.props.userLevel === 2 ?
-                        this.state.showFindModeView ?
-                        <button onClick={this.shouldShowFindModeView} className="w3-button w3-card w3-green">退出查找模式</button>
-                        : <button onClick={this.shouldShowFindModeView} className="w3-button w3-card w3-green">查找当前标签</button>
-                    : null
-                }
+                {this.props.userLevel === 3 || this.props.userLevel === 2
+                  ? <SearchButton
+                    exitFindMode={this.exitFindMode}
+                    findByTag={this.findByTag}
+                    findByLabel={this.findByLabel}
+                    findByNoLabel={this.findByNoLabel} />
+                  : null}
                 <div className="flex-box margin-top-5">
                     <select onChange={this.changeTagStringList} id="mySelectForListName" className="w3-select" style={{width: '50%'}}>
                     {
@@ -487,7 +494,7 @@ class TagView extends Component {
                                 </div>
                             </div>
                             <div>额外信息:<input className="w3-input" type="text" onChange={this.onChangeBoxInfo.bind(this, index)} value={this.props.boxList[index].info}/></div>
-                            <img src={this.state.boxImgList[index]} style={{maxWidth: '100%', marginTop: '5px', maxHeight: '80px'}} alt="tag-image" />
+                            <img src={this.state.boxImgList[index]} style={{maxWidth: '100%', marginTop: '5px', maxHeight: '80px'}} alt="tag-content" />
                             {this.props.userLevel > 0 &&
                               <CheckReviewSelector
                                 value={box.checked ? box.checked : '' }

@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
-import { Link, withRouter } from 'react-router-dom'
+import { withRouter } from 'react-router-dom'
 import TopBar from './TopBar'
-import { getTaskStateName, getTaskTypeName, getUserLevelCode, getTaskTypeCode } from '../utils/Task';
+import { getUserLevelCode } from '../utils/Task';
 import TrainTaskTable from './tables/TrainTaskTable';
 import TaskTable from './tables/TaskTable';
 import OperationsTable from './tables/OperationsTable';
@@ -14,13 +14,11 @@ import { changeTaskName, getTrainStateLog, getManagerData } from '../actions/app
 import 'react-tabs/style/react-tabs.css';
 import GlobalSetTable from './tables/GlobalSetTable';
 import { DEFAULT_TAGED_NUM, DEFAULT_TAGED_PROGRESS } from '../utils/global_config';
-import { Color } from '../utils/global_config';
 import RefreshIcon from 'material-ui-icons/Cached';
 import Button from 'material-ui/Button';
 import { withStyles } from 'material-ui/styles';
 import DistriTaskView from './popups/DistriTaskView';
 import NewTaskView from './popups/NewTaskView';
-import Paper from 'material-ui/Paper';
 import Divider from 'material-ui/Divider';
 import Tabs, { Tab } from 'material-ui/Tabs';
 import { getTrainTaskList } from '../actions/task_action';
@@ -54,7 +52,6 @@ class TaskPage extends Component {
         showTrainSettingView: false,
         showPersonPanel: false,
         showDistributeTaskView: false,
-        showStartAndNumInputView: false,
         showLabelStatisticsView: false,
         showUserManageEditView: false,
         showEditWorkerOwner: false,
@@ -298,7 +295,6 @@ class TaskPage extends Component {
     }
 
     componentDidMount() {
-        const that = this;
         this.getTaskList();
         const theRefreshInterval = window.setInterval(this.refreshInterval, 60000);
         this.setState({theRefreshInterval});
@@ -806,14 +802,12 @@ class TaskPage extends Component {
         this.setState({showDistributeTaskView: false});
     }
 
-    distributeTaskToUser = (index) => {
+    setCurrentUser = (index) => {
         const userName = this.state.distrableUserList[index].name;
-        this.setState({showStartAndNumInputView: true, currentUserName: userName});
+        this.setState({currentUserName: userName});
     }
 
-    confirmDistrTaskToUser = () => {
-        const start = this.state.start;
-        const num = this.state.num;
+    distrTaskToUser = (start, num) => {
         const fileCount = parseInt(this.state.currentTaskFileCount);
         if((start + num - 1) > fileCount) {
             window.alert(`总共 ${fileCount} 张,请检查输入`);
@@ -823,21 +817,18 @@ class TaskPage extends Component {
             const that = this;
             try{
                 const request = new XMLHttpRequest();
-                request.open('GET', `${this.props.defaultURL}distributetask?usrname=${this.props.username}&taskname=${this.state.currentTaskName}&distusrname=${this.state.currentUserName}&start=${this.state.start}&num=${this.state.num}`);
+                request.open('GET', `${this.props.defaultURL}distributetask?usrname=${this.props.username}&taskname=${this.state.currentTaskName}&distusrname=${this.state.currentUserName}&start=${start}&num=${num}`);
                 request.send();
                 request.onload = function() {
                     that.getDistredUserList(that.state.currentTaskName);
                     that.getDistrableUserList();
                     that.setState({
-                        start: '',
-                        num: '',
                         currentUserName: '',
                     })
                 }
             } catch(error) {
                 console.log(error);
             }
-            this.closeStartAndNumInputView();
         }
     }
 
@@ -867,15 +858,6 @@ class TaskPage extends Component {
             case 3: return '超级用户';
             default: return 'ERROR';
         }
-    }
-
-    closeStartAndNumInputView = () => {
-        this.setState({
-            showStartAndNumInputView: false,
-            start: '',
-            num: '',
-            currentUserName: ''
-        });
     }
 
     getDistredUserList = (taskName) => {
@@ -1178,30 +1160,18 @@ class TaskPage extends Component {
                   taskType={this.state.currentTaskType}
                   currentTaskName={this.state.currentTaskName}
                   startTrain={this.startTrain} />}
-                <NewTaskView
-                  open={this.state.showInputView}
+                {this.state.showInputView && <NewTaskView
                   addNewTask={this.addNewTask}
-                  closeView={this.closeInputView} />
-                {
-                    this.state.showStartAndNumInputView ? (
-                        <div className="popup" style={{background: 'rgba(0, 0, 0, 0.8)', position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', zIndex: '100000'}}>
-                            <i onClick={this.closeStartAndNumInputView} className="fa fa-times w3-text-white w3-xxlarge et-hoverable" aria-hidden="true" style={{position: 'absolute', top: '10px', right: '10px'}}></i>
-                            <div className="flex-box" style={{width: '40%', margin: '0 auto', position: 'absolute', top: '30%', left: '30%'}}>
-                                <input onChange={this.handleStartInputChange} value={this.state.start} placeholder="输入起始序号" className="w3-input" type="number" style={{width: '40%'}}/>
-                                <input onChange={this.handleNumInputChange} value={this.state.num} placeholder="输入图片数量" className="w3-input" type="number" style={{width: '40%', marginLeft: '2px'}}/>
-                                <button onClick={this.confirmDistrTaskToUser} className="w3-button w3-orange" style={{width: '20%', marginLeft: '2px'}}>确定分配</button>
-                            </div>
-                        </div>
-                    ) : null
-                }
-                <DistriTaskView
-                  open={this.state.showDistributeTaskView}
+                  closeView={this.closeInputView} />}
+                {this.state.showDistributeTaskView && <DistriTaskView
+                  distrTaskToUser={this.distrTaskToUser}
+                  setCurrentUser={this.setCurrentUser}
                   closeDistributeTaskView={this.closeDistributeTaskView}
                   taskName={this.state.currentTaskName}
                   distredUserList={this.state.distredUserList}
                   distrableUserList={this.state.distrableUserList}
                   unDistributeTaskToUser={this.unDistributeTaskToUser}
-                  distributeTaskToUser={this.distributeTaskToUser} />
+                  distributeTaskToUser={this.distributeTaskToUser} />}
                 {
                     this.state.showImageView === true ? (
                         <div className="popup w3-center w3-padding-64" style={{background: 'rgba(0, 0, 0, 0.4)', position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', zIndex: '100', overflowY: 'auto'}}>

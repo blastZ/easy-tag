@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import Dialog, { DialogTitle } from 'material-ui/Dialog';
+import Dialog, { DialogTitle, DialogContent } from 'material-ui/Dialog';
 import { withStyles } from 'material-ui/styles';
 import Table, { TableBody, TableCell, TableHead, TableRow, TableFooter, TablePagination } from 'material-ui/Table';
 import IconButton from 'material-ui/IconButton';
@@ -10,6 +10,9 @@ import Typography from 'material-ui/Typography';
 import Divider from 'material-ui/Divider';
 import { getUserLevelName } from '../../utils/Task';
 import Select from 'material-ui/Select';
+import Input from 'material-ui/Input';
+import Button from 'material-ui/Button';
+import TextField from 'material-ui/TextField';
 
 const styles = theme => ({
   root: {
@@ -43,7 +46,70 @@ const styles = theme => ({
   indicator: {
     backgroundColor: '#90CAF9'
   },
+  textField: {
+    width: '48%'
+  },
+  button: {
+    width: '48%',
+    background: 'linear-gradient(to right, rgb(67, 206, 162), rgb(24, 90, 157))',
+    letterSpacing: '1px'
+  }
 });
+
+class InputView extends Component {
+  state = {
+    start: '',
+    num: '',
+  }
+
+  handleStart = (e) => {
+    let value = e.target.value;
+    if(value < 1) value = 1;
+    this.setState({
+      start: value
+    })
+  }
+
+  handleNum = (e) => {
+    this.setState({
+      num: e.target.value
+    })
+  }
+
+  render() {
+    const { classes, closeView, distrTaskToUser } = this.props;
+    return (
+      <Dialog open={true} onRequestClose={closeView}>
+        <DialogTitle>分配任务</DialogTitle>
+        <DialogContent>
+          <div style={{display: 'flex', justifyContent: 'space-between'}}>
+            <TextField
+              type="number"
+              label="起始序号"
+              className={classes.textField}
+              value={this.state.start}
+              onChange={this.handleStart}
+            />
+            <TextField
+              type="number"
+              label="图片数量"
+              className={classes.textField}
+              value={this.state.num}
+              onChange={this.handleNum}
+            />
+          </div>
+          <div style={{display: 'flex', justifyContent: 'center', marginTop: '25px'}}>
+            <Button onClick={() => distrTaskToUser(this.state.start, this.state.num)} color="primary" raised className={classes.button}>
+              确定
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    )
+  }
+}
+
+
 
 class DistriTaskView extends Component {
   state = {
@@ -52,7 +118,21 @@ class DistriTaskView extends Component {
     page2: 0,
     rowsPerPage2: 5,
     modeIndex: 0,
-    currentTable: 'distred'
+    currentTable: 'distred',
+    showInputView: false,
+  }
+
+  closeInputView = () => {
+    this.setState({
+      showInputView: false
+    })
+  }
+
+  openInputView = (index) => {
+    this.props.setCurrentUser(index);
+    this.setState({
+      showInputView: true
+    })
   }
 
   handleTableChange = (e) => {
@@ -91,15 +171,28 @@ class DistriTaskView extends Component {
     })
   }
 
-  getIndex = (index) => {
-    return (index + (this.state.page * this.state.rowsPerPage));
+  getIndex1 = (index) => {
+    return (index + (this.state.page1 * this.state.rowsPerPage1));
+  }
+
+  getIndex2 = (index) => {
+    return (index + (this.state.page2 * this.state.rowsPerPage2));
+  }
+
+  distrTaskToUser = (start, num) => {
+    this.props.distrTaskToUser(start, num);
+    this.closeInputView();
   }
 
   render() {
     const { page1, page2, rowsPerPage1, rowsPerPage2 } = this.state;
-    const { classes, showDistributeTaskView, taskName, distredUserList, distrableUserList, distributeTaskToUser, ...other } = this.props;
+    const { classes, showDistributeTaskView, taskName, distredUserList, distrableUserList, distributeTaskToUser } = this.props;
     return (
-      <Dialog classes={{paper: classes.paper}} onRequestClose={this.props.closeDistributeTaskView} {...other}>
+      <Dialog classes={{paper: classes.paper}} onRequestClose={this.props.closeDistributeTaskView} open={true}>
+        {this.state.showInputView && <InputView
+          distrTaskToUser={this.distrTaskToUser}
+          classes={classes}
+          closeView={this.closeInputView} />}
         <Typography style={{color: 'white'}} type="title">{`当前任务(${taskName})`}</Typography>
         <div>
         </div>
@@ -135,7 +228,7 @@ class DistriTaskView extends Component {
                       <TableCell numeric>{getUserLevelName(user.level)}</TableCell>
                       <TableCell numeric>{user.taskName}</TableCell>
                       <TableCell numeric>{user.tagedNum}</TableCell>
-                      <TableCell numeric><i onClick={this.props.unDistributeTaskToUser.bind(this, this.getIndex(index))} className="fa fa-calendar-times-o table-item-button" aria-hidden="true"> 取消分配</i></TableCell>
+                      <TableCell numeric><i onClick={this.props.unDistributeTaskToUser.bind(this, this.getIndex1(index))} className="fa fa-calendar-times-o table-item-button" aria-hidden="true"> 取消分配</i></TableCell>
                     </TableRow>
                   )
                 )}
@@ -167,7 +260,7 @@ class DistriTaskView extends Component {
                     <TableRow key={user.name}>
                       <TableCell>{user.name}</TableCell>
                       <TableCell numeric>{getUserLevelName(user.level)}</TableCell>
-                      <TableCell numeric><i onClick={this.props.distributeTaskToUser.bind(this, this.getIndex(index))} className="fa fa-calendar-check-o table-item-button"> 分配任务</i></TableCell>
+                      <TableCell numeric><i onClick={() => this.openInputView(this.getIndex2(index))} className="fa fa-calendar-check-o table-item-button"> 分配任务</i></TableCell>
                     </TableRow>
                   )
                 )}

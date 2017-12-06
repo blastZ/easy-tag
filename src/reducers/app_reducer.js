@@ -30,6 +30,7 @@ const initState = {
     managerData: '',
     trainStateLog: '', //app_middleware:172
     regionSize: 40,
+    showImageMode: 'LABELED'
 }
 
 function appReducer(state=initState, action) {

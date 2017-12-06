@@ -121,10 +121,9 @@ class TaskTable extends Component {
     const { page, rowsPerPage } = this.state;
     return(
       <div>
-        <TransferView
-          open={this.state.showTransferView}
+        {this.state.showTransferView && <TransferView
           closeView={this.closeTransferView}
-          getDistrableUserList={this.props.getDistrableUserList} />
+          getDistrableUserList={this.props.getDistrableUserList} />}
         <div className="et-margin-top-32" style={{position: 'relative', display: 'flex', alignItems: 'center'}}>
           <h3 className="et-table-title">任务列表</h3>
           <Select
