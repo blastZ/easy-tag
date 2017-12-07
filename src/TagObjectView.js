@@ -304,13 +304,11 @@ class TagObjectView extends Component {
                     </div>
                   </div>
                 </div>}
-                {this.props.userLevel === 3 || this.props.userLevel === 2
-                  ? <SearchButton
+                <SearchButton
                     exitFindMode={this.exitFindMode}
                     findByTag={this.findByTag}
                     findByLabel={this.findByLabel}
                     findByNoLabel={this.findByNoLabel} />
-                  : null}
                 <div className="flex-box margin-top-5">
                     <select onChange={this.changeTagStringList} id="mySelectForListName" className="w3-select" style={{width: '50%'}}>
                     {
