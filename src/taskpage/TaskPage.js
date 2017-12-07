@@ -808,7 +808,9 @@ class TaskPage extends Component {
     }
 
     distrTaskToUser = (start, num) => {
-        const fileCount = parseInt(this.state.currentTaskFileCount);
+        const fileCount = parseInt(this.state.currentTaskFileCount, 10);
+        start = parseInt(start, 10);
+        num = parseInt(num ,10);
         if((start + num - 1) > fileCount) {
             window.alert(`总共 ${fileCount} 张,请检查输入`);
         } else if(start === '' || num === '') {
