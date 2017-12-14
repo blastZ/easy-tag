@@ -1,16 +1,24 @@
 import React, { Component } from 'react';
-import SelectedImage from './SelectedImage';
-import SelectBar from './SelectBar';
-import TagView from './TagView';
+import SelectedImage from './components/SelectedImage';
+import SelectBar from './components/SelectBar';
+import TagView from './components/TagView';
 import WaitingPage from '../WaitingPage';
 
-class Test extends Component {
+class TestForAll extends Component {
   state = {
     imageList: [],
     boxList: [],
     selectedImageNum: 0,
     boxIndex: 0,
-    showWaitingPage: false
+    showWaitingPage: false,
+    modeList: ['车牌检测与识别'],
+    testMode: 0
+  }
+
+  handleTestModeChange = (e) => {
+    this.setState({
+      testMode: e.target.value
+    })
   }
 
   uploadImageFiles = (files) => {
@@ -21,14 +29,17 @@ class Test extends Component {
           }
           const formData = new FormData();
           formData.append("file", file);
-          const fileRequest = new XMLHttpRequest();
-          fileRequest.open('POST', `${that.props.defaultURL}uploadtestfile?usrname=${this.props.userName}&taskname=${this.props.taskName}&filename=${file.name}`);
-          fileRequest.send(formData);
-          fileRequest.onload = function() {
-              console.log('post image success.');
-          }
-          fileRequest.onerror = function() {
-              console.log('post image failed.');
+          if(this.state.testMode === 0) {
+            fetch(`${this.props.defaultURL}demoplaterecog?filename=${file.name}`, {
+              method: 'POST',
+              body: formData
+            }).then((response) => response.text())
+              .then((result) => {
+                console.log(result);
+              })
+              .catch((error) => {
+                console.log(error);
+              })
           }
       }
   }
@@ -37,25 +48,6 @@ class Test extends Component {
       this.setState({
         imageList: this.state.imageList.concat([{url, name}])
       });
-  }
-
-  autoTagImages = (start, num, pretrainmodel) => {
-    this.setState({
-      showWaitingPage: true
-    })
-    fetch(`${this.props.defaultURL}autolabeltestimage?usrname=${this.props.userName}&taskname=${this.props.taskName}&pretrainmodel=${pretrainmodel}`, {
-      method: 'POST',
-      body: `{"imageList": [${this.state.imageList.slice(start - 1, num).map((image) => (JSON.stringify(image.name)))}]}`
-    })
-      .then((response) => (response.text()))
-      .then((result) => {
-        setTimeout(() => {
-          this.setState({
-            showWaitingPage: false
-          })
-          this.getBoxList(this.state.selectedImageNum);
-        }, 5000);
-      })
   }
 
   getBoxList = (index) => {
@@ -98,7 +90,6 @@ class Test extends Component {
       encodeURI(`${that.props.defaultURL}loadlabel?usrname=${this.props.userName}&taskname=${this.props.taskName}&filename=${this.state.imageList[index].name}`));
       tagListRequest.send();
       tagListRequest.onload = function() {
-        console.log(tagListRequest.response);
           const jsonResponse = JSON.parse(tagListRequest.response);
           if(jsonResponse.length > 0) {
               boxList = jsonResponse.objects;
@@ -144,7 +135,7 @@ class Test extends Component {
 
   render() {
     return (
-      <div className="flex-box full-height">
+      <div className="flex-box full-height" style={{width: '100%', overflow: 'hidden'}}>
           {this.state.showWaitingPage && <WaitingPage text="检测中" />}
           <div className="flex-box flex-column full-height" style={{flex: '1 1 auto', width: '80%', position: 'relative'}}>
               <div style={{zIndex: '100000', height: '47px', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '5px 0px', position: 'absolute', top: '0px', left: '0px', width: '100%', background: 'rgb(48,48,48)', color: 'white'}}>
@@ -180,21 +171,17 @@ class Test extends Component {
                  selectedImage={this.props.selectedImage}
                  selectedImageNum={this.props.selectedImageNum}
                  getBoxList={this.props.getTagList}
-                 onHandleNumChange={this.props.handleNumChange}
-                 onHandleStartChange={this.props.handleStartChange}
-                 start={this.props.start}
-                 num={this.props.num}
                  info={this.props.info}
                  boxList={this.state.boxList}
                  defaultURL={this.props.defaultURL}
                  userName={this.props.userName}
                  userLevel={this.props.userLevel}
-                 taskName={this.props.taskName}
-                 autoTagImages={this.autoTagImages} />
+                 testMode={this.state.testMode}
+                 handleTestModeChange={this.handleTestModeChange} />
           </div>
       </div>
     )
   }
 }
 
-export default Test;
+export default TestForAll;

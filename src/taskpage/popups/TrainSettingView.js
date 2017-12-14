@@ -259,7 +259,7 @@ class TrainSettingView extends Component {
       structure,
       epoch,
       optimizer,
-      batchsize: batchSize,
+      batchsize: parseFloat(batchSize, 10),
       learningrate: learningRate,
       weightdecay: weightDecay,
       momentum,

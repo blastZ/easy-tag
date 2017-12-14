@@ -8,15 +8,44 @@ import UserIcon from 'material-ui-icons/AccountCircle';
 import { orange, green } from 'material-ui/colors';
 import HelperIcon from 'material-ui-icons/HelpOutline';
 import { Color } from '../utils/global_config';
+import RightMenu from '../login_page/RightMenu';
+import MenuIcon from 'material-ui-icons/Menu';
+import IconButton from 'material-ui/IconButton';
+import { withStyles } from 'material-ui/styles';
+
+const styles = {
+  buttonRoot: {
+    color: 'white'
+  },
+  buttonIcon: {
+    width: '1.2em',
+    height: '1.2em'
+  }
+}
+
 
 class TopBar extends Component {
+  state = {
+    showMenu: false
+  }
+
+  shouldShowMenu = () => {
+    this.setState({
+      showMenu: !this.state.showMenu
+    })
+  }
+
   saveUserLevelLocal = () => {
     window.localStorage.setItem('userLevel', this.props.userLevel);
   }
 
   render() {
+    const { classes } = this.props;
       return (
         <AppBar position="static" style={{background: `linear-gradient(to right, #43cea2, #185a9d)`}}>
+          <RightMenu
+            open={this.state.showMenu}
+            closeView={this.shouldShowMenu} />
           <Toolbar>
             {this.props.shouldShowPersonPanel
               ? <div className="popup" style={{position: 'absolute', left: '10px', top: '56px'}}>
@@ -33,9 +62,12 @@ class TopBar extends Component {
               </Typography>
             </div>
             <div style={{position: 'absolute', right: '15px'}}>
-              <Link to="/helper/0" onClick={this.saveUserLevelLocal} target="_blank">
-                <HelperIcon style={{width: '33px', height: '33px'}} />
-              </Link>
+              <IconButton onClick={this.shouldShowMenu} classes={{
+                root: classes.buttonRoot,
+                icon: classes.buttonIcon
+              }}>
+                <MenuIcon />
+              </IconButton>
             </div>
           </Toolbar>
         </AppBar>
@@ -48,4 +80,4 @@ const mapStateToProps = ({ appReducer }) => ({
   userLevel: appReducer.userLevel
 })
 
-export default withRouter(connect(mapStateToProps)(TopBar));
+export default withStyles(styles)(withRouter(connect(mapStateToProps)(TopBar)));

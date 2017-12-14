@@ -23,6 +23,8 @@ import Divider from 'material-ui/Divider';
 import Tabs, { Tab } from 'material-ui/Tabs';
 import { getTrainTaskList } from '../actions/task_action';
 import TrainSettingView from './popups/TrainSettingView';
+import LoadingStatisticsView from './popups/LoadingStatisticsView';
+import StatisticsView from './popups/StatisticsView';
 
 const styles = theme => ({
   refreshButton: {
@@ -437,30 +439,33 @@ class TaskPage extends Component {
       }
     }
 
-    getTagProgress = (taskName, showLabelStatistics) => {
-        const that = this;
-        const getFileCount = new XMLHttpRequest();
-        getFileCount.open('GET', `${this.props.defaultURL}filecount?usrname=${this.props.username}&taskname=${taskName}`);
-        getFileCount.send();
-        getFileCount.onload = function() {
-            const theFileCount = getFileCount.response;
-            const getTagedFileCount = new XMLHttpRequest();
-            getTagedFileCount.open('GET', `${that.props.defaultURL}labeledfilecount?usrname=${that.props.username}&taskname=${taskName}`);
-            getTagedFileCount.send();
-            getTagedFileCount.onload = function() {
-                const theTagedFileCount = getTagedFileCount.response;
-                const tagProgress = `${theTagedFileCount}/${theFileCount}`;
-                that.setState((state) => {
-                    state.taskList.map((task) => {
-                        if(task.taskName === taskName) {
-                            task.tagProgress = tagProgress;
-                        }
-                    })
-                }, function() {
-                    showLabelStatistics();
+    getTagProgress = (taskName, showLabelStatistics=null) => {
+      fetch(`${this.props.defaultURL}filecount?usrname=${this.props.username}&taskname=${taskName}`)
+        .then((response) => response.json())
+        .then((result) => {
+          const theFileCount = result;
+          fetch(`${this.props.defaultURL}labeledfilecount?usrname=${this.props.username}&taskname=${taskName}`)
+            .then((response) => response.json())
+            .then((result) => {
+              const theTagedFileCount = result;
+              const tagProgress = `${theTagedFileCount}/${theFileCount}`;
+              this.setState((state) => {
+                state.taskList.map((task) => {
+                    if(task.taskName === taskName) {
+                        task.tagProgress = tagProgress;
+                    }
                 })
-            }
-        }
+              }, () => {
+                showLabelStatistics();
+              })
+            })
+            .catch((error) => {
+              console.log(error);
+            })
+        })
+        .catch((error) => {
+          console.log(error);
+        })
     }
 
     getTagProgressForTrainTask = (task, showLabelStatisticsForTrainTask) => {
@@ -1069,6 +1074,9 @@ class TaskPage extends Component {
               this.shouldShowLabelStatisticsView();
             })
           })
+          .catch((error) => {
+            console.log(error);
+          })
       });
     }
 
@@ -1166,6 +1174,8 @@ class TaskPage extends Component {
                   addNewTask={this.addNewTask}
                   closeView={this.closeInputView} />}
                 {this.state.showDistributeTaskView && <DistriTaskView
+                  defaultURL={this.props.defaultURL}
+                  userName={this.props.userName}
                   distrTaskToUser={this.distrTaskToUser}
                   setCurrentUser={this.setCurrentUser}
                   closeDistributeTaskView={this.closeDistributeTaskView}
@@ -1222,23 +1232,16 @@ class TaskPage extends Component {
                         </div>
                     ) : null
                 }
-                {this.state.showLabelStatisticsLoading
-                  ? <div className="w3-modal" style={{display: 'flex', justifyContent: 'center', paddingTop: '300px'}}>
-                    <i onClick={this.shouldShowLabelStatisticsLoading} className="fa fa-times w3-text-white w3-xxlarge et-hoverable" style={{position: 'absolute', top: '10px', right: '10px'}}></i>
-                    <p style={{fontSize: '4em', color: 'white'}}>统计中...</p>
-                  </div>
-                  : null}
-                {this.state.showLabelStatisticsView === true &&
-                  <div className="popup w3-center w3-padding-64" style={{background: 'rgba(0, 0, 0, 0.4)', position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', zIndex: '100', overflowY: 'scroll'}}>
-                      <i onClick={this.shouldShowLabelStatisticsView} className="fa fa-times w3-text-white w3-xxlarge et-hoverable" aria-hidden="true" style={{position: 'absolute', top: '10px', right: '10px'}}></i>
-                      <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
-                          <h3 className="w3-text-white">{`标注进度: ${this.state.currentTagProgress}`}</h3>
-                          <div style={{overflowX: 'auto', width: '90%'}}>
-                            <img src={this.state.statisticsUrl} />
-                          </div>
-                          <button onClick={this.outputTagData} className="w3-button w3-orange w3-text-white w3-margin-top" style={{borderRadius: '5px'}}>输出标记数据</button>
-                      </div>
-                  </div>}
+                {this.state.showLabelStatisticsLoading && <LoadingStatisticsView
+                  shouldShowLabelStatisticsLoading={this.shouldShowLabelStatisticsLoading}/>}
+                {this.state.showLabelStatisticsView && <StatisticsView
+                  userName={this.props.userName}
+                  taskName={this.state.currentTaskName}
+                  defaultURL={this.props.defaultURL}
+                  closeView={this.shouldShowLabelStatisticsView}
+                  currentTagProgress={this.state.currentTagProgress}
+                  statisticsUrl={this.state.statisticsUrl}
+                  outputTagData={this.outputTagData} />}
                 <div className={`et-content`}>
                   <Tabs
                     value={tabIndex}
@@ -1313,7 +1316,8 @@ const mapStateToProps = ({ appReducer }) => ({
   userLevel: appReducer.userLevel,
   trainStateLog: appReducer.trainStateLog,
   userName: appReducer.userName,
-  taskName: appReducer.taskName
+  taskName: appReducer.taskName,
+  defaultURL: appReducer.defaultURL
 })
 
 export default withStyles(styles)(withRouter(connect(mapStateToProps)(TaskPage)));

@@ -109,7 +109,176 @@ class InputView extends Component {
   }
 }
 
+class LabelerTable extends Component {
+  state = {
+    labelerList: [],
+    page: 0,
+    rowsPerPage: 5,
+  }
 
+  componentDidMount() {
+    this.getLabeler();
+  }
+
+  getLabeler = () => {
+    const { defaultURL, userName, taskName } = this.props;
+    fetch(`${defaultURL}getstatisticslabeler?usrname=${userName}&taskname=${taskName}`)
+      .then((response) => response.text())
+      .then((result) => {
+        if(result !== '{}') {
+          const arrayData = result.split(']');
+          const labelerList = [];
+          for(let i=0; i<arrayData.length - 1; i++) {
+            const data = arrayData[i].split(':');
+            const name = i === 0 ? data[0].slice(3, data[0].length - 1) : data[0].slice(4, data[0].length - 1);
+            const strList = data[1].slice(1, data[1].length) + ']';
+            const numList = JSON.parse(strList);
+            labelerList.push({name, numList});
+          }
+          this.setState({
+            labelerList
+          })
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      })
+  }
+
+  handleChangePage = (e, page) => {
+    this.setState({
+      page
+    })
+  }
+
+  handleChangeRowsPerPage = (e) => {
+    this.setState({
+      rowsPerPage: e.target.value
+    })
+  }
+
+  render() {
+    const { page, rowsPerPage, labelerList } = this.state;
+    const { classes } = this.props;
+    return (
+      <Table className={classes.table}>
+        <TableHead>
+          <TableRow>
+            <TableCell>标注者</TableCell>
+            <TableCell>标注数量</TableCell>
+            <TableCell>已审核数</TableCell>
+            <TableCell>已通过数</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {labelerList.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((labeler) => (
+            <TableRow key={labeler.name}>
+              <TableCell>{labeler.name}</TableCell>
+              <TableCell>{labeler.numList[0]}</TableCell>
+              <TableCell>{labeler.numList[1]}</TableCell>
+              <TableCell>{labeler.numList[2]}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+        <TableFooter>
+          <TableRow>
+            <TablePagination
+              labelRowsPerPage="每页数量"
+              count={labelerList.length}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onChangePage={this.handleChangePage}
+              onChangeRowsPerPage={this.handleChangeRowsPerPage}
+            />
+          </TableRow>
+        </TableFooter>
+      </Table>
+    )
+  }
+}
+
+class ReviewerTable extends Component {
+  state = {
+    reviewerList: [],
+    page: 0,
+    rowsPerPage: 5,
+  }
+
+  componentDidMount() {
+    this.getReviewer();
+  }
+
+  getReviewer = () => {
+    const { defaultURL, userName, taskName } = this.props;
+    fetch(`${defaultURL}getstatisticsreviewer?usrname=${userName}&taskname=${taskName}`)
+      .then((response) => response.text())
+      .then((result) => {
+        if(result !== '{}') {
+          const arrayData = result.split(',');
+          const reviewerList = [];
+          for(let i=0; i<arrayData.length; i++) {
+            const data = arrayData[i].split(':');
+            const name = data[0].slice(3, data[0].length - 1);
+            const num = i === arrayData.length - 1 ? data[1].slice(1, data[1].length - 1) : data[1].slice(1, data[1].length);
+            reviewerList.push({name, num});
+          }
+          this.setState({
+            reviewerList
+          })
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      })
+  }
+
+  handleChangePage = (e, page) => {
+    this.setState({
+      page
+    })
+  }
+
+  handleChangeRowsPerPage = (e) => {
+    this.setState({
+      rowsPerPage: e.target.value
+    })
+  }
+
+  render() {
+    const { reviewerList, page, rowsPerPage } = this.state;
+    const { classes } = this.props;
+    return (
+      <Table className={classes.table}>
+        <TableHead>
+          <TableRow>
+            <TableCell>审核者</TableCell>
+            <TableCell>审核数量</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {reviewerList.slice(rowsPerPage * page, rowsPerPage * page + rowsPerPage).map((reviewer) => (
+            <TableRow key={reviewer.name}>
+              <TableCell>{reviewer.name}</TableCell>
+              <TableCell>{reviewer.num}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+        <TableFooter>
+          <TableRow>
+            <TablePagination
+              labelRowsPerPage="每页数量"
+              count={reviewerList.length}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onChangePage={this.handleChangePage}
+              onChangeRowsPerPage={this.handleChangeRowsPerPage}
+            />
+          </TableRow>
+        </TableFooter>
+      </Table>
+    )
+  }
+}
 
 class DistriTaskView extends Component {
   state = {
@@ -119,6 +288,7 @@ class DistriTaskView extends Component {
     rowsPerPage2: 5,
     modeIndex: 0,
     currentTable: 'distred',
+    currentTable2: 'labeler',
     showInputView: false,
   }
 
@@ -138,6 +308,12 @@ class DistriTaskView extends Component {
   handleTableChange = (e) => {
     this.setState({
       currentTable: e.target.value
+    })
+  }
+
+  handleTableChange2 = (e) => {
+    this.setState({
+      currentTable2: e.target.value
     })
   }
 
@@ -194,8 +370,6 @@ class DistriTaskView extends Component {
           classes={classes}
           closeView={this.closeInputView} />}
         <Typography style={{color: 'white'}} type="title">{`当前任务(${taskName})`}</Typography>
-        <div>
-        </div>
         <div>
           <div style={{marginTop: '32px'}}>
             <Toolbar style={{background: '#fff'}}>
@@ -279,6 +453,30 @@ class DistriTaskView extends Component {
               </TableFooter>
             </Table>}
           </div>
+        </div>
+        <div style={{marginTop: '30px'}}>
+          <Toolbar style={{background: '#fff'}}>
+            <div className={classes.title}>
+              <Select
+                native
+                value={this.state.currentTable2}
+                onChange={this.handleTableChange2}>
+                <option value={'labeler'}>标注者统计</option>
+                <option value={'reviewer'}>审核者统计</option>
+              </Select>
+            </div>
+          </Toolbar>
+          <Divider style={{backgroundColor: '#f1f1f1'}} />
+          {this.state.currentTable2 === 'labeler' && <LabelerTable
+            defaultURL={this.props.defaultURL}
+            userName={this.props.userName}
+            taskName={this.props.taskName}
+            classes={this.props.classes} />}
+          {this.state.currentTable2 === 'reviewer' && <ReviewerTable
+            defaultURL={this.props.defaultURL}
+            userName={this.props.userName}
+            taskName={this.props.taskName}
+            classes={this.props.classes} />}
         </div>
       </Dialog>
     )

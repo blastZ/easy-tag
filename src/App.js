@@ -25,14 +25,15 @@ import SelectedPointImage from './point_page/SelectedPointImage';
 import TagPointView from './point_page/TagPointView';
 import SelectPointBar from './point_page/SelectPointBar';
 import { DEFAULT_URL } from './utils/global_config';
+import TestForAll from './testPageForAll/TestForAll';
 
 class App extends Component {
     state = {
-        userName: '',
+        userName: 'fj',
         taskName: '',
-        userLevel: 0,
+        userLevel: 3,
         userGroup: '',
-        password: '',
+        password: '1q2w3e4r',
         defaultURL: DEFAULT_URL,
         imageList: [
             //{url: 'http://demo.codvision.com:16831/static/user/fj/task1/data/zhong1_12.jpg', name: 'ding1_6.jpg', labeled: 0}
@@ -45,7 +46,7 @@ class App extends Component {
         start: 1,
         num: 10,
         complete: 0,
-        login: false,
+        login: true,
         shouldPostTagList: false,
         shouldPostObjectTagList: false,
         currentBrowserMode: 'normal', //'normal', 'find',
@@ -2214,6 +2215,60 @@ class App extends Component {
                         </div>
                     </div> : null
                 )}/>
+                <Route exact path="/testforall" render={() => (
+                  <TestForAll
+                    boxIndex={this.state.boxIndex}
+                    bindVideoFileEvent={this.bindVideoFileEvent}
+                    deleteSameImage={this.autoDeleteSameFiles}
+                    getImageList={this.getImageList}
+                    onNextImage={this.nextImage}
+                    onPreviousImage={this.previousImage}
+                    num={this.state.num}
+                    info={this.state.info}
+                    currentTagString={this.state.currentTagString}
+                    onAddTag={this.addTag}
+                    selectedImage={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].url : ''}
+                    selectedImageName={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].name : 'No Image'}
+                    selectedImageNumInAll={parseInt(this.state.start) + this.state.selectedImageNum}
+                    complete={this.state.complete}
+                    onDeleteImage={this.deleteImage}
+                    onUploadImgeFiles={this.uploadImageFiles}
+                    onShowNewImage={this.showNewImage}
+                    boxList={this.state.tagList}
+                    userName={this.state.userName}
+                    userLevel={this.state.userLevel}
+                    taskName={this.props.taskName}
+                    onClickItem={this.clickItem}
+                    selectedImageNum={this.state.selectedImageNum}
+                    imageList={this.state.imageList}
+                    changeReviewState={this.changeReviewState}
+                    boxIndex={this.state.boxIndex}
+                    changeBoxIndex={this.changeBoxIndex}
+                    selectedImage={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].url : ''}
+                    selectedImageNum={this.state.selectedImageNum}
+                    getBoxList={this.getTagList}
+                    needPostTagList={this.needPostTagList}
+                    onHandleNumChange={this.handleNumChange}
+                    getImageListByTag={this.getImageListByTag}
+                    editTagString={this.editTagString}
+                    addNewTagToBox={this.addNewTagToBox}
+                    removeTagFromBox={this.removeTagFromBox}
+                    onHandleStartChange={this.handleStartChange}
+                    start={this.state.start}
+                    num={this.state.num}
+                    info={this.state.info}
+                    currentTagString={this.state.currentTagString}
+                    onChangeTagString={this.changeTagString}
+                    onChangeBrowserMode={this.changeBrowserMode}
+                    onGetImageList={this.getImageList}
+                    onNextImageList={this.nextImageList}
+                    onPreviousImageList={this.previousImageList}
+                    boxList={this.state.tagList}
+                    onDeleteBox={this.deleteBox}
+                    onChangeBoxInfo={this.changeBoxInfo}
+                    defaultURL={this.state.defaultURL}
+                    onAutoTagImages={this.autoTagImages} />
+                )} />
             </div>
         )
   }

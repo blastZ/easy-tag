@@ -6,19 +6,37 @@ import Toolbar from 'material-ui/Toolbar';
 import { orange, green } from 'material-ui/colors';
 import Avatar from 'material-ui/Avatar';
 import IconButton from 'material-ui/IconButton';
-import HelperIcon from 'material-ui-icons/HelpOutline';
 import SettingView from './SettingView';
 import { withStyles } from 'material-ui/styles';
 import Button from 'material-ui/Button';
 import TextField from 'material-ui/TextField';
 import { Color } from '../utils/global_config';
+import RightMenu from './RightMenu';
+import MenuIcon from 'material-ui-icons/Menu';
+
+const styles = {
+  buttonRoot: {
+    color: 'white'
+  },
+  buttonIcon: {
+    width: '1.2em',
+    height: '1.2em'
+  }
+}
 
 class Login extends Component {
     state = {
         username: '',
         password: '',
         showRegisterView: false,
-        showSettingView: false
+        showSettingView: false,
+        showMenu: false
+    }
+
+    shouldShowMenu = () => {
+      this.setState({
+        showMenu: !this.state.showMenu
+      })
     }
 
     showRegisterView = () => {
@@ -72,11 +90,15 @@ class Login extends Component {
     }
 
     render() {
+      const { classes } = this.props;
         return (
             <div className="full-height et-background-white">
                 {this.state.showRegisterView
                   ? <RegisterView defaultURL={this.props.defaultURL} onCloseRegisterView={this.closeRegisterView}/>
                   : null}
+                <RightMenu
+                  open={this.state.showMenu}
+                  closeView={this.shouldShowMenu} />
                 <SettingView
                   open={this.state.showSettingView}
                   onRequestClose={this.closeSetView} />
@@ -87,9 +109,12 @@ class Login extends Component {
                     </div>
                     <h2>图像智能分析系统</h2>
                     <div style={{position: 'absolute', right: '20px'}}>
-                      <Link to="/helper/0" target="_blank">
-                        <HelperIcon style={{width: '35px', height: '35px'}}/>
-                      </Link>
+                      <IconButton onClick={this.shouldShowMenu} classes={{
+                        root: classes.buttonRoot,
+                        icon: classes.buttonIcon
+                      }}>
+                        <MenuIcon />
+                      </IconButton>
                     </div>
                   </Toolbar>
                 </AppBar>
@@ -121,4 +146,4 @@ class Login extends Component {
     }
 }
 
-export default Login
+export default withStyles(styles)(Login);
