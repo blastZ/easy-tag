@@ -68,9 +68,10 @@ class StatisticsView extends Component {
         <DialogContent>
           <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
               <div style={{display: 'flex'}}>
-                <h3>{`标注进度: ${currentTagProgress}`}</h3>
+                <h3>{`总图片数: ${currentTagProgress.split('/')[1]}`}</h3>
+                <h3 style={{marginLeft: '20px'}}>{`标注张数: ${currentTagProgress.split('/')[0]}`}</h3>
                 <h3 style={{marginLeft: '20px'}}>{`已审核张数: ${checkedFileCount}`}</h3>
-                <h3 style={{marginLeft: '20px'}}>{`已审核通过张数: ${passedFileCount}`}</h3>
+                <h3 style={{marginLeft: '20px'}}>{`审核通过张数: ${passedFileCount}`}</h3>
               </div>
               <div style={{overflowX: 'auto'}}>
                 <img src={statisticsUrl} />

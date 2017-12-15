@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import CheckReviewSelector from './CheckReviewSelector';
 import AutoTagView from './AutoTagView';
 import SearchButton from './SearchButton';
+import SetReasonView from './tagPage/popups/SetReasonView';
 
 class TagView extends Component {
     state = {
@@ -20,6 +21,14 @@ class TagView extends Component {
         showAutoTagView: false,
         pretrainmodelList: [],
         boxImgList: {}, //use key-value so this is object not array
+        reasonList: [], //review reasons
+        showSetReasonView: false
+    }
+
+    shouldShowSetReasonView = () => {
+      this.setState({
+        showSetReasonView: !this.state.showSetReasonView
+      })
     }
 
     openAutoTagView = () => {
@@ -84,7 +93,46 @@ class TagView extends Component {
 
     componentDidMount() {
         this.loadTagList();
+        this.getReviewReason();
         document.addEventListener('keyup', this.pageUpAndDownListener);
+    }
+
+    getReviewReason = () => {
+      fetch(`${this.props.defaultURL}loadreason?usrname=${this.props.userName}&taskname=${this.props.taskName}`)
+        .then(response => response.json())
+        .then((result) => {
+          this.setState({
+            reasonList: result.reasonlist
+          })
+        })
+    }
+
+    addNewReason = (reason) => {
+      fetch(`${this.props.defaultURL}savereason?usrname=${this.props.userName}&taskname=${this.props.taskName}`, {
+        method: 'POST',
+        body: JSON.stringify({
+          reasonlist: this.state.reasonList.concat([reason])
+        })
+      })
+        .then(response => response.text())
+        .then((result) => {
+          this.getReviewReason();
+        })
+    }
+
+    deleteReason = (index) => {
+      const reasonList = this.state.reasonList;
+      reasonList.splice(index, 1);
+      fetch(`${this.props.defaultURL}savereason?usrname=${this.props.userName}&taskname=${this.props.taskName}`, {
+        method: 'POST',
+        body: JSON.stringify({
+          reasonlist: reasonList
+        })
+      })
+        .then(response => response.text())
+        .then((result) => {
+          this.getReviewReason();
+        })
     }
 
     componentDidUpdate(preProps, preState) {
@@ -356,6 +404,11 @@ class TagView extends Component {
     render() {
         return (
             <div className="flex-box flex-column" style={{justifyContent: 'center', height: '100%'}}>
+                {this.state.showSetReasonView && <SetReasonView
+                  reasonList={this.state.reasonList}
+                  closeView={this.shouldShowSetReasonView}
+                  addNewReason={this.addNewReason}
+                  deleteReason={this.deleteReason} />}
                 <AutoTagView
                   open={this.state.showAutoTagView}
                   closeView={this.closeAutoTagView}
@@ -495,15 +548,22 @@ class TagView extends Component {
                             <img src={this.state.boxImgList[index]} style={{maxWidth: '100%', marginTop: '5px', maxHeight: '80px'}} alt="tag-content" />
                             {this.props.userLevel > 0 &&
                               <CheckReviewSelector
+                                openSetReasonView={this.shouldShowSetReasonView}
+                                reasonList={this.state.reasonList}
                                 value={box.checked ? box.checked : '' }
+                                reason={box.reason ? box.reason : ''}
                                 changeReviewState={this.props.changeReviewState}
+                                changeReason={this.props.changeReason}
                                 index={index}/>}
                             {this.props.userLevel === 0 &&
                               <div>
                                 {box.checked
                                   ? box.checked === 'YES'
                                     ? <p style={{color: 'green'}}>审核通过</p>
-                                    : <p style={{color: 'red'}}>审核未通过</p>
+                                    : <div>
+                                      <p style={{color: 'red'}}>审核未通过</p>
+                                      <p>{`原因：${box.reason}`}</p>
+                                    </div>
                                   : <p style={{color: 'orange'}}>待审核</p>}
                               </div>}
                         </li>

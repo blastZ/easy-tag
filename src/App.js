@@ -1845,7 +1845,27 @@ class App extends Component {
     changeReviewState = (value, index) => {
       let theBox = this.state.tagList[index];
       theBox.checked = value;
+      if(value === 'YES') {
+        if(theBox.reason) {
+          delete theBox.reason
+        }
+      }
       theBox.reviewer = this.state.userName;
+      this.setState({
+        tagList: this.state.tagList.map((box, theIndex) => {
+          if(theIndex === index) {
+            return theBox;
+          } else {
+            return box;
+          }
+        }),
+        shouldPostTagList: true
+      })
+    }
+
+    changeReason = (value, index) => {
+      let theBox = this.state.tagList[index];
+      theBox.reason = value;
       this.setState({
         tagList: this.state.tagList.map((box, theIndex) => {
           if(theIndex === index) {
@@ -1925,6 +1945,7 @@ class App extends Component {
                                clickItem={this.clickItem}
                                getImageList={this.getImageList}
                                changeReviewState={this.changeReviewState}
+                               changeReason={this.changeReason}
                                boxIndex={this.state.boxIndex}
                                changeBoxIndex={this.changeBoxIndex}
                                selectedImage={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].url : ''}
@@ -2040,7 +2061,6 @@ class App extends Component {
                         onClickItem={this.clickItem}
                         selectedImageNum={this.state.selectedImageNum}
                         imageList={this.state.imageList}
-                        changeReviewState={this.changeReviewState}
                         boxIndex={this.state.boxIndex}
                         changeBoxIndex={this.changeBoxIndex}
                         selectedImage={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].url : ''}
@@ -2241,7 +2261,6 @@ class App extends Component {
                     onClickItem={this.clickItem}
                     selectedImageNum={this.state.selectedImageNum}
                     imageList={this.state.imageList}
-                    changeReviewState={this.changeReviewState}
                     boxIndex={this.state.boxIndex}
                     changeBoxIndex={this.changeBoxIndex}
                     selectedImage={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].url : ''}
