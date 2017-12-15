@@ -5,7 +5,7 @@ import Select from 'material-ui/Select';
 import Input, { InputLabel } from 'material-ui/Input';
 import { MenuItem } from 'material-ui/Menu';
 import Button from 'material-ui/Button';
-import AddIcon from 'material-ui-icons/Add';
+import SetIcon from 'material-ui-icons/Settings';
 import { withStyles } from 'material-ui/styles';
 
 const styles = {
@@ -70,7 +70,7 @@ class CheckReviewSelector extends Component {
               root: classes.button,
               label: classes.buttonLabel
             }}>
-              <AddIcon style={{width: '18px', height: '18px'}} />
+              <SetIcon style={{width: '14px', height: '16px'}} />
             </Button>
             <FormControl style={{flexGrow: 1}}>
               <InputLabel htmlFor="age-simple">审核不通过原因</InputLabel>

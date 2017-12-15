@@ -393,12 +393,8 @@ class TagView extends Component {
       this.props.onChangeBrowserMode('find');
     }
 
-    findByLabel = () => {
-      this.props.onChangeBrowserMode('findLabel');
-    }
-
-    findByNoLabel = () => {
-      this.props.onChangeBrowserMode('findNoLabel');
+    findByMode = (mode) => {
+      this.props.onChangeBrowserMode(mode);
     }
 
     render() {
@@ -418,8 +414,7 @@ class TagView extends Component {
                 <SearchButton
                     exitFindMode={this.exitFindMode}
                     findByTag={this.findByTag}
-                    findByLabel={this.findByLabel}
-                    findByNoLabel={this.findByNoLabel} />
+                    findByMode={this.findByMode} />
                 <div className="flex-box margin-top-5">
                     <select onChange={this.changeTagStringList} id="mySelectForListName" className="w3-select" style={{width: '50%'}}>
                     {

@@ -29,11 +29,11 @@ import TestForAll from './testPageForAll/TestForAll';
 
 class App extends Component {
     state = {
-        userName: 'fj',
+        userName: '',
         taskName: '',
-        userLevel: 3,
+        userLevel: -1,
         userGroup: '',
-        password: '1q2w3e4r',
+        password: '',
         defaultURL: DEFAULT_URL,
         imageList: [
             //{url: 'http://demo.codvision.com:16831/static/user/fj/task1/data/zhong1_12.jpg', name: 'ding1_6.jpg', labeled: 0}
@@ -46,7 +46,7 @@ class App extends Component {
         start: 1,
         num: 10,
         complete: 0,
-        login: true,
+        login: false,
         shouldPostTagList: false,
         shouldPostObjectTagList: false,
         currentBrowserMode: 'normal', //'normal', 'find',
@@ -106,6 +106,27 @@ class App extends Component {
 
     }
 
+    getFindMethod = (mode) => {
+      switch (mode) {
+        case 'noLabel': return 'getdirwithouttag';
+        case 'reviewed': return 'getdirchecked';
+        case 'noReviewed': return 'getdirunchecked ';
+        case 'passed': return 'getdirpassed';
+        case 'noPassed': return 'getdirnotpassed';
+        default: return 'getdirwithtag';
+      }
+    }
+
+    getFindMode = (browserMode) => {
+      switch (browserMode) {
+        case 'findNoLabel': return 'noLabel';
+        case 'findReviewed': return 'reviewed';
+        case 'findNoReviewed': return 'noReviewed';
+        case 'findPassed': return 'passed';
+        case 'findNoPassed': return 'noPassed';
+      }
+    }
+
     getImageListByTag = (mode='') => {
         this.setState({selectedImageNum: 0, tagList: []});
         const that = this;
@@ -134,9 +155,9 @@ class App extends Component {
               console.log('get imageList by tag failed');
               that.getTagList(0);
           }
-        } else if(mode === 'noLabel') {
+        } else {
           const newImageList = [];
-          fetch(`${this.state.defaultURL}getdirwithouttag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start}&num=${this.state.num}`)
+          fetch(`${this.state.defaultURL}${this.getFindMethod(mode)}?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start}&num=${this.state.num}`)
             .then((response) => response.json())
             .then((result) => {
               result.map((image) => {
@@ -255,9 +276,10 @@ class App extends Component {
                 })
                 that.getTagList(0);
             }
-        } else if(this.state.currentBrowserMode === 'findNoLabel') {
+        } else {
+          const mode = this.getFindMode(this.state.currentBrowserMode);
           const newImageList = [];
-          fetch(`${this.state.defaultURL}getdirwithouttag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start}&num=${this.state.num}`)
+          fetch(`${this.state.defaultURL}${this.getFindMethod(mode)}?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start + this.state.num}&num=${this.state.num}`)
             .then((response) => response.json())
             .then((result) => {
               result.map((image) => {
@@ -362,9 +384,10 @@ class App extends Component {
                 })
                 that.getTagList(0);
             }
-        } else if(this.state.currentBrowserMode === 'findNoLabel') {
+        } else {
+            const mode = this.getFindMode(this.state.currentBrowserMode);
             const newImageList = [];
-            fetch(`${this.state.defaultURL}getdirwithouttag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start}&num=${this.state.num}`)
+            fetch(`${this.state.defaultURL}${this.getFindMethod(mode)}?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start}&num=${this.state.num}`)
               .then((response) => response.json())
               .then((result) => {
                 result.map((image) => {
@@ -463,9 +486,10 @@ class App extends Component {
                 that.getDaubData(0);
               }, 300)
           }
-      } else if(this.state.currentBrowserMode === 'findNoLabel') {
+      } else {
+          const mode = this.getFindMode(this.state.currentBrowserMode);
           const newImageList = [];
-          fetch(`${this.state.defaultURL}getdirwithouttag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start}&num=${this.state.num}`)
+          fetch(`${this.state.defaultURL}${this.getFindMethod(mode)}?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start}&num=${this.state.num}`)
             .then((response) => response.json())
             .then((result) => {
               result.map((image) => {
@@ -567,9 +591,10 @@ class App extends Component {
                 })
                 that.getTagList(0);
             }
-        } else if(this.state.currentBrowserMode === 'findNoLabel') {
+        } else {
+            const mode = this.getFindMode(this.state.currentBrowserMode);
             const newImageList = [];
-            fetch(`${this.state.defaultURL}getdirwithouttag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start}&num=${this.state.num}`)
+            fetch(`${this.state.defaultURL}${this.getFindMethod(mode)}?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`)
               .then((response) => response.json())
               .then((result) => {
                 result.map((image) => {
@@ -669,9 +694,10 @@ class App extends Component {
                 })
                 that.getTagList(0);
             }
-        } else if(this.state.currentBrowserMode === 'findNoLabel') {
+        } else {
+            const mode = this.getFindMode(this.state.currentBrowserMode);
             const newImageList = [];
-            fetch(`${this.state.defaultURL}getdirwithouttag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start}&num=${this.state.num}`)
+            fetch(`${this.state.defaultURL}${this.getFindMethod(mode)}?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start}&num=${this.state.num}`)
               .then((response) => response.json())
               .then((result) => {
                 result.map((image) => {
@@ -767,9 +793,10 @@ class App extends Component {
                 that.getDaubData(0);
               }, 300)
           }
-      } else if(this.state.currentBrowserMode === 'findNoLabel') {
+      } else {
+          const mode = this.getFindMode(this.state.currentBrowserMode);
           const newImageList = [];
-          fetch(`${this.state.defaultURL}getdirwithouttag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start}&num=${this.state.num}`)
+          fetch(`${this.state.defaultURL}${this.getFindMethod(mode)}?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start}&num=${this.state.num}`)
             .then((response) => response.json())
             .then((result) => {
               result.map((image) => {
@@ -888,10 +915,11 @@ class App extends Component {
                 } catch(error) {
                     console.log(error);
                 }
-            } else if(this.state.currentBrowserMode === 'findNoLabel') {
+            } else {
                 try {
+                    const mode = this.getFindMode(this.state.currentBrowserMode);
                     const newImageList = [];
-                    fetch(`${this.state.defaultURL}getdirwithouttag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start}&num=${this.state.num}`)
+                    fetch(`${this.state.defaultURL}${this.getFindMethod(mode)}?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start}&num=${this.state.num}`)
                       .then((response) => response.json())
                       .then((result) => {
                         result.map((image) => {
@@ -1012,10 +1040,11 @@ class App extends Component {
                 } catch(error) {
                     console.log(error);
                 }
-            } else if(this.state.currentBrowserMode === 'findNoLabel') {
+            } else {
                 try {
+                    const mode = this.getFindMode(this.state.currentBrowserMode);
                     const newImageList = [];
-                    fetch(`${this.state.defaultURL}getdirwithouttag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start}&num=${this.state.num}`)
+                    fetch(`${this.state.defaultURL}${this.getFindMethod(mode)}?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start}&num=${this.state.num}`)
                       .then((response) => response.json())
                       .then((result) => {
                         result.map((image) => {
@@ -1136,10 +1165,11 @@ class App extends Component {
               } catch(error) {
                   console.log(error);
               }
-          } else if(this.state.currentBrowserMode === 'findNoLabel') {
+          } else {
               try {
+                  const mode = this.getFindMode(this.state.currentBrowserMode);
                   const newImageList = [];
-                  fetch(`${this.state.defaultURL}getdirwithouttag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start}&num=${this.state.num}`)
+                  fetch(`${this.state.defaultURL}${this.getFindMethod(mode)}?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start}&num=${this.state.num}`)
                     .then((response) => response.json())
                     .then((result) => {
                       result.map((image) => {
@@ -1720,6 +1750,14 @@ class App extends Component {
                 this.setState({start: 1, num: 10}, () => {this.getImageListByTag('label')})
             } else if(this.state.currentBrowserMode === 'findNoLabel') {
                 this.setState({start: 1, num: 10}, () => {this.getImageListByTag('noLabel')})
+            } else if(this.state.currentBrowserMode === 'findReviewed') {
+                this.setState({start: 1, num: 10}, () => {this.getImageListByTag('reviewed')})
+            } else if(this.state.currentBrowserMode === 'findNoReviewed') {
+                this.setState({start: 1, num: 10}, () => {this.getImageListByTag('noReviewed')})
+            } else if(this.state.currentBrowserMode === 'findPassed') {
+                this.setState({start: 1, num: 10}, () => {this.getImageListByTag('passed')})
+            } else if(this.state.currentBrowserMode === 'findNoPassed') {
+                this.setState({start: 1, num: 10}, () => {this.getImageListByTag('noPassed')})
             }
         });
     }
