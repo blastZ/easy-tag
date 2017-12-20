@@ -10,6 +10,13 @@ class SelectedImage extends Component {
         fileCount: 0,
         tagedFileCount: 0,
         imgLoaded: false,
+        drawing: false,
+        startPoint: {x: 0, y: 0},
+        endPoint: {x: 0, y: 0},
+        moveRecX: 0,
+        moveRecY: 0,
+        moveRecWidth: 0,
+        moveRecHeight: 0,
     }
 
     componentWillMount() {
@@ -81,6 +88,127 @@ class SelectedImage extends Component {
       })
     }
 
+    handleMouseDown = (e) => {
+      const clientX = e.clientX;
+      const clientY = e.clientY;
+      const image = document.getElementById('selectedImage');
+      const panel = document.getElementById('selectedImagePanel');
+      if(e.buttons === 1) {
+        const rec = image.getBoundingClientRect();
+        const panelRec = panel.getBoundingClientRect();
+        const offsetXPanel = panelRec.left;
+        const offsetYPanel = panelRec.top;
+        const offsetX = rec.left;
+        const offsetY = rec.top;
+        const x = clientX - offsetX;
+        const y = clientY - offsetY;
+        if(x >= 0 && y >= 0) {
+          this.setState({
+            drawing: true,
+            startPoint: {x,y},
+            endPoint: {x,y},
+            moveRecX: clientX - offsetXPanel,
+            moveRecY: clientY - offsetYPanel,
+            moveRecWidth: 0,
+            moveRecHeight: 0,
+          })
+        }
+      }
+    }
+
+    handleMouseMove = (e) => {
+      if(this.state.drawing) {
+        const clientX = e.clientX;
+        const clientY = e.clientY;
+        const image = document.getElementById('selectedImage');
+        const panel = document.getElementById('selectedImagePanel');
+        if(e.buttons === 1) {
+          const rec = image.getBoundingClientRect();
+          const panelRec = panel.getBoundingClientRect();
+          const offsetXPanel = panelRec.left;
+          const offsetYPanel = panelRec.top;
+          const offsetX = rec.left;
+          const offsetY = rec.top;
+          const left = offsetX - offsetXPanel;
+          const top = offsetY - offsetYPanel;
+          const x = clientX - offsetX;
+          const y = clientY - offsetY;
+          this.setState({
+            endPoint: {x, y}
+          }, () => {
+            const { startPoint, endPoint } = this.state;
+            if(endPoint.x > startPoint.x && endPoint.y < startPoint.y) {
+              this.setState({
+                moveRecX: startPoint.x + offsetX - offsetXPanel,
+                moveRecY: endPoint.y + offsetY - offsetYPanel,
+                moveRecWidth: endPoint.x - startPoint.x,
+                moveRecHeight: startPoint.y - endPoint.y
+              })
+            } else if(endPoint.x > startPoint.x && endPoint.y > startPoint.y) {
+              this.setState({
+                moveRecX: startPoint.x + offsetX - offsetXPanel,
+                moveRecY: startPoint.y + offsetY - offsetYPanel,
+                moveRecWidth: endPoint.x - startPoint.x,
+                moveRecHeight: endPoint.y - startPoint.y
+              })
+            } else if(endPoint.x < startPoint.x && endPoint.y > startPoint.y) {
+              this.setState({
+                moveRecX: endPoint.x + offsetX - offsetXPanel,
+                moveRecY: startPoint.y + offsetY - offsetYPanel,
+                moveRecWidth: startPoint.x - endPoint.x,
+                moveRecHeight: endPoint.y - startPoint.y
+              })
+            } else if(endPoint.x < startPoint.x && endPoint.y < startPoint.y) {
+              this.setState({
+                moveRecX: endPoint.x + offsetX - offsetXPanel,
+                moveRecY: endPoint.y + offsetY - offsetYPanel,
+                moveRecWidth: startPoint.x - endPoint.x,
+                moveRecHeight: startPoint.y - endPoint.y
+              })
+            }
+          })
+        }
+      }
+    }
+
+    handleMouseUp = (e) => {
+      if(e.buttons === 0) {
+        if(this.state.drawing) {
+          this.addNewBox();
+        }
+      }
+    }
+
+    addNewBox = () => {
+      const image = document.getElementById('selectedImage');
+      const img_natural_width = image.width;
+      const img_natural_height = image.height;
+      const { startPoint, endPoint } = this.state;
+      const x_start = startPoint.x > endPoint.x ? endPoint.x : startPoint.x;
+      const y_start = startPoint.y > endPoint.y ? endPoint.y : startPoint.y;
+      const x_end = startPoint.x > endPoint.x ? startPoint.x : endPoint.x;
+      const y_end = startPoint.y > endPoint.y ? startPoint.y : endPoint.y;
+      const relative_x_start = (x_start / img_natural_width).toFixed(3);
+      const relative_y_start = (y_start / img_natural_height).toFixed(3);
+      const relative_x_end = (x_end / img_natural_width).toFixed(3);
+      const relative_y_end = (y_end / img_natural_height).toFixed(3);
+      const tag = {x_start: relative_x_start, y_start: relative_y_start, x_end: relative_x_end, y_end: relative_y_end, tag: [this.props.currentTagString], info: this.props.info ? this.props.info : '', tagger: this.props.userName}
+      this.props.onAddTag(tag);
+      this.initDrawState();
+    }
+
+    initDrawState = () => {
+      this.setState({
+        drawing: false,
+        startPoint: {x: 0, y: 0},
+        endPoint: {x: 0, y: 0},
+        moveRecX: 0,
+        moveRecY: 0,
+        moveRecWidth: 0,
+        moveRecHeight: 0,
+      })
+    }
+
     componentDidMount() {
         const that = this;
         const theImage = document.getElementById('selectedImage');
@@ -108,26 +236,11 @@ class SelectedImage extends Component {
         //bind upload and show events
         this.bindFileEvent();
 
-        let drawing = false
-        let x1 = 0, y1 = 0, x_move = 0, y_move = 0
-        let rect_width = 0, rect_height = 0
-        let offset = {}
+        let drawing = false;
         let start = false;
         let previousClientX = 0, previousClientY = 0, currentClientX = 0, currentClientY = 0;
         $('#selectedImagePanel').mousedown(function(e) {
-            if(e.which === 1) {
-                drawing = true
-                try {
-                    offset = $(this).offset()
-                    x1 = e.clientX - offset.left
-                    y1 = e.clientY - offset.top
-                    $(this).append(
-                        `<div id="move-rect" class="black-white-border" style="position: absolute; left: ${x1}px; top: ${y1}px;"></div>`
-                    )
-                } catch(e) {
-                    alert(e)
-                }
-            } else if(e.which === 3) {
+            if(e.which === 3) {
                 start = true;
                 previousClientX = e.clientX;
                 previousClientY = e.clientY;
@@ -135,29 +248,7 @@ class SelectedImage extends Component {
         })
 
         $('#selectedImagePanel').mousemove(function(e) {
-            if(e.which === 1) {
-                if(drawing) {
-                    x_move = e.clientX - offset.left
-                    y_move = e.clientY - offset.top
-                    if(x_move > x1 && y_move < y1) {
-                        $('#move-rect').css('left', `${x1}px`)
-                        $('#move-rect').css('top', `${y_move}px`)
-                    } else if(x_move > x1 && y_move > y1) {
-                        $('#move-rect').css('left', `${x1}px`)
-                        $('#move-rect').css('top', `${y1}px`)
-                    } else if(x_move < x1 && y_move > y1) {
-                        $('#move-rect').css('left', `${x_move}px`)
-                        $('#move-rect').css('top', `${y1}px`)
-                    } else if(x_move < x1 && y_move < y1) {
-                        $('#move-rect').css('left', `${x_move}px`)
-                        $('#move-rect').css('top', `${y_move}px`)
-                    }
-                    rect_width = Math.abs(x_move - x1)
-                    rect_height = Math.abs(y_move - y1)
-                    $('#move-rect').css('width', `${rect_width}px`)
-                    $('#move-rect').css('height', `${rect_height}px`)
-                }
-            } else if(e.which === 3) {
+            if(e.which === 3) {
                 if(start) {
                     currentClientX = e.clientX;
                     currentClientY = e.clientY;
@@ -171,35 +262,7 @@ class SelectedImage extends Component {
         })
 
         mouseupListener = function(e) {
-          if(e.which === 1) {
-              if(drawing) {
-                  const img_natural_width = document.getElementById('selectedImage').width;
-                  const img_natural_height = document.getElementById('selectedImage').height;
-                  try {
-                      const theImage_left = parseInt(theImage.style.left);
-                      const theImage_top = parseInt(theImage.style.top);
-                      const x_start = $('#move-rect').css('left');
-                      const x_start_int = parseInt(x_start);
-                      const y_start = $('#move-rect').css('top');
-                      const y_start_int = parseInt(y_start);
-                      const x_end = x_start_int + rect_width
-                      const y_end = y_start_int + rect_height
-                      const relative_x_start = ((x_start_int - theImage_left) / img_natural_width).toFixed(3)
-                      const relative_y_start = ((y_start_int - theImage_top) / img_natural_height).toFixed(3)
-                      const relative_x_end = ((x_end - theImage_left) / img_natural_width).toFixed(3)
-                      const relative_y_end = ((y_end - theImage_top) / img_natural_height).toFixed(3)
-                      const tag = {x_start: relative_x_start, y_start: relative_y_start, x_end: relative_x_end, y_end: relative_y_end, tag: [that.props.currentTagString], info: that.props.info ? that.props.info : '', tagger: that.props.userName}
-                      //console.log(tag)
-                      that.props.onAddTag(tag)
-                      $('#move-rect').remove()
-                  } catch(e) {
-                      alert(e)
-                  }
-              }
-              drawing = false
-              rect_width = 0
-              rect_height = 0
-          } else if(e.which === 3) {
+          if(e.which === 3) {
               start = false;
               that.forceUpdate();
           }
@@ -292,6 +355,7 @@ class SelectedImage extends Component {
     }
 
     render() {
+      const { drawing, moveRecX, moveRecY, moveRecWidth, moveRecHeight } = this.state;
         return (
             <div className="w3-center w3-padding-24 flex-box full-width" style={{position: 'relative', justifyContent: 'center', alignItems: 'center', backgroundColor: '#303030', flex: '1'}}>
                 <ImgTopBar
@@ -306,11 +370,21 @@ class SelectedImage extends Component {
                   userLevel={this.props.userLevel}
                   deleteSameImage={this.props.deleteSameImage}
                   onDeleteImage={this.props.onDeleteImage} />
-                <div id="selectedImagePanel" style={{position: 'relative', width: '1200px', height: '600px', overflow: 'hidden', zIndex:'0'}}>
+                <div
+                  onMouseDown={this.handleMouseDown}
+                  onMouseMove={this.handleMouseMove}
+                  onMouseUp={this.handleMouseUp}
+                  id="selectedImagePanel"
+                  style={{position: 'relative', width: '1200px', height: '600px', overflow: 'hidden', zIndex:'0'}}>
                     <img draggable="false" id="selectedImage" src={this.props.selectedImage} alt={this.props.selectedImage} style={{position: 'absolute'}}/>
-                    {
-                        this.state.imgLoaded ? this.drawBoxList() : null
-                    }
+                    {this.state.imgLoaded ? this.drawBoxList() : null}
+                    {drawing && <div className="black-white-border" style={{
+                      position: 'absolute',
+                      width: `${moveRecWidth}px`,
+                      height: `${moveRecHeight}px`,
+                      left: `${moveRecX}px`,
+                      top: `${moveRecY}px`
+                    }} />}
                 </div>
                 {this.props.userLevel !== 0 ?
                     <UploadImageButton
