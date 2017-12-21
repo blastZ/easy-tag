@@ -25,6 +25,7 @@ import { getTrainTaskList } from '../actions/task_action';
 import TrainSettingView from './popups/TrainSettingView';
 import LoadingStatisticsView from './popups/LoadingStatisticsView';
 import StatisticsView from './popups/StatisticsView';
+import { setParams } from '../utils/global_config';
 
 const styles = theme => ({
   refreshButton: {
@@ -297,6 +298,18 @@ class TaskPage extends Component {
     }
 
     componentDidMount() {
+        if(localStorage.getItem('DEFAULT_URL')) {
+          setParams('url', localStorage.getItem('DEFAULT_URL'));
+        }
+        if(localStorage.getItem('DEFAULT_TAGED_NUM')) {
+          setParams('taged-num', localStorage.getItem('DEFAULT_TAGED_NUM'));
+        }
+        if(localStorage.getItem('DEFAULT_URL')) {
+          setParams('taged-progress', localStorage.getItem('DEFAULT_TAGED_PROGRESS'));
+        }
+        if(localStorage.getItem('DEFAULT_URL')) {
+          setParams('DEFAULT_TAG_SIZE', localStorage.getItem('DEFAULT_TAG_SIZE'));
+        }
         this.getTaskList();
         const theRefreshInterval = window.setInterval(this.refreshInterval, 60000);
         this.setState({theRefreshInterval});

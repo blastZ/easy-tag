@@ -29,11 +29,11 @@ import TestForAll from './testPageForAll/TestForAll';
 
 class App extends Component {
     state = {
-        userName: 'fj',
+        userName: '',
         taskName: '',
-        userLevel: 3,
+        userLevel: -1,
         userGroup: '',
-        password: '1q2w3e4r',
+        password: '',
         defaultURL: DEFAULT_URL,
         imageList: [
             //{url: 'http://demo.codvision.com:16831/static/user/fj/task1/data/zhong1_12.jpg', name: 'ding1_6.jpg', labeled: 0}
@@ -46,7 +46,7 @@ class App extends Component {
         start: 1,
         num: 10,
         complete: 0,
-        login: true,
+        login: false,
         shouldPostTagList: false,
         shouldPostObjectTagList: false,
         currentBrowserMode: 'normal', //'normal', 'find',
@@ -1930,6 +1930,18 @@ class App extends Component {
       })
     }
 
+    changeBox = (index, x_start, y_start, x_end, y_end) => {
+      let newTagList = this.state.tagList;
+      newTagList[index].x_start = x_start;
+      newTagList[index].y_start = y_start;
+      newTagList[index].x_end = x_end;
+      newTagList[index].y_end = y_end;
+      this.setState({
+        tagList: newTagList,
+        shouldPostTagList: true
+      })
+    }
+
     render() {
         return (
             <div className="App full-height">
@@ -1952,6 +1964,8 @@ class App extends Component {
                             <SelectedImage ref="selectedImage"
                                setImgList={this.setImgList}
                                boxIndex={this.state.boxIndex}
+                               changeBoxIndex={this.changeBoxIndex}
+                               changeBox={this.changeBox}
                                bindVideoFileEvent={this.bindVideoFileEvent}
                                deleteSameImage={this.autoDeleteSameFiles}
                                getImageList={this.getImageList}

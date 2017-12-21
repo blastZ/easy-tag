@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { getTaskStateName, getTaskTypeName } from '../../utils/Task';
 import { Link } from 'react-router-dom';
-import { DEFAULT_TAGED_NUM, DEFAULT_TAGED_PROGRESS, setParams } from '../../utils/global_config';
+import { DEFAULT_TAGED_NUM, DEFAULT_TAGED_PROGRESS, DEFAULT_TAG_SIZE, setParams } from '../../utils/global_config';
 import TextField from 'material-ui/TextField';
 import { withStyles } from 'material-ui/styles';
 import Table, { TableBody, TableCell, TableHead, TableRow, TableFooter, TablePagination } from 'material-ui/Table';
@@ -33,7 +33,8 @@ const styles = {
 class GlobalSetTable extends Component {
   state = {
     tagedNum: DEFAULT_TAGED_NUM,
-    tagedProgress: DEFAULT_TAGED_PROGRESS
+    tagedProgress: DEFAULT_TAGED_PROGRESS,
+    tagSize: DEFAULT_TAG_SIZE
   }
 
   handleTagedNum = (e) => {
@@ -58,6 +59,14 @@ class GlobalSetTable extends Component {
     setParams('taged-progress', value);
   }
 
+  handleTagSize = (e) => {
+    let value = e.target.value;
+    this.setState({
+      tagSize: value
+    })
+    setParams('DEFAULT_TAG_SIZE', value);
+  }
+
   render() {
     const { userLevel, classes } = this.props;
     return(
@@ -70,16 +79,31 @@ class GlobalSetTable extends Component {
             <Table className={classes.table}>
               <TableBody>
                 <TableRow>
-                  <TableCell style={{borderRight: '1px solid rgba(0, 0, 0, 0.075)'}}>最低图片数量</TableCell>
+                  <TableCell style={{borderRight: '1px solid rgba(0, 0, 0, 0.075)', width: '33%'}}>最低图片数量</TableCell>
                   <TableCell><TextField type="number" InputProps={{classes: { input: classes.centerInput }}} value={this.state.tagedNum} onChange={this.handleTagedNum}/></TableCell>
                 </TableRow>
                 <TableRow>
-                  <TableCell style={{borderRight: '1px solid rgba(0, 0, 0, 0.075)'}}>最低标注比例</TableCell>
+                  <TableCell style={{borderRight: '1px solid rgba(0, 0, 0, 0.075)', width: '33%'}}>最低标注比例</TableCell>
                   <TableCell><TextField type="number" InputProps={{classes: { input: classes.centerInput }}} value={this.state.tagedProgress} onChange={this.handleTagedProgress} /></TableCell>
                 </TableRow>
               </TableBody>
             </Table>
           </Paper>}
+        <div className="et-margin-top-32" style={{position: 'relative', display: 'flex', alignItems: 'center'}}>
+            <h3 className="et-table-title">标注参数</h3>
+        </div>
+        <Paper className={classes.root}>
+          <Table className={classes.table}>
+            <TableBody>
+              <TableRow>
+                <TableCell style={{borderRight: '1px solid rgba(0, 0, 0, 0.075)', width: '33%'}}>最小检测标注面积</TableCell>
+                <TableCell>
+                  <TextField type="number" InputProps={{classes: { input: classes.centerInput }}} value={this.state.tagSize} onChange={this.handleTagSize} />
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </Paper>
         <div className="et-margin-top-32" style={{position: 'relative', display: 'flex', alignItems: 'center'}}>
             <h3 className="et-table-title">其它参数</h3>
         </div>
@@ -87,7 +111,7 @@ class GlobalSetTable extends Component {
           <Table className={classes.table}>
             <TableBody>
               <TableRow>
-                <TableCell style={{borderRight: '1px solid rgba(0, 0, 0, 0.075)'}}>背景颜色</TableCell>
+                <TableCell style={{borderRight: '1px solid rgba(0, 0, 0, 0.075)', width: '33%'}}>背景颜色</TableCell>
                 <TableCell>gray</TableCell>
               </TableRow>
             </TableBody>

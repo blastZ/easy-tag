@@ -2,8 +2,15 @@ import React, {Component} from 'react';
 import $ from 'jquery';
 import UploadImageButton from './UploadImageButton';
 import ImgTopBar from './ImgTopBar';
+import { DEFAULT_TAG_SIZE } from './utils/global_config';
+import List, { ListItem, ListItemIcon, ListItemText } from 'material-ui/List';
+import Divider from 'material-ui/Divider';
 
 var mouseupListener;
+
+const styles = {
+
+}
 
 class SelectedImage extends Component {
     state = {
@@ -11,12 +18,16 @@ class SelectedImage extends Component {
         tagedFileCount: 0,
         imgLoaded: false,
         drawing: false,
+        moving: false,
         startPoint: {x: 0, y: 0},
         endPoint: {x: 0, y: 0},
         moveRecX: 0,
         moveRecY: 0,
         moveRecWidth: 0,
         moveRecHeight: 0,
+        moveBox: false,
+        movePoint: {x: 0, y: 0},
+        theBox: null
     }
 
     componentWillMount() {
@@ -138,33 +149,90 @@ class SelectedImage extends Component {
           }, () => {
             const { startPoint, endPoint } = this.state;
             if(endPoint.x > startPoint.x && endPoint.y < startPoint.y) {
-              this.setState({
-                moveRecX: startPoint.x + offsetX - offsetXPanel,
-                moveRecY: endPoint.y + offsetY - offsetYPanel,
-                moveRecWidth: endPoint.x - startPoint.x,
-                moveRecHeight: startPoint.y - endPoint.y
-              })
+              const overflowX = endPoint.x > rec.width;
+              const overflowY = endPoint.y < 0;
+              if(overflowX || overflowY) {
+                const moveRecX = startPoint.x + offsetX - offsetXPanel;
+                const moveRecY = overflowY ? offsetY - offsetYPanel : this.state.endPoint.y + offsetY - offsetYPanel;
+                const moveRecWidth = overflowX ? rec.width - this.state.startPoint.x : this.state.endPoint.x - this.state.startPoint.x;
+                const moveRecHeight = overflowY ? this.state.startPoint.y : this.state.startPoint.y - this.state.endPoint.y;
+                const endPoint = {
+                  x: overflowX ? rec.width : this.state.endPoint.x,
+                  y: overflowY ? 0 : this.state.endPoint.y
+                }
+                this.setState({moveRecX, moveRecY, moveRecWidth, moveRecHeight, endPoint})
+              } else {
+                this.setState({
+                  moveRecX: startPoint.x + offsetX - offsetXPanel,
+                  moveRecY: endPoint.y + offsetY - offsetYPanel,
+                  moveRecWidth: endPoint.x - startPoint.x,
+                  moveRecHeight: startPoint.y - endPoint.y
+                })
+              }
             } else if(endPoint.x > startPoint.x && endPoint.y > startPoint.y) {
-              this.setState({
-                moveRecX: startPoint.x + offsetX - offsetXPanel,
-                moveRecY: startPoint.y + offsetY - offsetYPanel,
-                moveRecWidth: endPoint.x - startPoint.x,
-                moveRecHeight: endPoint.y - startPoint.y
-              })
+              const overflowX = endPoint.x > rec.width;
+              const overflowY = endPoint.y > rec.height;
+              if(overflowX || overflowY) {
+                const moveRecX = startPoint.x + offsetX - offsetXPanel;
+                const moveRecY = startPoint.y + offsetY - offsetYPanel;
+                const moveRecWidth = overflowX ? rec.width - this.state.endPoint.x : this.state.endPoint.x - this.state.startPoint.x;
+                const moveRecHeight = overflowY ? rec.height - this.state.endPoint.y : this.state.endPoint.y - this.state.startPoint.y;
+                const endPoint = {
+                  x: overflowX ? rec.width : this.state.endPoint.x,
+                  y: overflowY ? rec.height : this.state.endPoint.y
+                }
+                this.setState({moveRecX, moveRecY, moveRecWidth, moveRecHeight, endPoint})
+              } else {
+                this.setState({
+                  moveRecX: startPoint.x + offsetX - offsetXPanel,
+                  moveRecY: startPoint.y + offsetY - offsetYPanel,
+                  moveRecWidth: endPoint.x - startPoint.x,
+                  moveRecHeight: endPoint.y - startPoint.y
+                })
+              }
+
             } else if(endPoint.x < startPoint.x && endPoint.y > startPoint.y) {
-              this.setState({
-                moveRecX: endPoint.x + offsetX - offsetXPanel,
-                moveRecY: startPoint.y + offsetY - offsetYPanel,
-                moveRecWidth: startPoint.x - endPoint.x,
-                moveRecHeight: endPoint.y - startPoint.y
-              })
+              const overflowX = endPoint.x < 0;
+              const overflowY = endPoint.y > rec.height;
+              if(overflowX || overflowY) {
+                const moveRecX = overflowX ? offsetX - offsetXPanel : this.state.endPoint.x + offsetX - offsetXPanel;
+                const moveRecY = startPoint.y + offsetY - offsetYPanel;
+                const moveRecWidth = overflowX ? this.state.startPoint.x : this.state.startPoint.x - this.state.endPoint.x;
+                const moveRecHeight = overflowY ? rec.height - this.state.startPoint.y : this.state.endPoint.y - this.state.startPoint.y;
+                const endPoint = {
+                  x: overflowX ? 0 : this.state.endPoint.x,
+                  y: overflowY ? rec.height : this.state.endPoint.y
+                }
+                this.setState({moveRecX, moveRecY, moveRecWidth, moveRecHeight, endPoint})
+              } else {
+                this.setState({
+                  moveRecX: endPoint.x + offsetX - offsetXPanel,
+                  moveRecY: startPoint.y + offsetY - offsetYPanel,
+                  moveRecWidth: startPoint.x - endPoint.x,
+                  moveRecHeight: endPoint.y - startPoint.y
+                })
+              }
             } else if(endPoint.x < startPoint.x && endPoint.y < startPoint.y) {
-              this.setState({
-                moveRecX: endPoint.x + offsetX - offsetXPanel,
-                moveRecY: endPoint.y + offsetY - offsetYPanel,
-                moveRecWidth: startPoint.x - endPoint.x,
-                moveRecHeight: startPoint.y - endPoint.y
-              })
+              const overflowX = endPoint.x < 0;
+              const overflowY = endPoint.y < 0;
+              if(overflowX || overflowY) {
+                const moveRecX = overflowX ? offsetX - offsetXPanel : this.state.endPoint.x + offsetX - offsetXPanel;
+                const moveRecY = overflowY ? offsetY - offsetYPanel : this.state.endPoint.y + offsetY - offsetYPanel;
+                const moveRecWidth = overflowX ? this.state.startPoint.x : this.state.startPoint.x - this.state.endPoint.x;
+                const moveRecHeight = overflowY ? this.state.startPoint.y : this.state.startPoint.y - this.state.endPoint.y;
+                const endPoint = {
+                  x: overflowX ? 0 : this.state.endPoint.x,
+                  y: overflowY ? 0 : this.state.endPoint.y
+                }
+                this.setState({moveRecX, moveRecY, moveRecWidth, moveRecHeight, endPoint})
+              } else {
+                this.setState({
+                  moveRecX: endPoint.x + offsetX - offsetXPanel,
+                  moveRecY: endPoint.y + offsetY - offsetYPanel,
+                  moveRecWidth: startPoint.x - endPoint.x,
+                  moveRecHeight: startPoint.y - endPoint.y
+                })
+              }
             }
           })
         }
@@ -180,20 +248,24 @@ class SelectedImage extends Component {
     }
 
     addNewBox = () => {
-      const image = document.getElementById('selectedImage');
-      const img_natural_width = image.width;
-      const img_natural_height = image.height;
       const { startPoint, endPoint } = this.state;
-      const x_start = startPoint.x > endPoint.x ? endPoint.x : startPoint.x;
-      const y_start = startPoint.y > endPoint.y ? endPoint.y : startPoint.y;
-      const x_end = startPoint.x > endPoint.x ? startPoint.x : endPoint.x;
-      const y_end = startPoint.y > endPoint.y ? startPoint.y : endPoint.y;
-      const relative_x_start = (x_start / img_natural_width).toFixed(3);
-      const relative_y_start = (y_start / img_natural_height).toFixed(3);
-      const relative_x_end = (x_end / img_natural_width).toFixed(3);
-      const relative_y_end = (y_end / img_natural_height).toFixed(3);
-      const tag = {x_start: relative_x_start, y_start: relative_y_start, x_end: relative_x_end, y_end: relative_y_end, tag: [this.props.currentTagString], info: this.props.info ? this.props.info : '', tagger: this.props.userName}
-      this.props.onAddTag(tag);
+      const width = Math.abs(endPoint.x - startPoint.x);
+      const height = Math.abs(endPoint.y - startPoint.y);
+      if(width > DEFAULT_TAG_SIZE || height > DEFAULT_TAG_SIZE) {
+        const image = document.getElementById('selectedImage');
+        const img_natural_width = image.width;
+        const img_natural_height = image.height;
+        const x_start = startPoint.x > endPoint.x ? endPoint.x : startPoint.x;
+        const y_start = startPoint.y > endPoint.y ? endPoint.y : startPoint.y;
+        const x_end = startPoint.x > endPoint.x ? startPoint.x : endPoint.x;
+        const y_end = startPoint.y > endPoint.y ? startPoint.y : endPoint.y;
+        const relative_x_start = (x_start / img_natural_width).toFixed(3);
+        const relative_y_start = (y_start / img_natural_height).toFixed(3);
+        const relative_x_end = (x_end / img_natural_width).toFixed(3);
+        const relative_y_end = (y_end / img_natural_height).toFixed(3);
+        const tag = {x_start: relative_x_start, y_start: relative_y_start, x_end: relative_x_end, y_end: relative_y_end, tag: [this.props.currentTagString], info: this.props.info ? this.props.info : '', tagger: this.props.userName}
+        this.props.onAddTag(tag);
+      }
       this.initDrawState();
     }
 
@@ -210,6 +282,7 @@ class SelectedImage extends Component {
     }
 
     componentDidMount() {
+        this.props.changeBoxIndex(0);
         const that = this;
         const theImage = document.getElementById('selectedImage');
         const container = document.getElementById('selectedImagePanel');
@@ -342,22 +415,120 @@ class SelectedImage extends Component {
         }
     }
 
+    handleBoxMouseDown = (e) => {
+      this.setState({
+        moving: true,
+        movePoint: {x: e.clientX, y: e.clientY},
+        theBox: e.target
+      })
+    }
+
+    handleBoxMouseMove = (e) => {
+      if(this.state.moving && this.state.theBox) {
+        const box = this.state.theBox;
+        let left = parseFloat(box.style.left, 10);
+        let top = parseFloat(box.style.top, 10);
+        const offsetX = Math.abs(e.clientX - this.state.movePoint.x);
+        const offsetY = Math.abs(e.clientY - this.state.movePoint.y);
+        if(e.clientX > this.state.movePoint.x) {
+          left = left + offsetX;
+        } else {
+          left = left - offsetX;
+        }
+        if(e.clientY > this.state.movePoint.y) {
+          top = top + offsetY;
+        } else {
+          top = top - offsetY;
+        }
+        box.style.left = `${left}px`;
+        box.style.top = `${top}px`;
+        this.setState({
+          movePoint: {x: e.clientX, y: e.clientY}
+        })
+      }
+    }
+
+    handleBoxMouseUp = () => {
+      if(this.state.moving && this.state.theBox) {
+        const box = this.state.theBox;
+        const image = document.getElementById('selectedImage');
+        const imgLeft = parseFloat(image.style.left, 10);
+        const left = parseFloat(box.style.left, 10);
+        const imgTop = parseFloat(image.style.top, 10);
+        const top = parseFloat(box.style.top, 10);
+        const imgWidth = parseFloat(image.width, 10);
+        const width = parseFloat(box.style.width, 10);
+        const imgHeight = parseFloat(image.height, 10);
+        const height = parseFloat(box.style.height, 10);
+        const imgRight = imgLeft + imgWidth;
+        const right = left + width;
+        const imgBottom = imgBottom + imgHeight;
+        const bottom = top + height;
+        const x_start = ((left - imgLeft) / imgWidth).toFixed(3);
+        const y_start = ((top - imgTop) / imgHeight).toFixed(3);
+        const x_end = ((right - imgLeft) / imgWidth).toFixed(3);
+        const y_end = ((bottom - imgTop) / imgHeight).toFixed(3);
+        this.props.changeBox(this.props.boxIndex, x_start, y_start, x_end, y_end);
+        this.setState({
+          moving: false,
+          theBox: null,
+        })
+      }
+    }
+
+    shouldMoveBox = () => {
+      this.setState({
+        moveBox: !this.state.moveBox
+      })
+    }
+
     drawBoxList = () => {
-        return (
-            this.props.boxList.length > 0 ?
-            this.props.boxList.map((box, index) => (
-                <div className="black-white-border" key={box.x_start + box.y_end} style={{width: `${this.getBoxWidth(box.x_start, box.x_end)}px`, height: `${this.getBoxHeight(box.y_start, box.y_end)}px`,
-                             position: 'absolute', left: `${this.getBoxX(box.x_start)}px`, top: `${this.getBoxY(box.y_start)}px`, cursor: 'crosshair'}}>
-                             {this.props.boxIndex === index && <span className="tag-title"><b>No.{index + 1}<br/>{box.tag[0]}</b></span>}
+      return (
+        this.props.boxList.map((box, index) => (
+          index === this.props.boxIndex
+            ? <div className="black-white-border" key={box.x_start + box.y_end}
+              onMouseDown={this.state.moveBox ? this.handleBoxMouseDown : null}
+              style={{
+                zIndex: 100,
+                position: 'absolute',
+                width: `${this.getBoxWidth(box.x_start, box.x_end)}px`,
+                height: `${this.getBoxHeight(box.y_start, box.y_end)}px`,
+                left: `${this.getBoxX(box.x_start)}px`,
+                top: `${this.getBoxY(box.y_start)}px`,
+                cursor: `${this.state.moveBox ? 'move' : 'crosshair'}`}}>
+                  <span className="tag-title"><b>No.{index + 1}<br />{box.tag[0]}</b></span>
                 </div>
-            )) : null
-        );
+            : <div className="black-white-border" key={box.x_start + box.y_end}
+              style={{
+                position: 'absolute',
+                width: `${this.getBoxWidth(box.x_start, box.x_end)}px`,
+                height: `${this.getBoxHeight(box.y_start, box.y_end)}px`,
+                left: `${this.getBoxX(box.x_start)}px`,
+                top: `${this.getBoxY(box.y_start)}px`,
+                cursor: `${this.state.moveBox ? 'auto' : 'crosshair'}`}} />
+        ))
+      )
     }
 
     render() {
-      const { drawing, moveRecX, moveRecY, moveRecWidth, moveRecHeight } = this.state;
+      const { drawing, moveRecX, moveRecY, moveRecWidth, moveRecHeight, moveBox } = this.state;
+      const { classes } = this.props;
         return (
             <div className="w3-center w3-padding-24 flex-box full-width" style={{position: 'relative', justifyContent: 'center', alignItems: 'center', backgroundColor: '#303030', flex: '1'}}>
+                <div style={{width: '35px', height: '95px', background: 'white', position: 'fixed', left: '40px', top: '170px', borderRadius: '5px', zIndex: 1000}}>
+                  <List>
+                    <ListItem onClick={this.shouldMoveBox} button style={{padding: '10px 8px', background: `${this.state.moveBox ? '#c1c1c1' : ''}`}}>
+                      <ListItemIcon>
+                        <img style={{width: '20px', height: '20px'}} src={require("./imgs/drag.svg")} />
+                      </ListItemIcon>
+                    </ListItem>
+                    <ListItem button style={{padding: '10px 8px', marginTop: '10px'}}>
+                      <ListItemIcon>
+                        <img style={{width: '20px', height: '20px'}} src={require("./imgs/resize.svg")} />
+                      </ListItemIcon>
+                    </ListItem>
+                  </List>
+                </div>
                 <ImgTopBar
                   userName={this.props.userName}
                   taskName={this.props.taskName}
@@ -371,12 +542,17 @@ class SelectedImage extends Component {
                   deleteSameImage={this.props.deleteSameImage}
                   onDeleteImage={this.props.onDeleteImage} />
                 <div
-                  onMouseDown={this.handleMouseDown}
-                  onMouseMove={this.handleMouseMove}
-                  onMouseUp={this.handleMouseUp}
+                  onMouseDown={moveBox ? null : this.handleMouseDown}
+                  onMouseMove={moveBox ? this.handleBoxMouseMove : this.handleMouseMove}
+                  onMouseUp={moveBox ? this.handleBoxMouseUp : this.handleMouseUp}
                   id="selectedImagePanel"
                   style={{position: 'relative', width: '1200px', height: '600px', overflow: 'hidden', zIndex:'0'}}>
-                    <img draggable="false" id="selectedImage" src={this.props.selectedImage} alt={this.props.selectedImage} style={{position: 'absolute'}}/>
+                    <img draggable="false" id="selectedImage" src={this.props.selectedImage} alt={this.props.selectedImage}
+                      style={{
+                          position: 'absolute',
+                          userSelect: 'none',
+                          cursor: `${this.state.moveBox ? 'auto' : 'crosshair'}`,
+                      }}/>
                     {this.state.imgLoaded ? this.drawBoxList() : null}
                     {drawing && <div className="black-white-border" style={{
                       position: 'absolute',
@@ -400,4 +576,4 @@ class SelectedImage extends Component {
     }
 }
 
-export default SelectedImage
+export default SelectedImage;

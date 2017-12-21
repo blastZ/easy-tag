@@ -49,14 +49,6 @@ a:hover {
     margin-top: 5px !important;
 }
 
-#selectedImage {
-
-}
-
-#selectedImage:hover {
-    cursor: crosshair;
-}
-
 #select-bar {
     display: flex;
     justify-content: flex-start;
