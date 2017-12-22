@@ -26,6 +26,8 @@ class SelectedImage extends Component {
         moveRecWidth: 0,
         moveRecHeight: 0,
         moveBox: false,
+        resizeBox: false,
+        resizeDirec: '',
         movePoint: {x: 0, y: 0},
         theBox: null
     }
@@ -38,7 +40,6 @@ class SelectedImage extends Component {
     componentWillUnmount() {
         document.removeEventListener('keyup', this.deleteImageListener);
         document.removeEventListener('keyup', this.nextPreviousImageListener);
-        document.removeEventListener('wheel', this.wheelListener);
         document.removeEventListener('mouseup', mouseupListener);
     }
 
@@ -281,27 +282,24 @@ class SelectedImage extends Component {
       })
     }
 
+    initImage = (e) => {
+      const theImage = e.target;
+      const container = document.getElementById('selectedImagePanel');
+      container.width = 1200;
+      container.height = 600;
+      if(theImage.height > 600) {
+          theImage.height = 600;
+      }
+      theImage.style.left = container.width - theImage.width > 0 ? ((container.width - theImage.width) / 2).toString() + 'px' : '0px';
+      theImage.style.top = container.height - theImage.height > 0 ? ((container.height - theImage.height) / 2).toString() + 'px' : '0px';
+      this.setState({imgLoaded: true});
+    }
+
     componentDidMount() {
         this.props.changeBoxIndex(0);
         const that = this;
         const theImage = document.getElementById('selectedImage');
         const container = document.getElementById('selectedImagePanel');
-
-        container.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-        });
-
-        theImage.onload = function() {
-            const container = document.getElementById('selectedImagePanel');
-            container.width = 1200;
-            container.height = 600;
-            if(theImage.height > 600) {
-                theImage.height = 600;
-            }
-            theImage.style.left = container.width - theImage.width > 0 ? ((container.width - theImage.width) / 2).toString() + 'px' : '0px';
-            theImage.style.top = container.height - theImage.height > 0 ? ((container.height - theImage.height) / 2).toString() + 'px' : '0px';
-            that.setState({imgLoaded: true});
-        }
 
         document.addEventListener('keyup', this.deleteImageListener);
         document.addEventListener('keyup', this.nextPreviousImageListener);
@@ -341,26 +339,25 @@ class SelectedImage extends Component {
           }
         }
         document.addEventListener('mouseup', mouseupListener);
-        container.addEventListener('wheel', this.wheelListener);
     }
 
     wheelListener = (e) => {
-      e.wheelDeltaY > 0 ? this.increaseImageSize() : this.decreaseImageSize();
+      e.deltaY < 0 ? this.increaseImageSize() : this.decreaseImageSize();
       this.forceUpdate();
     }
 
     increaseImageSize = () => {
         const theImage = document.getElementById('selectedImage');
         theImage.height += 20;
-        theImage.style.left = (parseInt(theImage.style.left) - 5).toString() + 'px';
-        theImage.style.top = (parseInt(theImage.style.top) - 5).toString() + 'px';
+        theImage.style.left = `${parseFloat(theImage.style.left, 10) - 5}px`;
+        theImage.style.top = `${parseFloat(theImage.style.top, 10) - 5}px`;
     }
 
     decreaseImageSize = () => {
         const theImage = document.getElementById('selectedImage');
         theImage.height -= 20;
-        theImage.style.left = (parseInt(theImage.style.left) + 5).toString() + 'px';
-        theImage.style.top = (parseInt(theImage.style.top) + 5).toString() + 'px';
+        theImage.style.left = `${parseFloat(theImage.style.left, 10) + 5}px`;
+        theImage.style.top = `${parseFloat(theImage.style.top, 10) + 5}px`;
     }
 
     getBoxX = (r_x_start) => {
@@ -415,12 +412,35 @@ class SelectedImage extends Component {
         }
     }
 
+    toRelativeAndChange = (box) => {
+      const image = document.getElementById('selectedImage');
+      const imgLeft = parseFloat(image.style.left, 10);
+      const left = parseFloat(box.style.left, 10);
+      const imgTop = parseFloat(image.style.top, 10);
+      const top = parseFloat(box.style.top, 10);
+      const imgWidth = parseFloat(image.width, 10);
+      const width = parseFloat(box.style.width, 10);
+      const imgHeight = parseFloat(image.height, 10);
+      const height = parseFloat(box.style.height, 10);
+      const imgRight = imgLeft + imgWidth;
+      const right = left + width;
+      const imgBottom = imgBottom + imgHeight;
+      const bottom = top + height;
+      const x_start = ((left - imgLeft) / imgWidth).toFixed(3);
+      const y_start = ((top - imgTop) / imgHeight).toFixed(3);
+      const x_end = ((right - imgLeft) / imgWidth).toFixed(3);
+      const y_end = ((bottom - imgTop) / imgHeight).toFixed(3);
+      this.props.changeBox(this.props.boxIndex, x_start, y_start, x_end, y_end);
+    }
+
     handleBoxMouseDown = (e) => {
-      this.setState({
-        moving: true,
-        movePoint: {x: e.clientX, y: e.clientY},
-        theBox: e.target
-      })
+      if(e.target.tagName === 'DIV') {
+        this.setState({
+          moving: true,
+          movePoint: {x: e.clientX, y: e.clientY},
+          theBox: e.target
+        })
+      }
     }
 
     handleBoxMouseMove = (e) => {
@@ -450,29 +470,54 @@ class SelectedImage extends Component {
 
     handleBoxMouseUp = () => {
       if(this.state.moving && this.state.theBox) {
-        const box = this.state.theBox;
-        const image = document.getElementById('selectedImage');
-        const imgLeft = parseFloat(image.style.left, 10);
-        const left = parseFloat(box.style.left, 10);
-        const imgTop = parseFloat(image.style.top, 10);
-        const top = parseFloat(box.style.top, 10);
-        const imgWidth = parseFloat(image.width, 10);
-        const width = parseFloat(box.style.width, 10);
-        const imgHeight = parseFloat(image.height, 10);
-        const height = parseFloat(box.style.height, 10);
-        const imgRight = imgLeft + imgWidth;
-        const right = left + width;
-        const imgBottom = imgBottom + imgHeight;
-        const bottom = top + height;
-        const x_start = ((left - imgLeft) / imgWidth).toFixed(3);
-        const y_start = ((top - imgTop) / imgHeight).toFixed(3);
-        const x_end = ((right - imgLeft) / imgWidth).toFixed(3);
-        const y_end = ((bottom - imgTop) / imgHeight).toFixed(3);
-        this.props.changeBox(this.props.boxIndex, x_start, y_start, x_end, y_end);
+        this.toRelativeAndChange(this.state.theBox);
         this.setState({
           moving: false,
           theBox: null,
         })
+      }
+    }
+
+    handleBoxWheel = (e) => {
+      if(e.target.tagName === 'DIV') {
+        if(e.target !== this.state.theBox) {
+          this.setState({
+            theBox: e.target
+          })
+        }
+        e.deltaY < 0 ? this.increaseBoxSize(e.target) : this.decreaseBoxSize(e.target);
+      }
+    }
+
+    increaseBoxSize = (box) => {
+      const { resizeDirec } = this.state;
+      if(resizeDirec === 'BOTH') {
+        box.style.left = `${parseFloat(box.style.left, 10) - 0.5}px`;
+        box.style.top = `${parseFloat(box.style.top, 10) - 0.5}px`;
+        box.style.width = `${parseFloat(box.style.width, 10) + 1}px`;
+        box.style.height = `${parseFloat(box.style.height, 10) + 1}px`;
+      } else if(resizeDirec === 'HORIZONTAL') {
+        box.style.left = `${parseFloat(box.style.left, 10) - 0.5}px`;
+        box.style.width = `${parseFloat(box.style.width, 10) + 1}px`;
+      } else if(resizeDirec === 'VERTICAL') {
+        box.style.top = `${parseFloat(box.style.top, 10) - 0.5}px`;
+        box.style.height = `${parseFloat(box.style.height, 10) + 1}px`;
+      }
+    }
+
+    decreaseBoxSize = (box) => {
+      const { resizeDirec } = this.state;
+      if(resizeDirec === 'BOTH') {
+        box.style.left = `${parseFloat(box.style.left, 10) + 0.5}px`;
+        box.style.top = `${parseFloat(box.style.top, 10) + 0.5}px`;
+        box.style.width = `${parseFloat(box.style.width, 10) - 1}px`;
+        box.style.height = `${parseFloat(box.style.height, 10) - 1}px`;
+      } else if(resizeDirec === 'HORIZONTAL') {
+        box.style.left = `${parseFloat(box.style.left, 10) + 0.5}px`;
+        box.style.width = `${parseFloat(box.style.width, 10) - 1}px`;
+      } else if(resizeDirec === 'VERTICAL') {
+        box.style.top = `${parseFloat(box.style.top, 10) + 0.5}px`;
+        box.style.height = `${parseFloat(box.style.height, 10) - 1}px`;
       }
     }
 
@@ -482,12 +527,29 @@ class SelectedImage extends Component {
       })
     }
 
+    shouldResizeBox = (direc) => {
+      if(this.state.resizeDirec === direc) {
+        if(this.state.theBox) this.toRelativeAndChange(this.state.theBox);
+        this.setState({
+          theBox: null,
+          resizeBox: false,
+          resizeDirec: '',
+        })
+      } else {
+        this.setState({
+          resizeBox: true,
+          resizeDirec: direc,
+        })
+      }
+    }
+
     drawBoxList = () => {
       return (
         this.props.boxList.map((box, index) => (
           index === this.props.boxIndex
             ? <div className="black-white-border" key={box.x_start + box.y_end}
               onMouseDown={this.state.moveBox ? this.handleBoxMouseDown : null}
+              onWheel={this.state.resizeBox ? this.handleBoxWheel : null}
               style={{
                 zIndex: 100,
                 position: 'absolute',
@@ -496,7 +558,7 @@ class SelectedImage extends Component {
                 left: `${this.getBoxX(box.x_start)}px`,
                 top: `${this.getBoxY(box.y_start)}px`,
                 cursor: `${this.state.moveBox ? 'move' : 'crosshair'}`}}>
-                  <span className="tag-title"><b>No.{index + 1}<br />{box.tag[0]}</b></span>
+                  <span className="tag-title" style={{userSelect: 'none'}}><b>No.{index + 1}<br />{box.tag[0]}</b></span>
                 </div>
             : <div className="black-white-border" key={box.x_start + box.y_end}
               style={{
@@ -511,20 +573,30 @@ class SelectedImage extends Component {
     }
 
     render() {
-      const { drawing, moveRecX, moveRecY, moveRecWidth, moveRecHeight, moveBox } = this.state;
+      const { drawing, moveRecX, moveRecY, moveRecWidth, moveRecHeight, moveBox, resizeBox, resizeDirec } = this.state;
       const { classes } = this.props;
         return (
             <div className="w3-center w3-padding-24 flex-box full-width" style={{position: 'relative', justifyContent: 'center', alignItems: 'center', backgroundColor: '#303030', flex: '1'}}>
-                <div style={{width: '35px', height: '95px', background: 'white', position: 'fixed', left: '40px', top: '170px', borderRadius: '5px', zIndex: 1000}}>
+                <div style={{width: '35px', height: '188px', background: 'white', position: 'fixed', left: '40px', top: '170px', borderRadius: '5px', zIndex: 1000}}>
                   <List>
-                    <ListItem onClick={this.shouldMoveBox} button style={{padding: '10px 8px', background: `${this.state.moveBox ? '#c1c1c1' : ''}`}}>
+                    <ListItem onClick={this.shouldMoveBox} button style={{padding: '10px 8px', background: `${moveBox ? '#c1c1c1' : ''}`}}>
                       <ListItemIcon>
                         <img style={{width: '20px', height: '20px'}} src={require("./imgs/drag.svg")} />
                       </ListItemIcon>
                     </ListItem>
-                    <ListItem button style={{padding: '10px 8px', marginTop: '10px'}}>
+                    <ListItem onClick={() => this.shouldResizeBox('BOTH')} button style={{padding: '10px 8px', marginTop: '10px', background: `${(resizeBox && resizeDirec === 'BOTH') ? '#c1c1c1' : ''}`}}>
                       <ListItemIcon>
                         <img style={{width: '20px', height: '20px'}} src={require("./imgs/resize.svg")} />
+                      </ListItemIcon>
+                    </ListItem>
+                    <ListItem onClick={() => this.shouldResizeBox('HORIZONTAL')} button style={{padding: '10px 8px', marginTop: '10px', background: `${(resizeBox && resizeDirec === 'HORIZONTAL') ? '#c1c1c1' : ''}`}}>
+                      <ListItemIcon>
+                        <img style={{width: '20px', height: '20px'}} src={require("./imgs/resize_horizontal.svg")} />
+                      </ListItemIcon>
+                    </ListItem>
+                    <ListItem onClick={() => this.shouldResizeBox('VERTICAL')} button style={{padding: '10px 8px', marginTop: '10px', background: `${(resizeBox && resizeDirec === 'VERTICAL') ? '#c1c1c1' : ''}`}}>
+                      <ListItemIcon>
+                        <img style={{width: '20px', height: '20px'}} src={require("./imgs/resize_vertical.svg")} />
                       </ListItemIcon>
                     </ListItem>
                   </List>
@@ -545,9 +617,12 @@ class SelectedImage extends Component {
                   onMouseDown={moveBox ? null : this.handleMouseDown}
                   onMouseMove={moveBox ? this.handleBoxMouseMove : this.handleMouseMove}
                   onMouseUp={moveBox ? this.handleBoxMouseUp : this.handleMouseUp}
+                  onContextMenu={(e) => {e.preventDefault()}}
+                  onWheel={resizeBox ? null : this.wheelListener}
                   id="selectedImagePanel"
                   style={{position: 'relative', width: '1200px', height: '600px', overflow: 'hidden', zIndex:'0'}}>
                     <img draggable="false" id="selectedImage" src={this.props.selectedImage} alt={this.props.selectedImage}
+                      onLoad={(e) => {this.initImage(e)}}
                       style={{
                           position: 'absolute',
                           userSelect: 'none',
