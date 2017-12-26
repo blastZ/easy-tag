@@ -29,11 +29,11 @@ import TestForAll from './testPageForAll/TestForAll';
 
 class App extends Component {
     state = {
-        userName: 'fj',
+        userName: '',
         taskName: '',
-        userLevel: 3,
+        userLevel: -1,
         userGroup: '',
-        password: '1q2w3e4r',
+        password: '',
         defaultURL: DEFAULT_URL,
         imageList: [
             //{url: 'http://demo.codvision.com:16831/static/user/fj/task1/data/zhong1_12.jpg', name: 'ding1_6.jpg', labeled: 0}
@@ -46,7 +46,7 @@ class App extends Component {
         start: 1,
         num: 10,
         complete: 0,
-        login: true,
+        login: false,
         shouldPostTagList: false,
         shouldPostObjectTagList: false,
         currentBrowserMode: 'normal', //'normal', 'find',

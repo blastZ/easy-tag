@@ -10,60 +10,6 @@ import List, { ListItem, ListItemIcon, ListItemText } from 'material-ui/List';
 
 class TagView extends Component {
     state = {
-        boxImgList: {}, //use key-value so this is object not array
-    }
-
-    componentWillUnmount() {
-        document.removeEventListener('keyup', this.pageUpAndDownListener);
-    }
-
-    componentDidMount() {
-
-    }
-
-    componentDidUpdate(preProps, preState) {
-      if(this.props.boxList !== preProps.boxList) {
-        this.setState({
-          boxImgList: {}
-        }, () => {
-          for(let i=0; i<this.props.boxList.length; i++) {
-            this.getBoxImg(this.props.boxList[i], i);
-          }
-        })
-      }
-    }
-
-    pageUpAndDownListener = (e) => {
-        if(e.keyCode === 33) {
-            this.props.onPreviousImageList();
-        } else if(e.keyCode === 34) {
-            this.props.onNextImageList();
-        }
-    }
-
-    getBoxImg = (box, index) => {
-      const canvas = document.createElement('canvas');
-      const img = new Image();
-      img.onload = () => {
-        const startX = img.width * box.x_start;
-        const endX = img.width * box.x_end;
-        const width = endX - startX;
-        const startY = img.height * box.y_start;
-        const endY = img.height * box.y_end;
-        const height = endY - startY;
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, startX, startY, width, height, 0, 0, canvas.width, canvas.height);
-        this.setState({
-          boxImgList: {
-            ...this.state.boxImgList,
-            [index]: canvas.toDataURL()
-          }
-        })
-      }
-      img.setAttribute('crossOrigin', 'anonymous');
-      img.src = this.props.selectedImage;
     }
 
     render() {
@@ -107,7 +53,6 @@ class TagView extends Component {
                                 </div>
                             </div>
                             <div style={{display: 'flex', alignItems: 'center'}}>额外信息:<p style={{marginLeft: '5px'}}>{this.props.boxList[index].info}</p></div>
-                            <img src={this.state.boxImgList[index]} style={{maxWidth: '100%', marginTop: '5px', maxHeight: '80px'}} />
                         </li>
                     ))
                 }</ul>

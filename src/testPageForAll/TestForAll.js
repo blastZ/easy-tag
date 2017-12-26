@@ -7,6 +7,7 @@ import WaitingPage from '../WaitingPage';
 class TestForAll extends Component {
   state = {
     imageList: [],
+    allBoxList: [],
     boxList: [],
     selectedImageNum: 0,
     boxIndex: 0,
@@ -30,12 +31,36 @@ class TestForAll extends Component {
           const formData = new FormData();
           formData.append("file", file);
           if(this.state.testMode === 0) {
+            this.setState({
+              showWaitingPage: true,
+              boxList: []
+            })
             fetch(`${this.props.defaultURL}demoplaterecog?filename=${file.name}`, {
               method: 'POST',
               body: formData
-            }).then((response) => response.text())
+            }).then((response) => response.json())
               .then((result) => {
-                console.log(result);
+                if(result.length > 0) {
+                  this.setState({
+                    showWaitingPage: false,
+                    allBoxList: [
+                      ...this.state.allBoxList,
+                      result.objects
+                    ],
+                    boxList: result.objects,
+                    selectedImageNum: this.state.imageList.length - 1
+                  })
+                } else {
+                  this.setState({
+                    showWaitingPage: false,
+                    allBoxList: [
+                      ...this.state.allBoxList,
+                      []
+                    ],
+                    boxList: [],
+                    selectedImageNum: this.state.imageList.length - 1
+                  })
+                }
               })
               .catch((error) => {
                 console.log(error);
@@ -50,54 +75,25 @@ class TestForAll extends Component {
       });
   }
 
-  getBoxList = (index) => {
-    let boxList = [];
-    fetch(`${encodeURI(`${this.props.defaultURL}loadtestlabel?usrname=${this.props.userName}&taskname=${this.props.taskName}&filename=${this.state.imageList[index].name}`)}`)
-      .then((response) => response.json())
-      .then((result) => {
-        if(result.length > 0) {
-          boxList = result.objects;
-        }
-        this.setState({
-          boxList
-        })
-      })
+  getBoxList = () => {
+    this.setState({
+      boxList: this.state.allBoxList[this.state.selectedImageNum]
+    })
   }
 
   clickItem = (url) => {
       this.changeBoxIndex(0);
       const preIndex = this.state.selectedImageNum;
-      const that = this;
       for(let i=0; i<this.state.imageList.length; i++) {
           if(this.state.imageList[i].url === url) {
-              this.setState((state) => {
-                  state.selectedImageNum = i
-                  this.getBoxList(i);
-              }, function() {
-                  that.refs.selectedImage.initSelectedImage();
-                  //that.refs.tagView.changeAutoTagStart(that.state.selectedImageNum + that.refs.taView.state.start);
-              })
-              break
+            this.setState({
+              selectedImageNum: i
+            }, () => {
+              this.getBoxList();
+              this.refs.selectedImage.initSelectedImage();
+            })
+            break
           }
-      }
-  }
-
-  getBoxList = (index) => {
-      const that = this;
-      let boxList = [];
-      const tagListRequest = new XMLHttpRequest();
-      tagListRequest.open('GET',
-      encodeURI(`${that.props.defaultURL}loadlabel?usrname=${this.props.userName}&taskname=${this.props.taskName}&filename=${this.state.imageList[index].name}`));
-      tagListRequest.send();
-      tagListRequest.onload = function() {
-          const jsonResponse = JSON.parse(tagListRequest.response);
-          if(jsonResponse.length > 0) {
-              boxList = jsonResponse.objects;
-          }
-          that.setState({boxList})
-      }
-      tagListRequest.onerror = function() {
-          that.setState({boxList: []});
       }
   }
 
@@ -168,14 +164,9 @@ class TestForAll extends Component {
                  imageList={this.state.imageList}
                  boxIndex={this.state.boxIndex}
                  changeBoxIndex={this.changeBoxIndex}
-                 selectedImage={this.props.selectedImage}
-                 selectedImageNum={this.props.selectedImageNum}
-                 getBoxList={this.props.getTagList}
-                 info={this.props.info}
+                 selectedImage={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].url : ''}
+                 selectedImageNum={this.state.selectedImageNum}
                  boxList={this.state.boxList}
-                 defaultURL={this.props.defaultURL}
-                 userName={this.props.userName}
-                 userLevel={this.props.userLevel}
                  testMode={this.state.testMode}
                  handleTestModeChange={this.handleTestModeChange} />
           </div>

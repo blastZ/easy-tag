@@ -12,14 +12,14 @@ import { DEFAULT_URL } from '../utils/global_config';
 
 const initState = {
     defaultURL: DEFAULT_URL,
-    userName: 'fj',
-    password: '1q2w3e4r',
+    userName: '',
+    password: '',
     taskName: '',
     start: 1,
     num: 10,
     fileCount: 0,
     taggedFileCount: 0,
-    userLevel: 3,
+    userLevel: -1,
     imageList: [], //{url: image.url, name: image.name, labeled: image.labeled}
     selectedImageNum: 0,
     segmentAnnotatorList: [], // {labels: [{name: 'bacground', color: [255, 255, 255]}], annotation: "string"}

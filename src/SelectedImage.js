@@ -26,10 +26,13 @@ class SelectedImage extends Component {
         moveRecWidth: 0,
         moveRecHeight: 0,
         moveBox: false,
-        resizeBox: false,
-        resizeDirec: '',
+        resizing: false,
         movePoint: {x: 0, y: 0},
-        theBox: null
+        theBox: null,
+        onLeftEdge: false,
+        onTopEdge: false,
+        onRightEdge: false,
+        onBottomEdge: false
     }
 
     componentWillMount() {
@@ -414,32 +417,30 @@ class SelectedImage extends Component {
 
     toRelativeAndChange = (box) => {
       const image = document.getElementById('selectedImage');
-      const imgLeft = parseFloat(image.style.left, 10);
-      const left = parseFloat(box.style.left, 10);
-      const imgTop = parseFloat(image.style.top, 10);
-      const top = parseFloat(box.style.top, 10);
-      const imgWidth = parseFloat(image.width, 10);
-      const width = parseFloat(box.style.width, 10);
-      const imgHeight = parseFloat(image.height, 10);
-      const height = parseFloat(box.style.height, 10);
-      const imgRight = imgLeft + imgWidth;
-      const right = left + width;
-      const imgBottom = imgBottom + imgHeight;
-      const bottom = top + height;
-      const x_start = ((left - imgLeft) / imgWidth).toFixed(3);
-      const y_start = ((top - imgTop) / imgHeight).toFixed(3);
-      const x_end = ((right - imgLeft) / imgWidth).toFixed(3);
-      const y_end = ((bottom - imgTop) / imgHeight).toFixed(3);
+      const imageRec = image.getBoundingClientRect();
+      const boxRec = box.getBoundingClientRect();
+      const x_start = ((boxRec.x - imageRec.x) / imageRec.width).toFixed(3);
+      const y_start = ((boxRec.y - imageRec.y) / imageRec.height).toFixed(3);
+      const x_end = ((boxRec.x + boxRec.width - imageRec.x) / imageRec.width).toFixed(3);
+      const y_end = ((boxRec.y + boxRec.height - imageRec.y) / imageRec.height).toFixed(3);
       this.props.changeBox(this.props.boxIndex, x_start, y_start, x_end, y_end);
     }
 
     handleBoxMouseDown = (e) => {
       if(e.target.tagName === 'DIV') {
-        this.setState({
-          moving: true,
-          movePoint: {x: e.clientX, y: e.clientY},
-          theBox: e.target
-        })
+        const { onLeftEdge, onTopEdge, onRightEdge, onBottomEdge } = this.state;
+        if(onLeftEdge || onTopEdge || onRightEdge || onBottomEdge) {
+          this.setState({
+            resizing: true,
+            theBox: e.target
+          })
+        } else {
+          this.setState({
+            moving: true,
+            movePoint: {x: e.clientX, y: e.clientY},
+            theBox: e.target
+          })
+        }
       }
     }
 
@@ -466,6 +467,99 @@ class SelectedImage extends Component {
           movePoint: {x: e.clientX, y: e.clientY}
         })
       }
+      if(this.state.resizing && this.state.theBox) {
+        const MARGIN = 6;
+        const { onLeftEdge, onTopEdge, onRightEdge, onBottomEdge } = this.state;
+        const box = this.state.theBox;
+        const rec = box.getBoundingClientRect();
+        if(onRightEdge && !onTopEdge && !onBottomEdge) {
+          const move_x = e.clientX - rec.x - rec.width;
+          box.style.width = `${parseFloat(box.style.width, 10) + move_x}px`;
+        } else if(onBottomEdge && !onRightEdge && !onLeftEdge) {
+          const move_y = e.clientY - rec.y - rec.height;
+          box.style.height = `${parseFloat(box.style.height, 10) + move_y}px`;
+        } else if(onLeftEdge && !onBottomEdge && !onTopEdge) {
+          if(e.clientX < rec.x) {
+            const move_x = rec.x - e.clientX;
+            box.style.left = `${parseFloat(box.style.left, 10) - move_x}px`
+            box.style.width = `${parseFloat(box.style.width, 10) + move_x}px`
+          } else {
+            if(e.clientX < rec.x + rec.width - MARGIN) {
+              const move_x = e.clientX - rec.x;
+              box.style.left = `${parseFloat(box.style.left, 10) + move_x}px`
+              box.style.width = `${parseFloat(box.style.width, 10) - move_x}px`
+            }
+          }
+        } else if(onTopEdge && !onLeftEdge && !onRightEdge) {
+          if(e.clientY < rec.y) {
+            const move_y = rec.y - e.clientY;
+            box.style.top = `${parseFloat(box.style.top, 10) - move_y}px`
+            box.style.height = `${parseFloat(box.style.height, 10) + move_y}px`
+          } else {
+            if(e.clientY < rec.y + rec.height - MARGIN) {
+              const move_y = e.clientY - rec.y;
+              box.style.top = `${parseFloat(box.style.top, 10) + move_y}px`
+              box.style.height = `${parseFloat(box.style.height, 10) - move_y}px`
+            }
+          }
+        } else if(onRightEdge && onBottomEdge) {
+          const move_x = e.clientX - rec.x - rec.width;
+          const move_y = e.clientY - rec.y - rec.height;
+          box.style.width = `${parseFloat(box.style.width, 10) + move_x}px`;
+          box.style.height = `${parseFloat(box.style.height, 10) + move_y}px`;
+        } else if(onTopEdge && onRightEdge) {
+          const move_x = e.clientX - rec.x - rec.width;
+          box.style.width = `${parseFloat(box.style.width, 10) + move_x}px`;
+          if(e.clientY > rec.y) {
+            if(e.clientY < rec.y + rec.height - MARGIN) {
+              const move_y = e.clientY - rec.y;
+              box.style.top = `${parseFloat(box.style.top, 10) + move_y}px`
+              box.style.height = `${parseFloat(box.style.height, 10) - move_y}px`
+            }
+          } else {
+            const move_y = rec.y - e.clientY;
+            box.style.top = `${parseFloat(box.style.top, 10) - move_y}px`
+            box.style.height = `${parseFloat(box.style.height, 10) + move_y}px`
+          }
+        } else if(onLeftEdge && onTopEdge) {
+          if(e.clientY > rec.y) {
+            if(e.clientY < rec.y + rec.height - MARGIN) {
+              const move_y = e.clientY - rec.y;
+              box.style.top = `${parseFloat(box.style.top, 10) + move_y}px`
+              box.style.height = `${parseFloat(box.style.height, 10) - move_y}px`
+            }
+          } else {
+            const move_y = rec.y - e.clientY;
+            box.style.top = `${parseFloat(box.style.top, 10) - move_y}px`
+            box.style.height = `${parseFloat(box.style.height, 10) + move_y}px`
+          }
+          if(e.clientX < rec.x) {
+            const move_x = rec.x - e.clientX;
+            box.style.left = `${parseFloat(box.style.left, 10) - move_x}px`
+            box.style.width = `${parseFloat(box.style.width, 10) + move_x}px`
+          } else {
+            if(e.clientX < rec.x + rec.width - MARGIN) {
+              const move_x = e.clientX - rec.x;
+              box.style.left = `${parseFloat(box.style.left, 10) + move_x}px`
+              box.style.width = `${parseFloat(box.style.width, 10) - move_x}px`
+            }
+          }
+        } else if(onLeftEdge && onBottomEdge) {
+          const move_y = e.clientY - rec.y - rec.height;
+          box.style.height = `${parseFloat(box.style.height, 10) + move_y}px`;
+          if(e.clientX < rec.x) {
+            const move_x = rec.x - e.clientX;
+            box.style.left = `${parseFloat(box.style.left, 10) - move_x}px`
+            box.style.width = `${parseFloat(box.style.width, 10) + move_x}px`
+          } else {
+            if(e.clientX < rec.x + rec.width - MARGIN) {
+              const move_x = e.clientX - rec.x;
+              box.style.left = `${parseFloat(box.style.left, 10) + move_x}px`
+              box.style.width = `${parseFloat(box.style.width, 10) - move_x}px`
+            }
+          }
+        }
+      }
     }
 
     handleBoxMouseUp = () => {
@@ -476,6 +570,32 @@ class SelectedImage extends Component {
           theBox: null,
         })
       }
+      if(this.state.resizing && this.state.theBox) {
+        this.toRelativeAndChange(this.state.theBox);
+        this.setState({
+          resizing: false,
+          theBox: null,
+        })
+      }
+    }
+
+    handleEdge = (e) => {
+      const rec = e.target.getBoundingClientRect();
+      const x_left = e.clientX - rec.x;
+      const x_right = rec.x + rec.width - e.clientX;
+      const y_top = e.clientY - rec.y;
+      const y_bottom = rec.y + rec.height - e.clientY;
+      let onLeftEdge, onRightEdge, onTopEdge, onBottomEdge;
+      if(x_left <= 6) onLeftEdge = true;
+      if(x_right <= 6) onRightEdge = true;
+      if(y_top <= 6) onTopEdge = true;
+      if(y_bottom <= 6) onBottomEdge = true;
+      this.setState({
+        onLeftEdge,
+        onRightEdge,
+        onTopEdge,
+        onBottomEdge
+      })
     }
 
     handleBoxWheel = (e) => {
@@ -489,57 +609,24 @@ class SelectedImage extends Component {
       }
     }
 
-    increaseBoxSize = (box) => {
-      const { resizeDirec } = this.state;
-      if(resizeDirec === 'BOTH') {
-        box.style.left = `${parseFloat(box.style.left, 10) - 0.5}px`;
-        box.style.top = `${parseFloat(box.style.top, 10) - 0.5}px`;
-        box.style.width = `${parseFloat(box.style.width, 10) + 1}px`;
-        box.style.height = `${parseFloat(box.style.height, 10) + 1}px`;
-      } else if(resizeDirec === 'HORIZONTAL') {
-        box.style.left = `${parseFloat(box.style.left, 10) - 0.5}px`;
-        box.style.width = `${parseFloat(box.style.width, 10) + 1}px`;
-      } else if(resizeDirec === 'VERTICAL') {
-        box.style.top = `${parseFloat(box.style.top, 10) - 0.5}px`;
-        box.style.height = `${parseFloat(box.style.height, 10) + 1}px`;
-      }
-    }
-
-    decreaseBoxSize = (box) => {
-      const { resizeDirec } = this.state;
-      if(resizeDirec === 'BOTH') {
-        box.style.left = `${parseFloat(box.style.left, 10) + 0.5}px`;
-        box.style.top = `${parseFloat(box.style.top, 10) + 0.5}px`;
-        box.style.width = `${parseFloat(box.style.width, 10) - 1}px`;
-        box.style.height = `${parseFloat(box.style.height, 10) - 1}px`;
-      } else if(resizeDirec === 'HORIZONTAL') {
-        box.style.left = `${parseFloat(box.style.left, 10) + 0.5}px`;
-        box.style.width = `${parseFloat(box.style.width, 10) - 1}px`;
-      } else if(resizeDirec === 'VERTICAL') {
-        box.style.top = `${parseFloat(box.style.top, 10) + 0.5}px`;
-        box.style.height = `${parseFloat(box.style.height, 10) - 1}px`;
-      }
-    }
-
     shouldMoveBox = () => {
       this.setState({
         moveBox: !this.state.moveBox
       })
     }
 
-    shouldResizeBox = (direc) => {
-      if(this.state.resizeDirec === direc) {
-        if(this.state.theBox) this.toRelativeAndChange(this.state.theBox);
-        this.setState({
-          theBox: null,
-          resizeBox: false,
-          resizeDirec: '',
-        })
+    getCursor = () => {
+      const { onLeftEdge, onTopEdge, onRightEdge, onBottomEdge } = this.state;
+      if(onLeftEdge && onTopEdge || onRightEdge && onBottomEdge) {
+        return 'nwse-resize';
+      } else if(onRightEdge && onTopEdge || onLeftEdge && onBottomEdge) {
+        return 'nesw-resize';
+      } else if(onRightEdge || onLeftEdge) {
+        return 'ew-resize';
+      } else if(onBottomEdge || onTopEdge) {
+        return 'ns-resize';
       } else {
-        this.setState({
-          resizeBox: true,
-          resizeDirec: direc,
-        })
+        return 'move';
       }
     }
 
@@ -548,20 +635,22 @@ class SelectedImage extends Component {
         this.props.boxList.map((box, index) => (
           index === this.props.boxIndex
             ? <div className="black-white-border" key={box.x_start + box.y_end}
+              onMouseMove={this.state.moveBox && !this.state.moving && !this.state.resizing ? this.handleEdge : null}
               onMouseDown={this.state.moveBox ? this.handleBoxMouseDown : null}
-              onWheel={this.state.resizeBox ? this.handleBoxWheel : null}
               style={{
+                userSelect: 'none',
                 zIndex: 100,
                 position: 'absolute',
                 width: `${this.getBoxWidth(box.x_start, box.x_end)}px`,
                 height: `${this.getBoxHeight(box.y_start, box.y_end)}px`,
                 left: `${this.getBoxX(box.x_start)}px`,
                 top: `${this.getBoxY(box.y_start)}px`,
-                cursor: `${this.state.moveBox ? 'move' : 'crosshair'}`}}>
+                cursor: `${this.state.moveBox ? this.getCursor() : 'crosshair'}`}}>
                   <span className="tag-title" style={{userSelect: 'none'}}><b>No.{index + 1}<br />{box.tag[0]}</b></span>
                 </div>
             : <div className="black-white-border" key={box.x_start + box.y_end}
               style={{
+                userSelect: 'none',
                 position: 'absolute',
                 width: `${this.getBoxWidth(box.x_start, box.x_end)}px`,
                 height: `${this.getBoxHeight(box.y_start, box.y_end)}px`,
@@ -573,30 +662,15 @@ class SelectedImage extends Component {
     }
 
     render() {
-      const { drawing, moveRecX, moveRecY, moveRecWidth, moveRecHeight, moveBox, resizeBox, resizeDirec } = this.state;
+      const { drawing, moveRecX, moveRecY, moveRecWidth, moveRecHeight, moveBox } = this.state;
       const { classes } = this.props;
         return (
             <div className="w3-center w3-padding-24 flex-box full-width" style={{position: 'relative', justifyContent: 'center', alignItems: 'center', backgroundColor: '#303030', flex: '1'}}>
-                <div style={{width: '35px', height: '188px', background: 'white', position: 'fixed', left: '40px', top: '170px', borderRadius: '5px', zIndex: 1000}}>
+                <div style={{width: '35px', height: '55px', background: 'white', position: 'fixed', left: '40px', top: '170px', borderRadius: '5px', zIndex: 1000}}>
                   <List>
                     <ListItem onClick={this.shouldMoveBox} button style={{padding: '10px 8px', background: `${moveBox ? '#c1c1c1' : ''}`}}>
                       <ListItemIcon>
                         <img style={{width: '20px', height: '20px'}} src={require("./imgs/drag.svg")} />
-                      </ListItemIcon>
-                    </ListItem>
-                    <ListItem onClick={() => this.shouldResizeBox('BOTH')} button style={{padding: '10px 8px', marginTop: '10px', background: `${(resizeBox && resizeDirec === 'BOTH') ? '#c1c1c1' : ''}`}}>
-                      <ListItemIcon>
-                        <img style={{width: '20px', height: '20px'}} src={require("./imgs/resize.svg")} />
-                      </ListItemIcon>
-                    </ListItem>
-                    <ListItem onClick={() => this.shouldResizeBox('HORIZONTAL')} button style={{padding: '10px 8px', marginTop: '10px', background: `${(resizeBox && resizeDirec === 'HORIZONTAL') ? '#c1c1c1' : ''}`}}>
-                      <ListItemIcon>
-                        <img style={{width: '20px', height: '20px'}} src={require("./imgs/resize_horizontal.svg")} />
-                      </ListItemIcon>
-                    </ListItem>
-                    <ListItem onClick={() => this.shouldResizeBox('VERTICAL')} button style={{padding: '10px 8px', marginTop: '10px', background: `${(resizeBox && resizeDirec === 'VERTICAL') ? '#c1c1c1' : ''}`}}>
-                      <ListItemIcon>
-                        <img style={{width: '20px', height: '20px'}} src={require("./imgs/resize_vertical.svg")} />
                       </ListItemIcon>
                     </ListItem>
                   </List>
@@ -618,7 +692,7 @@ class SelectedImage extends Component {
                   onMouseMove={moveBox ? this.handleBoxMouseMove : this.handleMouseMove}
                   onMouseUp={moveBox ? this.handleBoxMouseUp : this.handleMouseUp}
                   onContextMenu={(e) => {e.preventDefault()}}
-                  onWheel={resizeBox ? null : this.wheelListener}
+                  onWheel={this.wheelListener}
                   id="selectedImagePanel"
                   style={{position: 'relative', width: '1200px', height: '600px', overflow: 'hidden', zIndex:'0'}}>
                     <img draggable="false" id="selectedImage" src={this.props.selectedImage} alt={this.props.selectedImage}
