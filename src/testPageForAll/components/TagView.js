@@ -23,6 +23,7 @@ class TagView extends Component {
                         value={this.props.testMode}
                         onChange={this.props.handleTestModeChange}>
                         <MenuItem value={0}>车牌检测与识别</MenuItem>
+                        <MenuItem value={1}>公章检测与识别</MenuItem>
                       </Select>
                     </ListItem>
                     <ListItem>

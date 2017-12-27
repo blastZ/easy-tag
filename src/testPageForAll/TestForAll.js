@@ -12,14 +12,25 @@ class TestForAll extends Component {
     selectedImageNum: 0,
     boxIndex: 0,
     showWaitingPage: false,
-    modeList: ['车牌检测与识别'],
     testMode: 0
   }
 
   handleTestModeChange = (e) => {
     this.setState({
-      testMode: e.target.value
+      testMode: e.target.value,
+      imageList: [],
+      allBoxList: [],
+      boxList: [],
+      selectedImageNum: 0,
+      boxIndex: 0,
     })
+  }
+
+  getURL = () => {
+    switch (this.state.testMode) {
+      case 0: return 'demoplaterecog';
+      case 1: return 'demosealrecog';
+    }
   }
 
   uploadImageFiles = (files) => {
@@ -30,42 +41,40 @@ class TestForAll extends Component {
           }
           const formData = new FormData();
           formData.append("file", file);
-          if(this.state.testMode === 0) {
-            this.setState({
-              showWaitingPage: true,
-              boxList: []
+          this.setState({
+            showWaitingPage: true,
+            boxList: []
+          })
+          fetch(`${this.props.defaultURL}${this.getURL()}?filename=${file.name}`, {
+            method: 'POST',
+            body: formData
+          }).then((response) => response.json())
+            .then((result) => {
+              if(result.length > 0) {
+                this.setState({
+                  showWaitingPage: false,
+                  allBoxList: [
+                    ...this.state.allBoxList,
+                    result.objects
+                  ],
+                  boxList: result.objects,
+                  selectedImageNum: this.state.imageList.length - 1
+                })
+              } else {
+                this.setState({
+                  showWaitingPage: false,
+                  allBoxList: [
+                    ...this.state.allBoxList,
+                    []
+                  ],
+                  boxList: [],
+                  selectedImageNum: this.state.imageList.length - 1
+                })
+              }
             })
-            fetch(`${this.props.defaultURL}demoplaterecog?filename=${file.name}`, {
-              method: 'POST',
-              body: formData
-            }).then((response) => response.json())
-              .then((result) => {
-                if(result.length > 0) {
-                  this.setState({
-                    showWaitingPage: false,
-                    allBoxList: [
-                      ...this.state.allBoxList,
-                      result.objects
-                    ],
-                    boxList: result.objects,
-                    selectedImageNum: this.state.imageList.length - 1
-                  })
-                } else {
-                  this.setState({
-                    showWaitingPage: false,
-                    allBoxList: [
-                      ...this.state.allBoxList,
-                      []
-                    ],
-                    boxList: [],
-                    selectedImageNum: this.state.imageList.length - 1
-                  })
-                }
-              })
-              .catch((error) => {
-                console.log(error);
-              })
-          }
+            .catch((error) => {
+              console.log(error);
+            })
       }
   }
 
@@ -159,7 +168,7 @@ class TestForAll extends Component {
                 selectedImageNum={this.state.selectedImageNum}
                 imageList={this.state.imageList}/>
           </div>
-          <div className="flex-box flex-column" style={{width: '20%', backgroundColor: '#F0F0F0'}}>
+          <div className="flex-box flex-column" style={{width: '20%', backgroundColor: '#F6F6F6'}}>
               <TagView ref="tagView"
                  imageList={this.state.imageList}
                  boxIndex={this.state.boxIndex}
