@@ -48,39 +48,56 @@ class TestForAll extends Component {
           fetch(`${this.props.defaultURL}${this.getURL()}?filename=${file.name}`, {
             method: 'POST',
             body: formData
-          }).then((response) => response.json())
-            .then((result) => {
-              if(result.length > 0) {
+          }).then((res) => {
+            if(res.ok) {
+              res.json().then((result) => {
+                if(result.length > 0) {
+                  this.setState({
+                    showWaitingPage: false,
+                    allBoxList: [
+                      ...this.state.allBoxList,
+                      result.objects
+                    ],
+                    boxList: result.objects,
+                    selectedImageNum: this.state.imageList.length - 1
+                  })
+                } else {
+                  this.setState({
+                    showWaitingPage: false,
+                    allBoxList: [
+                      ...this.state.allBoxList,
+                      []
+                    ],
+                    boxList: [],
+                    selectedImageNum: this.state.imageList.length - 1
+                  })
+                }
+              })
+            } else {
+              this.setState({
+                showWaitingPage: false,
+                imageList: this.state.imageList.slice(0, this.state.imageList.length - 1)
+              }, () => {
                 this.setState({
-                  showWaitingPage: false,
-                  allBoxList: [
-                    ...this.state.allBoxList,
-                    result.objects
-                  ],
-                  boxList: result.objects,
                   selectedImageNum: this.state.imageList.length - 1
                 })
-              } else {
-                this.setState({
-                  showWaitingPage: false,
-                  allBoxList: [
-                    ...this.state.allBoxList,
-                    []
-                  ],
-                  boxList: [],
-                  selectedImageNum: this.state.imageList.length - 1
-                })
-              }
-            })
-            .catch((error) => {
-              console.log(error);
-            })
+                window.alert('该图检测错误，请尝试更换图片。');
+              })
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+          })
       }
   }
 
   showNewImage = (url, name) => {
       this.setState({
         imageList: this.state.imageList.concat([{url, name}])
+      }, () => {
+        this.setState({
+          selectedImageNum: this.state.imageList.length - 1
+        })
       });
   }
 
@@ -140,9 +157,9 @@ class TestForAll extends Component {
 
   render() {
     return (
-      <div className="flex-box full-height" style={{width: '100%', overflow: 'hidden'}}>
+      <div className="flex-box full-height layout-in-small" style={{width: '100%', overflow: 'hidden'}}>
           {this.state.showWaitingPage && <WaitingPage text="检测中" />}
-          <div className="flex-box flex-column full-height" style={{flex: '1 1 auto', width: '80%', position: 'relative'}}>
+          <div className="flex-box flex-column full-height full-width-in-small" style={{flex: '1 1 auto', width: '80%', position: 'relative'}}>
               <div style={{zIndex: '100000', height: '47px', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '5px 0px', position: 'absolute', top: '0px', left: '0px', width: '100%', background: 'rgb(48,48,48)', color: 'white'}}>
                 {this.state.imageList.length > 0
                   ? `第 ${this.state.selectedImageNum + 1} 张 ${this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].name : ''}`
@@ -168,7 +185,7 @@ class TestForAll extends Component {
                 selectedImageNum={this.state.selectedImageNum}
                 imageList={this.state.imageList}/>
           </div>
-          <div className="flex-box flex-column" style={{width: '20%', backgroundColor: '#F6F6F6'}}>
+          <div className="flex-box flex-column full-width-in-small" style={{width: '20%', backgroundColor: '#F6F6F6'}}>
               <TagView ref="tagView"
                  imageList={this.state.imageList}
                  boxIndex={this.state.boxIndex}

@@ -344,3 +344,23 @@ a:hover {
 .normal-cursor:hover {
   cursor: auto !important;
 }
+
+@media screen and (max-width: 400px) {
+  .logo-in-small {
+    width: 45px !important;
+    height: 45px !important;
+  }
+
+  .title-in-small {
+    font-size: 22px !important;
+  }
+
+  .full-width-in-small {
+    width: 100% !important;
+  }
+
+  .layout-in-small {
+    overflow: visible !important;
+    flex-wrap: wrap !important;
+  }
+}

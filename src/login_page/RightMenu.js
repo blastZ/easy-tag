@@ -4,6 +4,13 @@ import TestIcon from 'material-ui-icons/Extension';
 import Drawer from 'material-ui/Drawer';
 import List, { ListItem, ListItemIcon, ListItemText } from 'material-ui/List';
 import Divider from 'material-ui/Divider';
+import { withStyles } from 'material-ui/styles';
+
+const styles = {
+  paper: {
+    outline: 'none'
+  }
+}
 
 class RightMenu extends Component {
   openHelper = () => {
@@ -15,8 +22,12 @@ class RightMenu extends Component {
   }
 
   render() {
+    const { classes } = this.props;
     return (
       <Drawer
+        classes={{
+          paper: classes.paper
+        }}
          anchor="right"
          open={this.props.open}
          onRequestClose={this.props.closeView}
@@ -40,4 +51,4 @@ class RightMenu extends Component {
   }
 }
 
-export default RightMenu;
+export default withStyles(styles)(RightMenu);

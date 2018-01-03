@@ -104,10 +104,10 @@ class Login extends Component {
                   onRequestClose={this.closeSetView} />
                 <AppBar position="absolute" style={{background: `linear-gradient(to right, #43cea2, #185a9d)`}}>
                   <Toolbar style={{alignItems: 'center'}}>
-                    <div style={{height: '65px'}}>
-                      <img style={{width: '60px', height: '60px'}} src={require("../imgs/logo.png")}/>
+                    <div>
+                      <img style={{width: '60px', height: '60px'}} src={require("../imgs/logo.png")} className="logo-in-small"/>
                     </div>
-                    <h2>图像智能分析系统</h2>
+                    <h2 className="title-in-small">图像智能分析系统</h2>
                     <div style={{position: 'absolute', right: '20px'}}>
                       <IconButton onClick={this.shouldShowMenu} classes={{
                         root: classes.buttonRoot,
