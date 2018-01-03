@@ -76,7 +76,6 @@ class SelectedImage extends Component {
 
         theImage.onload = function() {
             const container = document.getElementById('selectedImagePanel');
-            container.width = 1200;
             container.height = 600;
             if(theImage.height > 600) {
                 theImage.height = 600;
@@ -131,6 +130,7 @@ class SelectedImage extends Component {
     }
 
     wheelListener = (e) => {
+      e.preventDefault();
       e.wheelDeltaY > 0 ? this.increaseImageSize() : this.decreaseImageSize();
       this.forceUpdate();
     }
@@ -192,7 +192,7 @@ class SelectedImage extends Component {
     render() {
         return (
             <div className="w3-center w3-padding-24 flex-box full-width" style={{position: 'relative', justifyContent: 'center', alignItems: 'center', backgroundColor: '#303030', flex: '1'}}>
-                <div id="selectedImagePanel" style={{position: 'relative', width: '1200px', height: '600px', overflow: 'hidden', zIndex:'0'}}>
+                <div id="selectedImagePanel" style={{position: 'relative', width: '1200px', height: '600px', overflow: 'hidden', zIndex:'0'}} className="image-panel-in-small">
                     <img draggable="false" id="selectedImage" className="normal-cursor" src={this.props.selectedImage} alt={this.props.selectedImage} style={{position: 'absolute'}}/>
                     {
                         this.state.imgLoaded ? this.drawBoxList() : null

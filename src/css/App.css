@@ -363,4 +363,8 @@ a:hover {
     overflow: visible !important;
     flex-wrap: wrap !important;
   }
+
+  .image-panel-in-small {
+    width: 400px !important;
+  }
 }
