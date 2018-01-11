@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import $ from 'jquery';
 import UploadImageButton from '../UploadImageButton';
 import TopMenu from '../TopMenu';
+import { connect } from 'react-redux';
 
 var mouseupListener;
 
@@ -140,7 +141,7 @@ class SelectedDaubImage extends Component {
         let start = false;
         let previousClientX = 0, previousClientY = 0, currentClientX = 0, currentClientY = 0;
         canvas.addEventListener('mousedown', (e) => {
-          if(e.which === 1) {
+          if(e.which === 1 && this.props.objects[this.props.objectIndex]) {
             drawing = true;
             currentX = e.clientX - canvas.offsetLeft - container.offsetLeft;
             currentY = e.clientY - canvas.offsetTop - container.offsetTop;
@@ -154,7 +155,8 @@ class SelectedDaubImage extends Component {
                 dot_flag = false;
               } else {
                 ctx.beginPath();
-                ctx.fillStyle = that.props.getColor();
+                const color = that.props.objects[that.props.objectIndex].color;
+                ctx.fillStyle = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
                 ctx.arc(currentX + offset, currentY + offset, this.props.lineWidth, 0, 2 * Math.PI);
                 ctx.fill();
                 ctx.closePath();
@@ -211,7 +213,8 @@ class SelectedDaubImage extends Component {
                 ctx.beginPath();
                 ctx.moveTo(previousX + offset, previousY + offset);
                 ctx.lineTo(currentX + offset, currentY + offset);
-                ctx.strokeStyle = that.props.getColor();
+                const color = that.props.objects[that.props.objectIndex].color;
+                ctx.strokeStyle = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
                 ctx.lineWidth = this.props.lineWidth * 2;
                 ctx.lineCap = 'round';
                 ctx.stroke();
@@ -234,7 +237,7 @@ class SelectedDaubImage extends Component {
     }
 
     wheelListener = (e) => {
-      e.wheelDeltaY > 0 ? this.increaseImageSize() : this.decreaseImageSize();
+      //e.wheelDeltaY > 0 ? this.increaseImageSize() : this.decreaseImageSize();
     }
 
     increaseImageSize = () => {
@@ -315,7 +318,7 @@ class SelectedDaubImage extends Component {
                   deleteSameImage={this.props.deleteSameImage}
                   deleteImage={this.props.onDeleteImage} />*/}
                 <div id="selectedImagePanel" style={{position: 'relative', width: '1200px', height: '600px', overflow: 'hidden'}}>
-                    <img draggable="false" id="selectedImage" src={this.props.selectedImage} alt={this.props.selectedImage} style={{position: 'absolute'}}/>
+                    <img draggable="false" id="selectedImage" src={this.props.selectedImage} alt={this.props.selectedImage} style={{position: 'absolute', userSelect: 'none'}}/>
                     <canvas draggable="false" id="selectedCanvas" style={{position: 'absolute'}} />
                 </div>
                 {1 !== 0 ?
@@ -332,4 +335,9 @@ class SelectedDaubImage extends Component {
     }
 }
 
-export default SelectedDaubImage
+const mapStateToProps = ({ daubReducer }) => ({
+  objects: daubReducer.objects,
+  objectIndex: daubReducer.objectIndex
+})
+
+export default connect(mapStateToProps, null, null, { withRef: true })(SelectedDaubImage)

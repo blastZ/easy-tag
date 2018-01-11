@@ -26,14 +26,15 @@ import TagPointView from './point_page/TagPointView';
 import SelectPointBar from './point_page/SelectPointBar';
 import { DEFAULT_URL } from './utils/global_config';
 import TestForAll from './testPageForAll/TestForAll';
+import { setObjects } from './daub_page/daub_action';
 
 class App extends Component {
     state = {
-        userName: 'fj',
+        userName: '',
         taskName: '',
-        userLevel: 3,
+        userLevel: -1,
         userGroup: '',
-        password: '1q2w3e4r',
+        password: '',
         defaultURL: DEFAULT_URL,
         imageList: [
             //{url: 'http://demo.codvision.com:16831/static/user/fj/task1/data/zhong1_12.jpg', name: 'ding1_6.jpg', labeled: 0}
@@ -46,7 +47,7 @@ class App extends Component {
         start: 1,
         num: 10,
         complete: 0,
-        login: true,
+        login: false,
         shouldPostTagList: false,
         shouldPostObjectTagList: false,
         currentBrowserMode: 'normal', //'normal', 'find',
@@ -1398,8 +1399,8 @@ class App extends Component {
                 this.setState((state) => {
                     state.selectedImageNum = i
                 }, function() {
-                    that.refs.tagDaubRoute.refs.selectedDaubImage.initSelectedImage();
-                    that.refs.tagDaubRoute.refs.TagDaubView.changeAutoTagStart(that.state.selectedImageNum + that.state.start);
+                    that.refs.tagDaubRoute.refs.selectedDaubImage.getWrappedInstance().initSelectedImage();
+                    that.refs.tagDaubRoute.refs.tagDaubView.getWrappedInstance().changeAutoTagStart(that.state.selectedImageNum + that.state.start);
                 })
                 break
             }
@@ -1432,17 +1433,21 @@ class App extends Component {
     saveDaubData = (index) => {
       const canvas = document.getElementById('selectedCanvas');
       const ctx = canvas.getContext('2d');
+      const objects = this.props.objects;
       const url = canvas.toDataURL();
       fetch(`${this.state.defaultURL}savelabel?usrname=${this.state.userName}&taskname=${this.props.taskName}&filename=${this.state.imageList[index].name}`, {
         method: 'POST',
-        body: JSON.stringify(url)
+        body: JSON.stringify({
+          url,
+          objects
+        })
       }).then(() => {
         if(this.state.imageList[index]) {
           this.setState((state) => {
             state.imageList[index].labeled = 1;
           })
         }
-        this.refs.tagDaubRoute.refs.selectedDaubImage.getTagedFileCount();
+        this.refs.tagDaubRoute.refs.selectedDaubImage.getWrappedInstance().getTagedFileCount();
       })
     }
 
@@ -1450,7 +1455,8 @@ class App extends Component {
       fetch(`${this.state.defaultURL}loadlabel?usrname=${this.state.userName}&taskname=${this.props.taskName}&filename=${this.state.imageList[index].name}`)
         .then((response) => response.json())
         .then((result) => {
-          if(result.length !== 0) {
+          if(result.url && result.objects) {
+            this.props.dispatch(setObjects(result.objects));
             const canvas = document.getElementById('selectedCanvas');
             const image = document.getElementById('selectedImage');
             const ctx = canvas.getContext('2d');
@@ -1461,7 +1467,9 @@ class App extends Component {
               canvas.height = image.height;
               ctx.drawImage(newImage, 0, 0, image.width, image.height);
             }
-            newImage.src = result;
+            newImage.src = result.url;
+          } else {
+            this.props.dispatch(setObjects([]));
           }
         })
     }
@@ -1785,15 +1793,6 @@ class App extends Component {
         }
       }
       return 0;
-    }
-
-    getColor = () => {
-      const tagName = document.getElementById('mySelect-daub').value;
-      for(let i=0; i<this.state.tagStringList.length; i++) {
-        if(this.state.tagStringList[i].name === tagName) {
-          return this.state.tagStringList[i].color;
-        }
-      }
     }
 
     changeTagStringList = (tagStringList) => {
@@ -2167,7 +2166,6 @@ class App extends Component {
                                getDaubData={this.getDaubData}
                                deleteSameImage={this.autoDeleteSameFiles}
                                getImageList={this.getImageList}
-                               getColor={this.getColor}
                                onNextImage={this.nextImageForDaub}
                                onPreviousImage={this.previousImageForDaub}
                                num={this.state.num}
@@ -2192,14 +2190,13 @@ class App extends Component {
                                        imageList={this.state.imageList}/>
                         </div>
                         <div className="flex-box flex-column" style={{width: '20%', backgroundColor: '#F0F0F0'}}>
-                            <TagDaubView ref="TagDaubView"
+                            <TagDaubView ref="tagDaubView"
                                shouldSaveDaub={this.shouldSaveDaub}
                                eraseMode={this.state.eraseMode}
                                changeEraseMode={this.changeEraseMode}
                                lineWidth={this.state.lineWidth}
                                changeLineWidth={this.changeLineWidth}
                                tagStringList={this.state.tagStringList}
-                               getColor={this.getColor}
                                setTagStringList={this.setTagStringList}
                                setColorList={this.setColorList}
                                onHandleNumChange={this.handleNumChange}
@@ -2345,9 +2342,10 @@ class App extends Component {
   }
 }
 
-const mapStateToProps = ({ appReducer }) => ({
+const mapStateToProps = ({ appReducer, daubReducer }) => ({
   taskName: appReducer.taskName,
-  showImageMode: appReducer.showImageMode
+  showImageMode: appReducer.showImageMode,
+  objects: daubReducer.objects
 })
 
 export default withRouter(connect(mapStateToProps)(App));

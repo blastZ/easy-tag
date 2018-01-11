@@ -1,6 +1,17 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
+import { createObject, changeObjectIndex, removeObject, addTag, removeTag } from './daub_action';
+import { withStyles } from 'material-ui/styles';
+import List, { ListItem, ListItemIcon, ListItemText } from 'material-ui/List';
+import Paper from 'material-ui/Paper';
+import Typography from 'material-ui/Typography';
+import Chip from 'material-ui/Chip';
+import IconButton from 'material-ui/IconButton';
+import DeleteIcon from 'material-ui-icons/Delete';
+import AddIcon from 'material-ui-icons/Add';
+import RemoveIcon from 'material-ui-icons/Close';
+
 
 class TagDaubView extends Component {
     state = {
@@ -115,7 +126,7 @@ class TagDaubView extends Component {
         if(tagString.trim() !== '') {
             document.getElementById('new-tag-string').value = '';
             this.setState((state) => {
-                state.tagStringList = state.tagStringList.concat([{name: tagString, color: this.getRandomColor()}]);
+                state.tagStringList = state.tagStringList.concat([tagString]);
                 state.tagStringListAll[document.getElementById('mySelectForListName-daub').value] = state.tagStringList;
             }, () => {
               this.saveTagList();
@@ -152,7 +163,8 @@ class TagDaubView extends Component {
                     state.tagStringList.splice(index, 1);
                 }, () => {
                     this.saveTagList();
-                    this.props.onChangeTagString();
+                    this.props.on
+                    ();
                 })
             }
         }
@@ -202,7 +214,7 @@ class TagDaubView extends Component {
           if(data.listname[0] === 'tagname' && data.taglist.tagname[0] === 'tag1' && data.taglist.tagname[1] === 'tag2' && data.taglist.tagname[2] === 'tag3') {
             const listNameList = ['tagname'];
             const tagStringListAll = {
-              tagname: [{name: 'tag1', color: 'rgb(255,255,255)'}]
+              tagname: ['tag1']
             };
             const tagStringList = tagStringListAll['tagname'];
             this.setState({
@@ -228,7 +240,7 @@ class TagDaubView extends Component {
     }
 
     getRandomColor = () => {
-      return '#'+(Math.random()*0xFFFFFF<<0).toString(16);
+      return [Math.floor(Math.random() * 256), Math.floor(Math.random() * 256), Math.floor(Math.random() * 256)];
     }
 
     onChangeBoxInfo(index, e) {
@@ -313,33 +325,58 @@ class TagDaubView extends Component {
       this.shouldShowPremodelSelect();
     }
 
-    getBackgroundColor = () => {
-      if(this.state.listNameList.length > 0) {
-        const tagName = document.getElementById('mySelect-daub').value;
-        const { tagStringList } = this.state;
-        for(let i=0; i<tagStringList.length; i++) {
-          if(tagStringList[i].name === tagName) {
-            return tagStringList[i].color;
-          }
-        }
-      } else {
-        return 'rgb(255,255,255)';
-      }
+    createObject = () => {
+      const color = this.getRandomColor();
+      this.props.dispatch(createObject(color, document.getElementById('mySelect-daub').value));
     }
 
-    changeTagString = () => {
-      this.setState({
-        currentColor: this.getBackgroundColor()
-      })
+    changeObjectIndex = (index) => () => {
+      this.props.dispatch(changeObjectIndex(index));
     }
 
-    clearCanvas = () => {
-      const result = window.confirm('确定清除所有标记吗?');
+    removeObject = (color, index) => () => {
+      const result = window.confirm('确定删除该实例吗?');
       if(result) {
         const canvas = document.getElementById('selectedCanvas');
         const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+        for(let i=0; i<data.length; i=i+4) {
+          const r = data[i + 0];
+          const g = data[i + 1];
+          const b = data[i + 2];
+          if(r === color[0] && g === color[1] && b === color[2]) {
+            data[i + 0] = 0;
+            data[i + 1] = 0;
+            data[i + 2] = 0;
+            data[i + 3] = 0;
+          }
+        }
+        ctx.putImageData(imageData, 0, 0);
+      }
+      this.props.dispatch(removeObject(index));
+      this.props.shouldSaveDaub(true);
+    }
+
+    addTag = (index) => () => {
+      const tag = document.getElementById('mySelect-daub').value
+      const result = this.props.objects[index].tagList.filter((theTag) => (theTag === tag));
+      if(result.length > 0) {
+        window.alert('标签已存在');
+      } else {
+        this.props.dispatch(addTag(index, tag));
         this.props.shouldSaveDaub(true);
+      }
+
+    }
+
+    removeTag = (index, index2) => () => {
+      const result = this.props.objects[index].tagList.length;
+      if(result > 1) {
+        this.props.dispatch(removeTag(index, index2));
+        this.props.shouldSaveDaub(true);
+      } else {
+        window.alert('不能删除最后一个标签');
       }
     }
 
@@ -361,30 +398,24 @@ class TagDaubView extends Component {
                       </div>
                     </div>
                   </div>}
-                {
-                    this.props.userLevel === 3 || this.props.userLevel === 2 ?
-                        this.state.showFindModeView ?
-                        <button onClick={this.shouldShowFindModeView} className="w3-button w3-card w3-green">退出查找模式</button>
-                        : <button onClick={this.shouldShowFindModeView} className="w3-button w3-card w3-green">查找当前标签</button>
-                    : null
-                }
+                {this.props.userLevel === 3 || this.props.userLevel === 2
+                  ? this.state.showFindModeView
+                    ? <button onClick={this.shouldShowFindModeView} className="w3-button w3-card w3-green">退出查找模式</button>
+                    : <button onClick={this.shouldShowFindModeView} className="w3-button w3-card w3-green">查找当前标签</button>
+                  : null}
                 <div className="flex-box margin-top-5">
                     <select onChange={this.changeTagStringList} id="mySelectForListName-daub" className="w3-select" style={{width: '50%'}}>
-                    {
-                        this.state.listNameList.map((listName, index) => (
-                            <option key={listName + index}>{listName}</option>
-                        ))
-                    }
+                    {this.state.listNameList.map((listName, index) => (
+                      <option key={listName + index}>{listName}</option>
+                    ))}
                     </select>
                     <div style={{backgroundColor: 'rgb(211, 204, 204)', width: '2px'}}></div>
-                    <select onChange={this.changeTagString} id="mySelect-daub" className="w3-select" style={{width: '50%', background: `${this.state.currentColor}`}}>
-                    {
-                        this.state.tagStringList.map((tagString, index) => (
-                            <option key={tagString + index} style={{background: tagString.color}}>
-                              {tagString.name}
-                            </option>
-                        ))
-                    }
+                    <select id="mySelect-daub" className="w3-select" style={{width: '50%'}}>
+                    {this.state.tagStringList.map((tagString, index) => (
+                      <option key={tagString + index}>
+                        {tagString}
+                      </option>
+                    ))}
                     </select>
                 </div>
                 {
@@ -465,17 +496,50 @@ class TagDaubView extends Component {
                         : <button onClick={this.shouldShowEditView} className="w3-button w3-green w3-card margin-top-5">编辑标签</button>
                     :null
                 }
-                <button onClick={this.clearCanvas} className="w3-button w3-green w3-card" style={{marginTop: '5px'}}>清除所有标记</button>
-                <div className="w3-ul w3-hoverable margin-top-5"  style={{overflowY: 'auto', flex: '1'}}>
-                  <div style={{display: 'flex', padding: '0px 10px', alignItems: 'center'}}>
-                    <p>画笔宽度</p>
-                    <input value={this.props.lineWidth} onChange={this.props.changeLineWidth} type="number" style={{width: '20%', marginLeft: '5px', paddingLeft: '5px'}} />
-                  </div>
-                  <div className="margin-top-5" style={{display: 'flex', alignItems: 'center', padding: '0px 10px'}}>
-                    <p>橡皮擦</p>
+                <button onClick={this.createObject} className="w3-button w3-green w3-card" style={{marginTop: '5px'}}>创建实例</button>
+                <div style={{position: 'fixed', left: '20px', top: '100px', background: 'white', display: 'flex', padding: '6px 10px', fontSize: '13px', borderRadius: '7px', alignItems: 'center'}}>
+                  <p style={{margin: '5px 0px'}}>画笔宽度:</p>
+                  <input value={this.props.lineWidth} onChange={this.props.changeLineWidth} type="number" style={{width: '60px', paddingLeft: '5px', marginLeft: '5px'}} />
+                  <div style={{display: 'flex', alignItems: 'center', marginLeft: '8px'}}>
+                    <p style={{margin: '5px 0px'}}>橡皮擦:</p>
                     <input value={this.props.eraseMode} onChange={this.props.changeEraseMode} type="checkbox" style={{marginLeft: '5px'}} />
                   </div>
                 </div>
+                <List style={{overflowY: 'auto', flex: '1'}}>
+                  {this.props.objects.map((object, index) => (
+                    <ListItem key={object.color} button onClick={this.changeObjectIndex(index)} style={{background: `${this.props.objectIndex === index ? 'rgb(220,220,220)' : ''}`}}>
+                      <Paper style={{width: '100%', padding: '10px'}} elevation={4}>
+                        <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+                          <div style={{display: 'flex', alignItems: 'center'}}>
+                            <Typography type="body2">
+                              序号: {index + 1}
+                            </Typography>
+                            <Typography type="body2" style={{marginLeft: '5px'}}>颜色:</Typography>
+                            <div style={{width: '17px', height: '17px', background: `rgb(${object.color[0]},${object.color[1]}, ${object.color[2]})`, marginLeft: '5px'}} />
+                          </div>
+                          <div>
+                            <IconButton aria-label="Delete" onClick={this.removeObject(object.color, index)}>
+                              <DeleteIcon />
+                            </IconButton>
+                          </div>
+                        </div>
+                        <div>
+                          <div className="flex-box" style={{alignItems: 'center', padding: '5px 0px'}}>
+                            <span>标签: </span>
+                            <i onClick={this.addTag(index)} className="fa fa-plus-circle et-tag-button"></i>
+                            <div className="flex-box" style={{overflowX: 'auto', marginLeft: '4px'}}>{
+                              object.tagList.map((tag, index2) => (
+                                <div key={tag + index2} className="flex-box" style={{border: '2px solid black', alignItems: 'center', marginLeft: '2px', paddingLeft: '3px', paddingRight: '3px', whiteSpace: 'nowrap'}}>
+                                  {tag}
+                                  <i onClick={this.removeTag(index, index2)} className="fa fa-times et-tag-button"></i>
+                                </div>))
+                            }</div>
+                          </div>
+                        </div>
+                      </Paper>
+                    </ListItem>
+                  ))}
+                </List>
                 <div>
                   <div className="flex-box margin-top-5 w3-card">
                       <span style={{padding: '0px 8px', display: 'flex', whiteSpace:'nowrap', alignItems: 'center'}}>起始<br/>序号</span>
@@ -502,4 +566,9 @@ class TagDaubView extends Component {
     }
 }
 
-export default TagDaubView
+const mapStateToProps = ({ daubReducer }) => ({
+  objects: daubReducer.objects,
+  objectIndex: daubReducer.objectIndex
+})
+
+export default connect(mapStateToProps, null, null, { withRef: true })(TagDaubView);
