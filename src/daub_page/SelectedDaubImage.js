@@ -3,6 +3,7 @@ import $ from 'jquery';
 import UploadImageButton from '../UploadImageButton';
 import TopMenu from '../TopMenu';
 import { connect } from 'react-redux';
+import { setObjects, changeObjectIndex } from './daub_action';
 
 var mouseupListener;
 
@@ -101,6 +102,9 @@ class SelectedDaubImage extends Component {
         this.props.getCursor((dataURL) => {
           document.getElementById('selectedCanvas').style.cursor = `url(${dataURL}), pointer`;
         })
+
+        this.props.dispatch(setObjects([]));
+        this.props.dispatch(changeObjectIndex(0));
 
         setTimeout(() => {
           if(this.props.imageList.length > 0) {
