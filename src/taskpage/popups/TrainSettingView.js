@@ -277,7 +277,7 @@ class TrainSettingView extends Component {
   render() {
     const { classes, closeView, open } = this.props;
     return (
-      <Dialog onRequestClose={closeView} open={open}>
+      <Dialog onClose={closeView} open={open}>
         <DialogTitle>设置训练参数</DialogTitle>
         <DialogContent>
           <FormControl className={classes.formControl}>

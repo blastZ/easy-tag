@@ -79,7 +79,7 @@ class InputView extends Component {
   render() {
     const { classes, closeView, distrTaskToUser } = this.props;
     return (
-      <Dialog open={true} onRequestClose={closeView}>
+      <Dialog open={true} onClose={closeView}>
         <DialogTitle>分配任务</DialogTitle>
         <DialogContent>
           <div style={{display: 'flex', justifyContent: 'space-between'}}>
@@ -364,7 +364,7 @@ class DistriTaskView extends Component {
     const { page1, page2, rowsPerPage1, rowsPerPage2 } = this.state;
     const { classes, showDistributeTaskView, taskName, distredUserList, distrableUserList, distributeTaskToUser } = this.props;
     return (
-      <Dialog classes={{paper: classes.paper}} onRequestClose={this.props.closeDistributeTaskView} open={true}>
+      <Dialog classes={{paper: classes.paper}} onClose={this.props.closeDistributeTaskView} open={true}>
         {this.state.showInputView && <InputView
           distrTaskToUser={this.distrTaskToUser}
           classes={classes}

@@ -42,7 +42,6 @@ class App extends Component {
         tagList: [
             // {x_start: 0, y_start: 0, x_end: 10, y_end: 20, tag: ['car', 'white'], info: '浙F1234567', checked: false} result format
         ],
-        currentTagString: '1',
         selectedImageNum: 0,
         start: 1,
         num: 10,
@@ -136,7 +135,7 @@ class App extends Component {
           const xhr = new XMLHttpRequest();
           xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start}&num=${this.state.num}`);
           const data = JSON.stringify({
-              tag: mode === '' ? this.state.currentTagString : ""
+              tag: mode === '' ? this.props.currentTag : ""
           })
           xhr.send(data);
           xhr.onload = function() {
@@ -231,7 +230,7 @@ class App extends Component {
             const xhr = new XMLHttpRequest();
             xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start + this.state.num}&num=${this.state.num}`);
             const data = JSON.stringify({
-                tag: this.state.currentTagString
+                tag: this.props.currentTag
             })
             xhr.send(data);
             xhr.onload = function() {
@@ -339,7 +338,7 @@ class App extends Component {
             const xhr = new XMLHttpRequest();
             xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start + this.state.num}&num=${this.state.num}`);
             const data = JSON.stringify({
-                tag: this.state.currentTagString
+                tag: this.props.currentTag
             })
             xhr.send(data);
             xhr.onload = function() {
@@ -437,7 +436,7 @@ class App extends Component {
           const xhr = new XMLHttpRequest();
           xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.props.taskName}&start=${this.state.start + this.state.num}&num=${this.state.num}`);
           const data = JSON.stringify({
-              tag: this.state.currentTagString
+              tag: this.props.currentTag
           })
           xhr.send(data);
           xhr.onload = function() {
@@ -546,7 +545,7 @@ class App extends Component {
             const xhr = new XMLHttpRequest();
             xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
             const data = JSON.stringify({
-                tag: this.state.currentTagString
+                tag: this.props.currentTag
             })
             xhr.send(data);
             xhr.onload = function() {
@@ -649,7 +648,7 @@ class App extends Component {
             const xhr = new XMLHttpRequest();
             xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
             const data = JSON.stringify({
-                tag: this.state.currentTagString
+                tag: this.props.currentTag
             })
             xhr.send(data);
             xhr.onload = function() {
@@ -744,7 +743,7 @@ class App extends Component {
           const xhr = new XMLHttpRequest();
           xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.props.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
           const data = JSON.stringify({
-              tag: this.state.currentTagString
+              tag: this.props.currentTag
           })
           xhr.send(data);
           xhr.onload = function() {
@@ -861,7 +860,7 @@ class App extends Component {
                     const xhr = new XMLHttpRequest();
                     xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
                     const data = JSON.stringify({
-                        tag: this.state.currentTagString
+                        tag: this.props.currentTag
                     })
                     xhr.send(data);
                     const newImageList = [];
@@ -986,7 +985,7 @@ class App extends Component {
                     const xhr = new XMLHttpRequest();
                     xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
                     const data = JSON.stringify({
-                        tag: this.state.currentTagString
+                        tag: this.props.currentTag
                     })
                     xhr.send(data);
                     const newImageList = [];
@@ -1111,7 +1110,7 @@ class App extends Component {
                   const xhr = new XMLHttpRequest();
                   xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.props.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
                   const data = JSON.stringify({
-                      tag: this.state.currentTagString
+                      tag: this.props.currentTag
                   })
                   xhr.send(data);
                   const newImageList = [];
@@ -1546,7 +1545,7 @@ class App extends Component {
                         y_start: 0.0,
                         x_end: 1.0,
                         y_end: 1.0,
-                        tag: this.state.tagList[0] ? this.state.tagList[0].tag : [document.getElementById('mySelect').value],
+                        tag: this.state.tagList[0] ? this.state.tagList[0].tag : [this.props.currentTag],
                         info: this.state.tagList[0]? this.state.tagList[0].info : ''
                     }
                 ]
@@ -1600,15 +1599,6 @@ class App extends Component {
             state.shouldPostObjectTagList = true;
             state.tagList[index].info = value;
         })
-    }
-
-    changeTagString = () => {
-        this.setState({currentTagString: $('#mySelect').val()});
-    }
-
-    changeObjectTagString = () => {
-        this.setState({currentTagString: document.getElementById('mySelect').value});
-        document.getElementById('mySelect').blur();
     }
 
     handleNumChange = (e) => {
@@ -1691,12 +1681,12 @@ class App extends Component {
     }
 
     addNewTagToBox = (index) => {
-        const newTag = document.getElementById('mySelect').value;
+        const newTag = this.props.currentTag;
         if(this.state.tagList[index].tag.indexOf(newTag) < 0) {
-            const listName = document.getElementById('mySelectForListName').value;
+            const listName = this.props.currentList;
             let flag = true;
             this.state.tagList[index].tag.map((tag, index2) => {
-                if(this.refs.tagRoute.refs.tagView.state.tagStringListAll[listName].indexOf(tag) >= 0) {
+                if(this.props.tagStringListAll[listName].indexOf(tag) >= 0) {
                     this.setState((state) => {
                         state.tagList[index].tag[index2] = newTag;
                         state.shouldPostTagList = true;
@@ -1714,12 +1704,12 @@ class App extends Component {
     }
 
     addNewTagToBoxForObject = (index) => {
-        const newTag = document.getElementById('mySelect').value;
+        const newTag = this.props.currentTag;
         if(this.state.tagList[index].tag.indexOf(newTag) < 0) {
-            const listName = document.getElementById('mySelectForListName').value;
+            const listName = this.props.currentList;
             let flag = true;
             this.state.tagList[index].tag.map((tag, index2) => {
-                if(this.refs.tagObjectRoute.refs.tagObjectView.state.tagStringListAll[listName].indexOf(tag) >= 0) {
+                if(this.props.tagStringListAll[listName].indexOf(tag) >= 0) {
                     this.setState((state) => {
                         state.tagList[index].tag[index2] = newTag;
                         state.shouldPostObjectTagList = true;
@@ -1772,33 +1762,6 @@ class App extends Component {
 
     autoTagImages = (start, num, pretrainmodel) => {
       this.props.dispatch(autoTagImages(start, num, pretrainmodel));
-    }
-
-    getTagRGB = (tagNum) => {
-      const color = this.state.tagStringList[tagNum - 1].color.split(',');
-      const R = color[0].slice(4, color[0].length);
-      const G = color[1].slice(0, color[1].length);
-      const B = color[2].slice(0, color[2].length - 1);
-      return [parseInt(R, 10),parseInt(G, 10),parseInt(B, 10),255];
-    }
-
-    getTagNum = (r,g,b) => {
-      for(let i=0; i<this.state.tagStringList.length; i++) {
-        const color = this.state.tagStringList[i].color.split(',');
-        const theR = color[0].slice(4, color[0].length);
-        const theG = color[1].slice(0, color[1].length);
-        const theB = color[2].slice(0, color[2].length - 1);
-        if(parseInt(r, 10) === parseInt(theR, 10) && parseInt(g, 10) === parseInt(theG, 10) && parseInt(b, 10) === parseInt(theB, 10)) {
-          return (i + 1);
-        }
-      }
-      return 0;
-    }
-
-    changeTagStringList = (tagStringList) => {
-      this.setState({
-        tagStringList
-      })
     }
 
     autoDeleteSameFiles = () => {
@@ -1972,7 +1935,7 @@ class App extends Component {
                                onPreviousImage={this.previousImage}
                                num={this.state.num}
                                info={this.state.info}
-                               currentTagString={this.state.currentTagString}
+                               currentTag={this.props.currentTag}
                                onAddTag={this.addTag}
                                selectedImage={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].url : ''}
                                selectedImageName={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].name : 'No Image'}
@@ -2013,8 +1976,7 @@ class App extends Component {
                                start={this.state.start}
                                num={this.state.num}
                                info={this.state.info}
-                               currentTagString={this.state.currentTagString}
-                               onChangeTagString={this.changeTagString}
+                               currentTag={this.props.currentTag}
                                onChangeBrowserMode={this.changeBrowserMode}
                                onGetImageList={this.getImageList}
                                onNextImageList={this.nextImageList}
@@ -2043,7 +2005,7 @@ class App extends Component {
                                onPreviousImage={this.previousImageForObject}
                                num={this.state.num}
                                info={this.state.info}
-                               currentTagString={this.state.currentTagString}
+                               currentTag={this.props.currentTag}
                                onAddTag={this.addTag}
                                selectedImage={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].url : ''}
                                selectedImageName={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].name : 'No Image'}
@@ -2069,8 +2031,7 @@ class App extends Component {
                                start={this.state.start}
                                num={this.state.num}
                                info={this.state.info}
-                               currentTagString={this.state.currentTagString}
-                               onChangeTagString={this.changeObjectTagString}
+                               currentTag={this.props.currentTag}
                                onChangeBrowserMode={this.changeBrowserMode}
                                onGetImageList={this.getImageList}
                                onNextImageList={this.nextImageListForObject}
@@ -2096,7 +2057,7 @@ class App extends Component {
                         onPreviousImage={this.previousImage}
                         num={this.state.num}
                         info={this.state.info}
-                        currentTagString={this.state.currentTagString}
+                        currentTag={this.props.currentTag}
                         onAddTag={this.addTag}
                         selectedImage={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].url : ''}
                         selectedImageName={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].name : 'No Image'}
@@ -2127,8 +2088,7 @@ class App extends Component {
                         start={this.state.start}
                         num={this.state.num}
                         info={this.state.info}
-                        currentTagString={this.state.currentTagString}
-                        onChangeTagString={this.changeTagString}
+                        currentTag={this.props.currentTag}
                         onChangeBrowserMode={this.changeBrowserMode}
                         onGetImageList={this.getImageList}
                         onNextImageList={this.nextImageList}
@@ -2170,7 +2130,7 @@ class App extends Component {
                                onPreviousImage={this.previousImageForDaub}
                                num={this.state.num}
                                info={this.state.info}
-                               currentTagString={this.state.currentTagString}
+                               currentTag={this.props.currentTag}
                                onAddTag={this.addTag}
                                selectedImageNum={this.state.selectedImageNum}
                                selectedImage={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].url : ''}
@@ -2196,8 +2156,6 @@ class App extends Component {
                                changeEraseMode={this.changeEraseMode}
                                lineWidth={this.state.lineWidth}
                                changeLineWidth={this.changeLineWidth}
-                               tagStringList={this.state.tagStringList}
-                               setTagStringList={this.setTagStringList}
                                setColorList={this.setColorList}
                                onHandleNumChange={this.handleNumChange}
                                getImageListByTag={this.getImageListByTag}
@@ -2208,8 +2166,7 @@ class App extends Component {
                                start={this.state.start}
                                num={this.state.num}
                                info={this.state.info}
-                               currentTagString={this.state.currentTagString}
-                               onChangeTagStringList={this.changeTagStringList}
+                               currentTag={this.props.currentTag}
                                onChangeBrowserMode={this.changeBrowserMode}
                                onGetImageList={this.getImageList}
                                onNextImageList={this.nextImageListForDaub}
@@ -2235,7 +2192,7 @@ class App extends Component {
                                onPreviousImage={this.previousImage}
                                num={this.state.num}
                                info={this.state.info}
-                               currentTagString={this.state.currentTagString}
+                               currentTag={this.props.currentTag}
                                onAddTag={this.addTag}
                                selectedImage={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].url : ''}
                                selectedImageName={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].name : 'No Image'}
@@ -2267,8 +2224,6 @@ class App extends Component {
                                start={this.state.start}
                                num={this.state.num}
                                info={this.state.info}
-                               currentTagString={this.state.currentTagString}
-                               onChangeTagString={this.changeTagString}
                                onChangeBrowserMode={this.changeBrowserMode}
                                onGetImageList={this.getImageList}
                                onNextImageList={this.nextImageList}
@@ -2294,7 +2249,7 @@ class App extends Component {
                     onPreviousImage={this.previousImage}
                     num={this.state.num}
                     info={this.state.info}
-                    currentTagString={this.state.currentTagString}
+                    currentTag={this.props.currentTag}
                     onAddTag={this.addTag}
                     selectedImage={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].url : ''}
                     selectedImageName={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].name : 'No Image'}
@@ -2325,8 +2280,7 @@ class App extends Component {
                     start={this.state.start}
                     num={this.state.num}
                     info={this.state.info}
-                    currentTagString={this.state.currentTagString}
-                    onChangeTagString={this.changeTagString}
+                    currentTag={this.props.currentTag}
                     onChangeBrowserMode={this.changeBrowserMode}
                     onGetImageList={this.getImageList}
                     onNextImageList={this.nextImageList}
@@ -2345,7 +2299,10 @@ class App extends Component {
 const mapStateToProps = ({ appReducer, daubReducer }) => ({
   taskName: appReducer.taskName,
   showImageMode: appReducer.showImageMode,
-  objects: daubReducer.objects
+  objects: daubReducer.objects,
+  currentTag: appReducer.tagSelector.currentTag,
+  currentList: appReducer.tagSelector.currentList,
+  tagStringListAll: appReducer.tagSelector.tagStringListAll
 })
 
 export default withRouter(connect(mapStateToProps)(App));

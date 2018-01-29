@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { changeStartValue, changeNumValue, getImageList, onClickItem } from '../../actions/app_action';
+import TagSelector from '../../TagSelector';
 
 class TagView extends Component {
     handleStartChange = (e) => {
@@ -54,7 +55,8 @@ class TagView extends Component {
 
     render() {
         return (
-            <div className="flex-box flex-column" style={{height: '100%', marginTop: '10px'}}>
+            <div className="flex-box flex-column" style={{height: '100%'}}>
+              <TagSelector />
                 <div className="w3-container" style={{display: 'flex', flexDirection: 'column', maxHeight: '85%'}}>
                     <p style={{margin: '0'}}>标签:</p>
                     <div id="legend" className="legend margin-top-5" style={{overflowY: 'auto'}}></div>

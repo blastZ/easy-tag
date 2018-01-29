@@ -65,7 +65,7 @@ class SetReasonView extends Component {
   render() {
     const { classes, closeView, reasonList } = this.props;
     return (
-      <Dialog onRequestClose={closeView} open={true} classes={{
+      <Dialog onClose={closeView} open={true} classes={{
         paper: classes.paper
       }}>
         <DialogTitle>审核不通过原因设置</DialogTitle>

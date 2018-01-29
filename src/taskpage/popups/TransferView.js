@@ -201,7 +201,7 @@ class TransferView extends Component {
   render() {
     const { classes, closeView } = this.props;
     return (
-      <Dialog onRequestClose={closeView} open={true}>
+      <Dialog onClose={closeView} open={true}>
         <DialogTitle>复制数据</DialogTitle>
         <DialogContent>
           <div style={{display: 'flex', justifyContent: 'space-between'}}>

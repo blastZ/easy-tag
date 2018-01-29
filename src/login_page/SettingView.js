@@ -19,7 +19,7 @@ class SettingView extends Component {
   }
 
   handleRequestClose = () => {
-    this.props.onRequestClose();
+    this.props.onClose();
   }
 
   handleDefaultUrl = (e) => {
@@ -30,13 +30,13 @@ class SettingView extends Component {
 
   changeDefaultUrl = () => {
     setParams('url', this.state.defaultURL);
-    this.props.onRequestClose();
+    this.props.onClose();
   }
 
   render() {
     const { classes, ...other } = this.props;
     return (
-      <Dialog classes={{paper: classes.paper}} onRequestClose={this.handleRequestClose} {...other}>
+      <Dialog classes={{paper: classes.paper}} onClose={this.handleRequestClose} {...other}>
        <DialogTitle>登录设置</DialogTitle>
        <DialogContent>
          <FormControl fullWidth>

@@ -267,7 +267,7 @@ class SelectedImage extends Component {
         const relative_y_start = (y_start / img_natural_height).toFixed(3);
         const relative_x_end = (x_end / img_natural_width).toFixed(3);
         const relative_y_end = (y_end / img_natural_height).toFixed(3);
-        const tag = {x_start: relative_x_start, y_start: relative_y_start, x_end: relative_x_end, y_end: relative_y_end, tag: [this.props.currentTagString], info: this.props.info ? this.props.info : '', tagger: this.props.userName}
+        const tag = {x_start: relative_x_start, y_start: relative_y_start, x_end: relative_x_end, y_end: relative_y_end, tag: [this.props.currentTag], info: this.props.info ? this.props.info : '', tagger: this.props.userName}
         this.props.onAddTag(tag);
       }
       this.initDrawState();

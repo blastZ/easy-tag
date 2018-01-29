@@ -86,7 +86,7 @@ class TopMenu extends Component {
     const { classes } = this.props;
     return (
       <div style={{position: 'absolute', top: '0px', right: '11px', zIndex: '100', color: 'white'}}>
-        <Dialog onRequestClose={this.closeSearchView} open={this.state.showSearchView}>
+        <Dialog onClose={this.closeSearchView} open={this.state.showSearchView}>
           <DialogTitle>查找图片</DialogTitle>
           <DialogContent>
             <div>

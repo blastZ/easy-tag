@@ -26,6 +26,7 @@ export const GET_HELPER_DOC = 'GET_HELPER_DOC';
 export const GET_MANAGER_DATA = 'GET_MANAGER_DATA';
 export const GET_TRAIN_STATE_LOG = 'GET_TRAIN_STATE_LOG';
 export const AUTO_TAG_IMAGES = 'AUTO_TAG_IMAGES';
+export const INIT_TAG_SELECTOR = 'INIT_TAG_SELECTOR';
 
 export function addNewImage(imageUrl, imageName) {
     return {
@@ -175,4 +176,9 @@ export const autoTagImages = (start, num, pretrainmodel) => ({
   start,
   num,
   pretrainmodel
+})
+
+export const initTagSelector = (tagSelector) => ({
+  type: INIT_TAG_SELECTOR,
+  tagSelector
 })

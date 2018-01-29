@@ -101,7 +101,7 @@ class Login extends Component {
                   closeView={this.shouldShowMenu} />
                 <SettingView
                   open={this.state.showSettingView}
-                  onRequestClose={this.closeSetView} />
+                  onClose={this.closeSetView} />
                 <AppBar position="absolute" style={{background: `linear-gradient(to right, #43cea2, #185a9d)`}}>
                   <Toolbar style={{alignItems: 'center'}}>
                     <div>
