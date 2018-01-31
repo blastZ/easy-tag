@@ -30,11 +30,11 @@ import { setObjects } from './daub_page/daub_action';
 
 class App extends Component {
     state = {
-        userName: '',
+        userName: 'fj',
         taskName: '',
-        userLevel: -1,
+        userLevel: 3,
         userGroup: '',
-        password: '',
+        password: '1q2w3e4r',
         defaultURL: DEFAULT_URL,
         imageList: [
             //{url: 'http://demo.codvision.com:16831/static/user/fj/task1/data/zhong1_12.jpg', name: 'ding1_6.jpg', labeled: 0}
@@ -46,7 +46,7 @@ class App extends Component {
         start: 1,
         num: 10,
         complete: 0,
-        login: false,
+        login: true,
         shouldPostTagList: false,
         shouldPostObjectTagList: false,
         currentBrowserMode: 'normal', //'normal', 'find',
@@ -426,7 +426,7 @@ class App extends Component {
                 state.selectedImageNum = 0;
                 state.imageList = newImageList;
             }, function() {
-                if(that.refs.tagDaubRoute.refs.selectedDaubImage) that.refs.tagDaubRoute.refs.selectedDaubImage.initSelectedImage();
+                if(that.refs.tagDaubRoute.refs.selectedDaubImage) that.refs.tagDaubRoute.refs.selectedDaubImage.getWrappedInstance().initSelectedImage();
             })
             setTimeout(() => {
               this.getDaubData(0);
@@ -733,7 +733,7 @@ class App extends Component {
                   state.selectedImageNum = 0;
                   state.imageList = newImageList;
               }, function() {
-                  if(that.refs.tagDaubRoute.refs.selectedDaubImage) that.refs.tagDaubRoute.refs.selectedDaubImage.initSelectedImage();
+                  if(that.refs.tagDaubRoute.refs.selectedDaubImage) that.refs.tagDaubRoute.refs.selectedDaubImage.getWrappedInstance().initSelectedImage();
               })
             })
             setTimeout(() => {

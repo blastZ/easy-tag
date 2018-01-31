@@ -108,6 +108,9 @@ class TagDaubView extends Component {
     createObject = () => {
       const color = this.getRandomColor();
       this.props.dispatch(createObject(color, this.props.currentTag));
+      setTimeout(() => {
+        this.props.dispatch(changeObjectIndex(this.props.objects.length - 1));
+      }, 0)
     }
 
     changeObjectIndex = (index) => () => {

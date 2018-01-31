@@ -32,7 +32,14 @@ class SelectedImage extends Component {
         onLeftEdge: false,
         onTopEdge: false,
         onRightEdge: false,
-        onBottomEdge: false
+        onBottomEdge: false,
+        optionBox: {
+          x: 0,
+          y: 0,
+          left: 40,
+          top: 170,
+        },
+        moveOptionBox: false
     }
 
     componentWillMount() {
@@ -299,6 +306,7 @@ class SelectedImage extends Component {
     }
 
     componentDidMount() {
+        this.addDragListener();
         this.props.changeBoxIndex(0);
         const that = this;
         const theImage = document.getElementById('selectedImage');
@@ -661,19 +669,74 @@ class SelectedImage extends Component {
       )
     }
 
+    addDragListener = () => {
+      const optionBox = document.getElementById('option-box');
+      optionBox.addEventListener('mousedown', (e) => {
+        this.setState({
+          moveOptionBox: true,
+          optionBox: {
+            x: e.clientX,
+            y: e.clientY,
+            left: this.state.optionBox.left,
+            top: this.state.optionBox.top
+          }
+        })
+      })
+
+      window.addEventListener('mousemove', (e) => {
+        const { optionBox, moveOptionBox } = this.state;
+        if(moveOptionBox) {
+          const x = e.clientX;
+          const y = e.clientY;
+          const left = optionBox.left + x - optionBox.x;
+          const top = optionBox.top + y - optionBox.y;
+          this.setState({
+            optionBox: {
+              x,
+              y,
+              left,
+              top
+            }
+          })
+        }
+      })
+
+      window.addEventListener('mouseup', (e) => {
+        const { optionBox, moveOptionBox } = this.state;
+        if(moveOptionBox) {
+          const x = e.clientX - optionBox.x;
+          const y = e.clientY - optionBox.y;
+          const left = optionBox.left + x;
+          const top = optionBox.top + y;
+          this.setState({
+            moveOptionBox: false,
+            optionBox: {
+              x: 0,
+              y: 0,
+              left,
+              top
+            }
+          })
+        }
+      })
+    }
+
     render() {
-      const { drawing, moveRecX, moveRecY, moveRecWidth, moveRecHeight, moveBox } = this.state;
+      const { drawing, moveRecX, moveRecY, moveRecWidth, moveRecHeight, moveBox, optionBox } = this.state;
       const { classes } = this.props;
         return (
             <div className="w3-center w3-padding-24 flex-box full-width" style={{position: 'relative', justifyContent: 'center', alignItems: 'center', backgroundColor: '#303030', flex: '1'}}>
-                <div style={{width: '35px', height: '55px', background: 'white', position: 'fixed', left: '40px', top: '170px', borderRadius: '5px', zIndex: 1000}}>
-                  <List>
-                    <ListItem onClick={this.shouldMoveBox} button style={{padding: '10px 8px', background: `${moveBox ? '#c1c1c1' : ''}`}}>
-                      <ListItemIcon>
-                        <img style={{width: '20px', height: '20px'}} src={require("./imgs/drag.svg")} />
-                      </ListItemIcon>
-                    </ListItem>
-                  </List>
+                <div style={{
+                  width: '55px', height: '35px', background: 'white',
+                  position: 'fixed', left: `${optionBox.left}px`, top: `${optionBox.top}px`,
+                  borderRadius: '3px', zIndex: 1000,
+                  display: 'flex', alignItems: 'center'}}>
+                  <div id="option-box" style={{width: '14px', height: '35px', position: 'absolute', left: '-6px', background: 'green', borderRadius: '3px 0 0 3px'}} />
+                  <div style={{width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                    <div onClick={this.shouldMoveBox} style={{display: 'flex', alignItems: 'center', justifyContent: 'center', width: '25px', height: '25px', background: `${moveBox ? '#c1c1c1' : ''}`}}>
+                      <img style={{width: '20px', height: '20px'}} src={require("./imgs/drag.svg")} />
+                    </div>
+                  </div>
                 </div>
                 <ImgTopBar
                   userName={this.props.userName}
