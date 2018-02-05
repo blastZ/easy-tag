@@ -1,8 +1,7 @@
 import { ADD_NEW_IMAGE, CLICK_SELECT_BAR_ITEM,
          ADD_NEW_SEGMENT_ANNOTATOR, GET_IMAGE_LIST,
-         GET_IMAGE_ANNOTATION, GET_SEGMENT_ANNOTATOR_LABELS,
-         SET_SEGMENT_ANNOTATOR_LABELS, CHANGE_USER_NAME,
-         CHANGE_TASK_NAME, CHANGE_USER_LEVEL,
+         GET_IMAGE_ANNOTATION, SET_SEGMENT_ANNOTATOR_LABELS, CHANGE_USER_NAME,
+         CHANGE_TASK_NAME, CHANGE_USER_LEVEL, GET_SEGMENT_ANNOTATOR_LABELS,
          INIT_APP_REDUCER_STATE, GET_FILE_COUNT,
          GET_TAGGED_FILE_COUNT, DELETE_IMAGE,
          SHOULD_UPDATE_IMAGE, CHANGE_START_VALUE,
@@ -12,19 +11,19 @@ import { DEFAULT_URL } from '../utils/global_config';
 
 const initState = {
     defaultURL: DEFAULT_URL,
-    userName: 'fj',
-    password: '1q2w3e4r',
+    userName: '',
+    password: '',
     taskName: '',
     start: 1,
     num: 10,
     fileCount: 0,
     taggedFileCount: 0,
-    userLevel: 3,
+    userLevel: -1,
     imageList: [], //{url: image.url, name: image.name, labeled: image.labeled}
     selectedImageNum: 0,
     segmentAnnotatorList: [], // {labels: [{name: 'bacground', color: [255, 255, 255]}], annotation: "string"}
     imageAnnotation: null,
-    segmentAnnotatorLabels: [],
+    segmentAnnotatorLabels: [{name: 'bacground', color: [255, 255, 255]}],
     updateImage: false,
     navList: [],
     managerData: '',
@@ -37,6 +36,7 @@ const initState = {
       tagStringListAll: {}, // {tagname: ['1','2','3'], tagname2: ['4','5','6']}
       currentList: '',
       currentTag: '',
+      annotatorLabels: [{name: 'bacground', color: [255, 255, 255]}]
     }
 }
 

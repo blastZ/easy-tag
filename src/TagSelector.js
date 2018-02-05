@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { initTagSelector } from './actions/app_action';
+import { initTagSelector, saveSegmentAnnotatorLabels } from './actions/app_action';
+import { segmentAnnotator } from './segment_page/SegmentView';
 
 class TagSelector extends Component {
   state = {
@@ -28,6 +29,15 @@ class TagSelector extends Component {
     this.props.dispatch(initTagSelector({
       currentTag: e.target.value
     }))
+    if(this.props.segment) {
+      const index = this.props.tagStringList.indexOf(e.target.value);
+      const selected = document.getElementsByClassName('legend-selected')[0];
+      const item = document.getElementsByClassName('legend-item')[index];
+      if (selected)
+        selected.classList.remove('legend-selected');
+      segmentAnnotator.setCurrentLabel(index);
+      item.classList.add('legend-selected');
+    }
   }
 
   loadTagList = () => {
@@ -171,6 +181,7 @@ class TagSelector extends Component {
 
   addNewTag = () => {
     const { newTag } = this.state;
+    const that = this;
     if(newTag.trim() !== '') {
       const { tagStringList, tagStringListAll, currentList } = this.props;
       let new_tagStringList = tagStringList, new_tagStringListAll = tagStringListAll;
@@ -186,6 +197,16 @@ class TagSelector extends Component {
         this.saveTagList();
       })
       this.shouldShowInput('ADD_NEW_TAG')();
+      if(this.props.segment) {
+        const input = document.getElementById('add-label-input');
+        input.value = this.state.newTag;
+        const button = document.getElementById('add-item-button');
+        button.click();
+        this.props.dispatch(initTagSelector({
+          currentTag: this.state.newTag
+        }))
+        this.props.dispatch(saveSegmentAnnotatorLabels(segmentAnnotator.getLabels()));
+      }
     } else {
       window.alert('标签名不能为空');
     }

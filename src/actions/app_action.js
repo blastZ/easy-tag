@@ -7,8 +7,8 @@ export const UPLOAD_IMAGE_FILES = 'UPLOAD_IMAGE_FILES';
 export const GET_IMAGE_LIST = 'GET_IMAGE_LIST';
 export const SAVE_IMAGE_ANNOTATION = 'SAVE_IMAGE_ANNOTATION';
 export const GET_IMAGE_ANNOTATION = 'GET_IMAGE_ANNOTATION';
-export const SAVE_SEGMENT_ANNOTATOR_LABELS = 'SAVE_SEGMENT_ANNOTATOR_LABELS';
 export const GET_SEGMENT_ANNOTATOR_LABELS = 'GET_SEGMENT_ANNOTATOR_LABELS';
+export const SAVE_SEGMENT_ANNOTATOR_LABELS = 'SAVE_SEGMENT_ANNOTATOR_LABELS';
 export const SET_SEGMENT_ANNOTATOR_LABELS = 'SET_SEGMENT_ANNOTATOR_LABELS';
 export const CHANGE_USER_NAME = 'CHANGE_USER_NAME';
 export const CHANGE_TASK_NAME = 'CHANGE_TASK_NAME';
@@ -78,19 +78,6 @@ export function getImageAnnotation(index) {
     return {
         type: GET_IMAGE_ANNOTATION,
         index
-    }
-}
-
-export function saveSegmentAnnotatorLabels(labels) {
-    return {
-        type: SAVE_SEGMENT_ANNOTATOR_LABELS,
-        labels
-    }
-}
-
-export function getSegmentAnnotatorLabels() {
-    return {
-        type: GET_SEGMENT_ANNOTATOR_LABELS,
     }
 }
 
@@ -181,4 +168,13 @@ export const autoTagImages = (start, num, pretrainmodel) => ({
 export const initTagSelector = (tagSelector) => ({
   type: INIT_TAG_SELECTOR,
   tagSelector
+})
+
+export const getSegmentAnnotatorLabels = () => ({
+  type: GET_SEGMENT_ANNOTATOR_LABELS
+})
+
+export const saveSegmentAnnotatorLabels = (labels) => ({
+  type: SAVE_SEGMENT_ANNOTATOR_LABELS,
+  labels
 })

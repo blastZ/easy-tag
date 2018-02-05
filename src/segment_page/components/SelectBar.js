@@ -1,7 +1,6 @@
 import React, {Component} from 'react';
 import { connect } from 'react-redux';
-import { onClickItem, getImageAnnotation, getSegmentAnnotatorLabels,
-         shouldUpdateImage} from '../../actions/app_action';
+import { onClickItem, getImageAnnotation, shouldUpdateImage} from '../../actions/app_action';
 
 let count = 0;
 
@@ -78,7 +77,6 @@ const mapStateToProps = ({ appReducer }) => ({
 const mapDispatchToProps = (dispatch) => ({
     onClickItem: (index) => dispatch(onClickItem(index)),
     getImageAnnotation: (index) => dispatch(getImageAnnotation(index)),
-    getSegmentAnnotatorLabels: () => dispatch(getSegmentAnnotatorLabels()),
     shouldUpdateImage: () => dispatch(shouldUpdateImage())
 })
 
