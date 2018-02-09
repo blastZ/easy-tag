@@ -9,7 +9,7 @@ import WorkerTable from './tables/WorkerTable';
 import UserManageTable from './tables/UserManageTable';
 import UserGroupTable from './tables/UserGroupTable';
 import { connect } from 'react-redux';
-import { changeTaskName, getTrainStateLog, getManagerData } from '../actions/app_action';
+import { changeTask, getTrainStateLog, getManagerData } from '../actions/app_action';
 // import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
 import GlobalSetTable from './tables/GlobalSetTable';
@@ -565,7 +565,7 @@ class TaskPage extends Component {
     }
 
     onLookTrainState = (index) => {
-      this.props.dispatch(changeTaskName(this.state.taskList[index].taskName));
+      this.props.dispatch(changeTask({name: this.state.taskList[index].taskName, type: this.state.taskList[index].taskType}));
       const that = this;
       const currentProgress = this.state.taskList[index].progress;
       fetch(`${this.props.defaultURL}taskinfostructure?usrname=${this.props.username}&taskname=${this.state.taskList[index].taskName}`)
@@ -730,33 +730,33 @@ class TaskPage extends Component {
     }
 
     onLinkToTag = (index) => {
-        this.props.onChangeUserAndTask(this.props.username, this.state.taskList[index].taskName);
+        this.props.onChangeUserAndTask(this.props.username, this.state.taskList[index].taskName, this.state.taskList[index].taskType);
         this.props.onInitStartAndNum();
     }
 
     onLinkToSegment = (index) => {
-        this.props.dispatch(changeTaskName(this.state.taskList[index].taskName));
+        this.props.dispatch(changeTask({name: this.state.taskList[index].taskName, type: this.state.taskList[index].taskType}));
         this.props.history.push('/segment');
     }
 
     onLinkToTest = (index) => {
-      this.props.onChangeUserAndTask(this.props.username, this.state.taskList[index].taskName);
-      this.props.dispatch(changeTaskName(this.state.taskList[index].taskName));
+      this.props.onChangeUserAndTask(this.props.username, this.state.taskList[index].taskName, this.state.taskList[index].taskType);
+      this.props.dispatch(changeTask({name: this.state.taskList[index].taskName, type: this.state.taskList[index].taskType}));
     }
 
     onLinkToVideo = (index) => {
-      this.props.dispatch(changeTaskName(this.state.taskList[index].taskName));
+      this.props.dispatch(changeTask({name: this.state.taskList[index].taskName, type: this.state.taskList[index].taskType}));
       this.props.history.push('/video');
     }
 
     onLinkToDaub = (index) => {
-      this.props.dispatch(changeTaskName(this.state.taskList[index].taskName));
+      this.props.dispatch(changeTask({name: this.state.taskList[index].taskName, type: this.state.taskList[index].taskType}));
       this.props.history.push('/daub');
     }
 
     onLinkToPoint = (index) => {
-      this.props.dispatch(changeTaskName(this.state.taskList[index].taskName));
-      this.props.onChangeUserAndTask(this.props.username, this.state.taskList[index].taskName);
+      this.props.dispatch(changeTask({name: this.state.taskList[index].taskName, type: this.state.taskList[index].taskType}));
+      this.props.onChangeUserAndTask(this.props.username, this.state.taskList[index].taskName, this.state.taskList[index].taskType);
       this.props.onInitStartAndNum();
     }
 

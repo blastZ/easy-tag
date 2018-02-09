@@ -120,6 +120,14 @@ class UploadImageButton extends Component {
         }, 1000)
       })
 
+    // setInterval(() => {
+    //   fetch(`${defaultURL}getscrapystat?usrname=${userName}&taskname=${taskName}`)
+    //   .then((response) => response.text())
+    //   .then((result) => {
+    //     console.log(result);
+    //   })
+    // }, 2000);
+
     this.shouldShowSearchView();
   }
 

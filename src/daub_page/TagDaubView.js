@@ -20,7 +20,14 @@ class TagDaubView extends Component {
         autoTagStart: 1,
         showPremodelSelect: false,
         pretrainmodelList: [],
-        currentColor: ''
+        currentColor: '',
+        movePaintBox: false,
+        paintBox: {
+          x: 0,
+          y: 0,
+          left: 20,
+          top: 100
+        }
     }
 
     shouldShowPremodelSelect = () => {
@@ -61,10 +68,12 @@ class TagDaubView extends Component {
     }
 
     componentWillUnmount() {
+      this.removeDragListener();
         document.removeEventListener('keyup', this.pageUpAndDownListener);
     }
 
     componentDidMount() {
+      this.addDragListener();
         const that = this;
         document.addEventListener('keyup', this.pageUpAndDownListener);
         fetch(`${this.props.defaultURL}getpretrainmodelall?usrname=${this.props.userName}&taskname=${this.props.taskName}`)
@@ -163,7 +172,72 @@ class TagDaubView extends Component {
       }
     }
 
+    dragMDListener = (e) => {
+      this.setState({
+        movePaintBox: true,
+        paintBox: {
+          x: e.clientX,
+          y: e.clientY,
+          left: this.state.paintBox.left,
+          top: this.state.paintBox.top
+        }
+      })
+    }
+
+    dragMMListener = (e) => {
+      const { paintBox, movePaintBox } = this.state;
+      if(movePaintBox) {
+        const x = e.clientX;
+        const y = e.clientY;
+        const left = paintBox.left + x - paintBox.x;
+        const top = paintBox.top + y - paintBox.y;
+        this.setState({
+          paintBox: {
+            x,
+            y,
+            left,
+            top
+          }
+        })
+      }
+    }
+
+    dragMUListener = (e) => {
+      const { paintBox, movePaintBox } = this.state;
+      if(movePaintBox) {
+        const x = e.clientX - paintBox.x;
+        const y = e.clientY - paintBox.y;
+        const left = paintBox.left + x;
+        const top = paintBox.top + y;
+        this.setState({
+          movePaintBox: false,
+          paintBox: {
+            x: 0,
+            y: 0,
+            left,
+            top
+          }
+        })
+      }
+    }
+
+    addDragListener = () => {
+      const paintBox = document.getElementById('paint-box');
+      paintBox.addEventListener('mousedown', this.dragMDListener);
+      window.addEventListener('mousemove', this.dragMMListener);
+      window.addEventListener('mouseup', this.dragMUListener);
+    }
+
+    removeDragListener = () => {
+      const paintBox = document.getElementById('paint-box');
+      paintBox.removeEventListener('mousedown', this.dragMDListener);
+      window.removeEventListener('mousemove', this.dragMMListener);
+      window.removeEventListener('mouseup', this.dragMUListener);
+    }
+
     render() {
+      const { paintBox } = this.state;
+      const { lineWidth, changeLineWidth, eraseMode, changeEraseMode } = this.props;
         return (
             <div className="flex-box flex-column" style={{justifyContent: 'center', height: '100%'}}>
                 {this.state.showPremodelSelect &&
@@ -188,14 +262,13 @@ class TagDaubView extends Component {
                   : null}
                 <TagSelector />
                 <button onClick={this.createObject} className="w3-button w3-green w3-card" style={{marginTop: '5px'}}>创建实例</button>
-                <div style={{position: 'fixed', left: '20px', top: '100px', background: 'white', display: 'flex', padding: '6px 10px', fontSize: '13px', borderRadius: '7px', alignItems: 'center'}}>
-                  <p style={{margin: '5px 0px'}}>画笔宽度:</p>
-                  <input value={this.props.lineWidth} onChange={this.props.changeLineWidth} type="number" style={{width: '60px', paddingLeft: '5px', marginLeft: '5px'}} />
-                  <div style={{display: 'flex', alignItems: 'center', marginLeft: '8px'}}>
-                    <p style={{margin: '5px 0px'}}>橡皮擦:</p>
-                    <input value={this.props.eraseMode} onChange={this.props.changeEraseMode} type="checkbox" style={{marginLeft: '5px'}} />
-                  </div>
-                </div>
+                <PaintSetting
+                  lineWidth={lineWidth}
+                  changeLineWidth={changeLineWidth}
+                  eraseMode={eraseMode}
+                  changeEraseMode={changeEraseMode}
+                  left={paintBox.left}
+                  top={paintBox.top} />
                 <List style={{overflowY: 'auto', flex: '1'}}>
                   {this.props.objects.map((object, index) => (
                     <ListItem key={object.color} button onClick={this.changeObjectIndex(index)} style={{background: `${this.props.objectIndex === index ? 'rgb(220,220,220)' : ''}`}}>
@@ -256,6 +329,24 @@ class TagDaubView extends Component {
         )
     }
 }
+
+const PaintSetting = ({ left, top, lineWidth, changeLineWidth, eraseMode, changeEraseMode }) => (
+  <div style={{position: 'fixed', left: `${left}px`, top: `${top}px`, background: 'white', display: 'flex', padding: '6px 10px', fontSize: '13px', borderRadius: '4px', alignItems: 'center', userSelect: 'none'}}>
+    <div id="paint-box" style={{width: '15px', height: '100%', position: 'absolute', left: '-12px', background: 'white', borderRadius: '4px 0px 0px 4px'}}>
+      <div style={{display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-around', alignItems: 'center', background: 'rgba(0,0,0,0.3)'}}>
+        <div className="drag-circle"/>
+        <div className="drag-circle"/>
+        <div className="drag-circle"/>
+      </div>
+    </div>
+    <p style={{margin: '5px 0px'}}>画笔宽度:</p>
+    <input value={lineWidth} onChange={changeLineWidth} type="number" style={{width: '60px', paddingLeft: '5px', marginLeft: '5px'}} />
+    <div style={{display: 'flex', alignItems: 'center', marginLeft: '8px'}}>
+      <p style={{margin: '5px 0px'}}>橡皮擦:</p>
+      <input value={eraseMode} onChange={changeEraseMode} type="checkbox" style={{marginLeft: '5px'}} />
+    </div>
+  </div>
+)
 
 const mapStateToProps = ({ daubReducer, appReducer }) => ({
   objects: daubReducer.objects,

@@ -1,7 +1,7 @@
 import { ADD_NEW_IMAGE, CLICK_SELECT_BAR_ITEM,
          ADD_NEW_SEGMENT_ANNOTATOR, GET_IMAGE_LIST,
          GET_IMAGE_ANNOTATION, SET_SEGMENT_ANNOTATOR_LABELS, CHANGE_USER_NAME,
-         CHANGE_TASK_NAME, CHANGE_USER_LEVEL, GET_SEGMENT_ANNOTATOR_LABELS,
+         CHANGE_TASK, CHANGE_USER_LEVEL, GET_SEGMENT_ANNOTATOR_LABELS,
          INIT_APP_REDUCER_STATE, GET_FILE_COUNT,
          GET_TAGGED_FILE_COUNT, DELETE_IMAGE,
          SHOULD_UPDATE_IMAGE, CHANGE_START_VALUE,
@@ -14,6 +14,7 @@ const initState = {
     userName: '',
     password: '',
     taskName: '',
+    taskType: -1,
     start: 1,
     num: 10,
     fileCount: 0,
@@ -41,7 +42,7 @@ const initState = {
 }
 
 function appReducer(state=initState, action) {
-    const { userName, taskName, newImage, index, segmentAnnotator,
+    const { userName, task, taskName, newImage, index, segmentAnnotator,
             imageList, imageAnnotation, segmentAnnotatorLabels, newLabels,
             userLevel, fileCount, taggedFileCount, start, num, navList,
             password, trainStateLog, regionSize, tagSelector } = action;
@@ -102,10 +103,11 @@ function appReducer(state=initState, action) {
                 userName
             }
         }
-        case CHANGE_TASK_NAME: {
+        case CHANGE_TASK: {
             return {
                 ...state,
-                taskName
+                taskName: task.name,
+                taskType: task.type
             }
         }
         case CHANGE_USER_LEVEL: {

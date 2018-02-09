@@ -11,7 +11,7 @@ export const GET_SEGMENT_ANNOTATOR_LABELS = 'GET_SEGMENT_ANNOTATOR_LABELS';
 export const SAVE_SEGMENT_ANNOTATOR_LABELS = 'SAVE_SEGMENT_ANNOTATOR_LABELS';
 export const SET_SEGMENT_ANNOTATOR_LABELS = 'SET_SEGMENT_ANNOTATOR_LABELS';
 export const CHANGE_USER_NAME = 'CHANGE_USER_NAME';
-export const CHANGE_TASK_NAME = 'CHANGE_TASK_NAME';
+export const CHANGE_TASK = 'CHANGE_TASK';
 export const CHANGE_USER_LEVEL = 'CHANGE_USER_LEVEL';
 export const CHANGE_PASSWORD = 'CHANGE_PASSWORD';
 export const INIT_APP_REDUCER_STATE = 'INIT_APP_REDUCER_STATE';
@@ -93,9 +93,9 @@ export const changeUserName = (userName) => ({
     userName
 })
 
-export const changeTaskName = (taskName) => ({
-    type: CHANGE_TASK_NAME,
-    taskName
+export const changeTask = (task) => ({
+    type: CHANGE_TASK,
+    task
 })
 
 export const changeUserLevel = (userLevel) => ({
