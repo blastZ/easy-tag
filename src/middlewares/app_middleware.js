@@ -1,5 +1,5 @@
 import { segmentAnnotator } from '../segment_page/SegmentView';
-import { GET_TRAIN_STATE_LOG, AUTO_TAG_IMAGES } from '../actions/app_action';
+import { GET_TRAIN_STATE_LOG, AUTO_TAG_IMAGES, GET_SEGMENT_ANNOTATOR_LABELS, SAVE_SEGMENT_ANNOTATOR_LABELS } from '../actions/app_action';
 
 const appMiddleware = store => next => action => {
     const appState = store.getState().appReducer;
@@ -25,6 +25,26 @@ const appMiddleware = store => next => action => {
                 console.log('post images failed.');
             }
         }
+    }
+    else if(action.type === GET_SEGMENT_ANNOTATOR_LABELS) {
+        const state = store.getState().appReducer;
+        fetch(`${state.defaultURL}loadannolabel?usrname=${state.userName}&taskname=${state.taskName}`)
+          .then((response) => response.json())
+          .then((data) => {
+            console.log(data);
+            next({
+              type: GET_SEGMENT_ANNOTATOR_LABELS,
+              segmentAnnotatorLabels: data
+            })
+          })
+    }
+    else if(action.type === SAVE_SEGMENT_ANNOTATOR_LABELS) {
+        const state = store.getState().appReducer;
+        const { labels } = action;
+        fetch(`${state.defaultURL}saveannolabel?usrname=${state.userName}&taskname=${state.taskName}`, {
+          method: 'POST',
+          body: JSON.stringify(labels)
+        })
     }
     else if(action.type === 'GET_IMAGE_LIST') {
         const state = store.getState().appReducer;
@@ -68,41 +88,6 @@ const appMiddleware = store => next => action => {
                 imageAnnotation: xhr.response.split('&')[0],
                 regionSize: parseInt(xhr.response.split('&')[1] ? xhr.response.split('&')[1] : '40', 10)
             })
-        }
-        xhr.send();
-    }
-    else if(action.type === 'SAVE_SEGMENT_ANNOTATOR_LABELS') {
-        const { labels } = action;
-        const state = store.getState().appReducer;
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', `${state.defaultURL}savetag?usrname=${state.userName}&taskname=${state.taskName}`);
-        xhr.onload = function() {
-
-        }
-        xhr.setRequestHeader("Content-Type", "text/plain");
-        const data = JSON.stringify(labels);
-        xhr.send(data);
-    }
-    else if(action.type === 'GET_SEGMENT_ANNOTATOR_LABELS') {
-        const state = store.getState().appReducer;
-        const xhr = new XMLHttpRequest();
-        xhr.open('GET', `${state.defaultURL}loadtag?usrname=${state.userName}&taskname=${state.taskName}`);
-        xhr.onload = function() {
-            const labels = JSON.parse(xhr.response);
-            if(labels.length > 0) {
-                segmentAnnotator.setLabels(labels);
-                next({
-                    type: 'GET_SEGMENT_ANNOTATOR_LABELS',
-                    segmentAnnotatorLabels: labels
-                })
-            } else {
-                next({
-                    type: 'GET_SEGMENT_ANNOTATOR_LABELS',
-                    segmentAnnotatorLabels: [
-                        {name: 'background', color: [255, 255, 255]}
-                    ]
-                })
-            }
         }
         xhr.send();
     }

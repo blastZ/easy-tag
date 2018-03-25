@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { changeStartValue, changeNumValue, getImageList, onClickItem } from '../../actions/app_action';
+import TagSelector from '../../TagSelector';
 
 class TagView extends Component {
     handleStartChange = (e) => {
@@ -54,14 +55,17 @@ class TagView extends Component {
 
     render() {
         return (
-            <div className="flex-box flex-column" style={{height: '100%', marginTop: '10px'}}>
-                <div className="w3-container" style={{display: 'flex', flexDirection: 'column', maxHeight: '85%'}}>
-                    <p style={{margin: '0'}}>标签:</p>
-                    <div id="legend" className="legend margin-top-5" style={{overflowY: 'auto'}}></div>
-                    <p style={{flexShrink: '0'}}>
-                        <label htmlFor="add-label-input" style={{whiteSpace: 'nowrap'}}>添加:</label>
-                        <input id="add-label-input" type="text" className="w3-input margin-top-5"/>
-                    </p>
+            <div className="flex-box flex-column" style={{height: '100%'}}>
+              <TagSelector segment={true} />
+                <div className="w3-container" style={{display: 'flex', flexDirection: 'column', maxHeight: '85%', marginTop: '5px'}}>
+                    <div style={{display: 'none'}}>
+                      <p style={{margin: '0'}}>标签:</p>
+                      <div id="legend" className="legend margin-top-5" style={{overflowY: 'auto'}}></div>
+                      <p style={{flexShrink: '0'}}>
+                          <input id="add-label-input" type="text" className="w3-input margin-top-5"/>
+                          <button id="add-item-button">add tag</button>
+                      </p>
+                    </div>
                     <p style={{margin: '0'}}>视图:</p>
                     <div className="flex-box margin-top-5" style={{flexShrink: '0'}}>
                         <div id="image-view-button" className="toggle-button w3-button w3-green">图片</div><br />

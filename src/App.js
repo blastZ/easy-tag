@@ -13,7 +13,7 @@ import { Route, withRouter } from 'react-router-dom'
 import Test from './test_page/Test';
 import Login from './login_page/Login';
 import SegmentView from './segment_page/SegmentView';
-import { changeUserName, changeUserLevel, changeTaskName, changePassword, autoTagImages } from './actions/app_action';
+import { changeUserName, changeUserLevel, changeTask, changePassword, autoTagImages } from './actions/app_action';
 import { connect } from 'react-redux';
 import Helper from './helper_page/Helper';
 import VideoView from './video_page/VideoView';
@@ -24,25 +24,18 @@ import WaitingPage from './WaitingPage';
 import SelectedPointImage from './point_page/SelectedPointImage';
 import TagPointView from './point_page/TagPointView';
 import SelectPointBar from './point_page/SelectPointBar';
-import { DEFAULT_URL } from './utils/global_config';
 import TestForAll from './testPageForAll/TestForAll';
 import { setObjects } from './daub_page/daub_action';
 
 class App extends Component {
     state = {
-        userName: '',
-        taskName: '',
-        userLevel: -1,
         userGroup: '',
-        password: '',
-        defaultURL: DEFAULT_URL,
         imageList: [
-            //{url: 'http://demo.codvision.com:16831/static/user/fj/task1/data/zhong1_12.jpg', name: 'ding1_6.jpg', labeled: 0}
+            //{url: 'http://...', name: 'ding1_6.jpg', labeled: 0}
         ],
         tagList: [
             // {x_start: 0, y_start: 0, x_end: 10, y_end: 20, tag: ['car', 'white'], info: '浙F1234567', checked: false} result format
         ],
-        currentTagString: '1',
         selectedImageNum: 0,
         start: 1,
         num: 10,
@@ -87,7 +80,7 @@ class App extends Component {
             const formData = new FormData();
             formData.append("file", file);
             const fileRequest = new XMLHttpRequest();
-            fileRequest.open('POST', `${that.state.defaultURL}uploadfile?usrname=${this.state.userName}&taskname=${this.props.taskName}&filename=${file.name}`);
+            fileRequest.open('POST', `${that.props.defaultURL}uploadfile?usrname=${this.props.userName}&taskname=${this.props.taskName}&filename=${file.name}`);
             fileRequest.send(formData);
             fileRequest.onload = function() {
                 console.log('post image success.');
@@ -134,9 +127,9 @@ class App extends Component {
         //load imageList from server
         if(mode === '' || mode === 'label') {
           const xhr = new XMLHttpRequest();
-          xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start}&num=${this.state.num}`);
+          xhr.open('POST', `${that.props.defaultURL}getdirwithtag?usrname=${this.props.userName}&taskname=${this.props.taskName}&start=${this.state.start}&num=${this.state.num}`);
           const data = JSON.stringify({
-              tag: mode === '' ? this.state.currentTagString : ""
+              tag: mode === '' ? this.props.currentTag : ""
           })
           xhr.send(data);
           xhr.onload = function() {
@@ -158,7 +151,7 @@ class App extends Component {
           }
         } else {
           const newImageList = [];
-          fetch(`${this.state.defaultURL}${this.getFindMethod(mode)}?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start}&num=${this.state.num}`)
+          fetch(`${this.props.defaultURL}${this.getFindMethod(mode)}?usrname=${this.props.userName}&taskname=${this.props.taskName}&start=${this.state.start}&num=${this.state.num}`)
             .then((response) => response.json())
             .then((result) => {
               result.map((image) => {
@@ -173,7 +166,7 @@ class App extends Component {
 
     getImageList = (cb=null) => {
         this.setState({selectedImageNum: 0, tagList: []});
-        fetch(`${this.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.props.taskName}&start=${this.state.start}&num=${this.state.num}&video=${this.state.video}`)
+        fetch(`${this.props.defaultURL}getdir?usrname=${this.props.userName}&taskname=${this.props.taskName}&start=${this.state.start}&num=${this.state.num}&video=${this.state.video}`)
           .then((response) => response.json())
           .then((result) => {
             const newImageList = [];
@@ -202,7 +195,7 @@ class App extends Component {
             //load imageList from server
             const xhr = new XMLHttpRequest();
             //it is doesn't matter send a number larger than the maxValue, server side will detect it
-            xhr.open('GET', `${that.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start + this.state.num}&num=${this.state.num}&video=${this.state.video}`);
+            xhr.open('GET', `${that.props.defaultURL}getdir?usrname=${this.props.userName}&taskname=${this.props.taskName}&start=${this.state.start + this.state.num}&num=${this.state.num}&video=${this.state.video}`);
             xhr.onload = function() {
                 console.log('getNextList success');
                 const newImageList = [];
@@ -229,9 +222,9 @@ class App extends Component {
             xhr.send();
         } else if(this.state.currentBrowserMode === 'find') {
             const xhr = new XMLHttpRequest();
-            xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start + this.state.num}&num=${this.state.num}`);
+            xhr.open('POST', `${that.props.defaultURL}getdirwithtag?usrname=${this.props.userName}&taskname=${this.props.taskName}&start=${this.state.start + this.state.num}&num=${this.state.num}`);
             const data = JSON.stringify({
-                tag: this.state.currentTagString
+                tag: this.props.currentTag
             })
             xhr.send(data);
             xhr.onload = function() {
@@ -254,7 +247,7 @@ class App extends Component {
             }
         } else if(this.state.currentBrowserMode === 'findLabel') {
             const xhr = new XMLHttpRequest();
-            xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start + this.state.num}&num=${this.state.num}`);
+            xhr.open('POST', `${that.props.defaultURL}getdirwithtag?usrname=${this.props.userName}&taskname=${this.props.taskName}&start=${this.state.start + this.state.num}&num=${this.state.num}`);
             const data = JSON.stringify({
                 tag: ""
             })
@@ -280,7 +273,7 @@ class App extends Component {
         } else {
           const mode = this.getFindMode(this.state.currentBrowserMode);
           const newImageList = [];
-          fetch(`${this.state.defaultURL}${this.getFindMethod(mode)}?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start + this.state.num}&num=${this.state.num}`)
+          fetch(`${this.props.defaultURL}${this.getFindMethod(mode)}?usrname=${this.props.userName}&taskname=${this.props.taskName}&start=${this.state.start + this.state.num}&num=${this.state.num}`)
             .then((response) => response.json())
             .then((result) => {
               result.map((image) => {
@@ -310,7 +303,7 @@ class App extends Component {
             //load imageList from server
             const xhr = new XMLHttpRequest();
             //it is doesn't matter send a number larger than the maxValue, server side will detect it
-            xhr.open('GET', `${that.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start + this.state.num}&num=${this.state.num}&video=${this.state.video}`);
+            xhr.open('GET', `${that.props.defaultURL}getdir?usrname=${this.props.userName}&taskname=${this.props.taskName}&start=${this.state.start + this.state.num}&num=${this.state.num}&video=${this.state.video}`);
             xhr.onload = function() {
                 console.log('getNextList success');
                 const newImageList = [];
@@ -337,9 +330,9 @@ class App extends Component {
             xhr.send();
         } else if(this.state.currentBrowserMode === 'find') {
             const xhr = new XMLHttpRequest();
-            xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start + this.state.num}&num=${this.state.num}`);
+            xhr.open('POST', `${that.props.defaultURL}getdirwithtag?usrname=${this.props.userName}&taskname=${this.props.taskName}&start=${this.state.start + this.state.num}&num=${this.state.num}`);
             const data = JSON.stringify({
-                tag: this.state.currentTagString
+                tag: this.props.currentTag
             })
             xhr.send(data);
             xhr.onload = function() {
@@ -362,7 +355,7 @@ class App extends Component {
             }
         } else if(this.state.currentBrowserMode === 'findLabel') {
             const xhr = new XMLHttpRequest();
-            xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start + this.state.num}&num=${this.state.num}`);
+            xhr.open('POST', `${that.props.defaultURL}getdirwithtag?usrname=${this.props.userName}&taskname=${this.props.taskName}&start=${this.state.start + this.state.num}&num=${this.state.num}`);
             const data = JSON.stringify({
                 tag: ""
             })
@@ -388,7 +381,7 @@ class App extends Component {
         } else {
             const mode = this.getFindMode(this.state.currentBrowserMode);
             const newImageList = [];
-            fetch(`${this.state.defaultURL}${this.getFindMethod(mode)}?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start}&num=${this.state.num}`)
+            fetch(`${this.props.defaultURL}${this.getFindMethod(mode)}?usrname=${this.props.userName}&taskname=${this.props.taskName}&start=${this.state.start}&num=${this.state.num}`)
               .then((response) => response.json())
               .then((result) => {
                 result.map((image) => {
@@ -415,7 +408,7 @@ class App extends Component {
           maxValue = that.refs.tagDaubRoute.refs.selectedDaubImage.state.fileCount;
       }
       if(this.state.currentBrowserMode === 'normal') {
-        fetch(`${that.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.props.taskName}&start=${this.state.start + this.state.num > maxValue ? maxValue : this.state.start + this.state.num}&num=${this.state.num}&video=${this.state.video}`)
+        fetch(`${that.props.defaultURL}getdir?usrname=${this.props.userName}&taskname=${this.props.taskName}&start=${this.state.start + this.state.num > maxValue ? maxValue : this.state.start + this.state.num}&num=${this.state.num}&video=${this.state.video}`)
           .then((response) => (response.json()))
           .then((result) => {
             const newImageList = [];
@@ -427,7 +420,7 @@ class App extends Component {
                 state.selectedImageNum = 0;
                 state.imageList = newImageList;
             }, function() {
-                if(that.refs.tagDaubRoute.refs.selectedDaubImage) that.refs.tagDaubRoute.refs.selectedDaubImage.initSelectedImage();
+                if(that.refs.tagDaubRoute.refs.selectedDaubImage) that.refs.tagDaubRoute.refs.selectedDaubImage.getWrappedInstance().initSelectedImage();
             })
             setTimeout(() => {
               this.getDaubData(0);
@@ -435,9 +428,9 @@ class App extends Component {
           })
       } else if(this.state.currentBrowserMode === 'find') {
           const xhr = new XMLHttpRequest();
-          xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.props.taskName}&start=${this.state.start + this.state.num}&num=${this.state.num}`);
+          xhr.open('POST', `${that.props.defaultURL}getdirwithtag?usrname=${this.props.userName}&taskname=${this.props.taskName}&start=${this.state.start + this.state.num}&num=${this.state.num}`);
           const data = JSON.stringify({
-              tag: this.state.currentTagString
+              tag: this.props.currentTag
           })
           xhr.send(data);
           xhr.onload = function() {
@@ -462,7 +455,7 @@ class App extends Component {
           }
       } else if(this.state.currentBrowserMode === 'findLabel') {
           const xhr = new XMLHttpRequest();
-          xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.props.taskName}&start=${this.state.start + this.state.num}&num=${this.state.num}`);
+          xhr.open('POST', `${that.props.defaultURL}getdirwithtag?usrname=${this.props.userName}&taskname=${this.props.taskName}&start=${this.state.start + this.state.num}&num=${this.state.num}`);
           const data = JSON.stringify({
               tag: ""
           })
@@ -490,7 +483,7 @@ class App extends Component {
       } else {
           const mode = this.getFindMode(this.state.currentBrowserMode);
           const newImageList = [];
-          fetch(`${this.state.defaultURL}${this.getFindMethod(mode)}?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start}&num=${this.state.num}`)
+          fetch(`${this.props.defaultURL}${this.getFindMethod(mode)}?usrname=${this.props.userName}&taskname=${this.props.taskName}&start=${this.state.start}&num=${this.state.num}`)
             .then((response) => response.json())
             .then((result) => {
               result.map((image) => {
@@ -517,7 +510,7 @@ class App extends Component {
         if(this.state.currentBrowserMode === 'normal') {
             //load imageList from server
             const xhr = new XMLHttpRequest();
-            xhr.open('GET', `${that.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}&video=${this.state.video}`);
+            xhr.open('GET', `${that.props.defaultURL}getdir?usrname=${this.props.userName}&taskname=${this.props.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}&video=${this.state.video}`);
             xhr.onload = function() {
                 console.log('getNextList success');
                 const newImageList = [];
@@ -544,9 +537,9 @@ class App extends Component {
             xhr.send();
         } else if(this.state.currentBrowserMode === 'find') {
             const xhr = new XMLHttpRequest();
-            xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
+            xhr.open('POST', `${that.props.defaultURL}getdirwithtag?usrname=${this.props.userName}&taskname=${this.props.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
             const data = JSON.stringify({
-                tag: this.state.currentTagString
+                tag: this.props.currentTag
             })
             xhr.send(data);
             xhr.onload = function() {
@@ -569,7 +562,7 @@ class App extends Component {
             }
         } else if(this.state.currentBrowserMode === 'findLabel') {
             const xhr = new XMLHttpRequest();
-            xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
+            xhr.open('POST', `${that.props.defaultURL}getdirwithtag?usrname=${this.props.userName}&taskname=${this.props.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
             const data = JSON.stringify({
                 tag: ""
             })
@@ -595,7 +588,7 @@ class App extends Component {
         } else {
             const mode = this.getFindMode(this.state.currentBrowserMode);
             const newImageList = [];
-            fetch(`${this.state.defaultURL}${this.getFindMethod(mode)}?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`)
+            fetch(`${this.props.defaultURL}${this.getFindMethod(mode)}?usrname=${this.props.userName}&taskname=${this.props.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`)
               .then((response) => response.json())
               .then((result) => {
                 result.map((image) => {
@@ -620,7 +613,7 @@ class App extends Component {
         if(this.state.currentBrowserMode === 'normal') {
             //load imageList from server
             const xhr = new XMLHttpRequest();
-            xhr.open('GET', `${that.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}&video=${this.state.video}`);
+            xhr.open('GET', `${that.props.defaultURL}getdir?usrname=${this.props.userName}&taskname=${this.props.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}&video=${this.state.video}`);
             xhr.onload = function() {
                 console.log('getNextList success');
                 const newImageList = [];
@@ -647,9 +640,9 @@ class App extends Component {
             xhr.send();
         } else if(this.state.currentBrowserMode === 'find') {
             const xhr = new XMLHttpRequest();
-            xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
+            xhr.open('POST', `${that.props.defaultURL}getdirwithtag?usrname=${this.props.userName}&taskname=${this.props.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
             const data = JSON.stringify({
-                tag: this.state.currentTagString
+                tag: this.props.currentTag
             })
             xhr.send(data);
             xhr.onload = function() {
@@ -672,7 +665,7 @@ class App extends Component {
             }
         } else if(this.state.currentBrowserMode === 'findLabel') {
             const xhr = new XMLHttpRequest();
-            xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
+            xhr.open('POST', `${that.props.defaultURL}getdirwithtag?usrname=${this.props.userName}&taskname=${this.props.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
             const data = JSON.stringify({
                 tag: ""
             })
@@ -698,7 +691,7 @@ class App extends Component {
         } else {
             const mode = this.getFindMode(this.state.currentBrowserMode);
             const newImageList = [];
-            fetch(`${this.state.defaultURL}${this.getFindMethod(mode)}?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start}&num=${this.state.num}`)
+            fetch(`${this.props.defaultURL}${this.getFindMethod(mode)}?usrname=${this.props.userName}&taskname=${this.props.taskName}&start=${this.state.start}&num=${this.state.num}`)
               .then((response) => response.json())
               .then((result) => {
                 result.map((image) => {
@@ -722,7 +715,7 @@ class App extends Component {
       this.saveDaubData(this.state.selectedImageNum);
       if(this.state.currentBrowserMode === 'normal') {
           //load imageList from server
-          fetch(`${this.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.props.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`)
+          fetch(`${this.props.defaultURL}getdir?usrname=${this.props.userName}&taskname=${this.props.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`)
             .then((response) => response.json())
             .then((result) => {
               const newImageList = [];
@@ -734,7 +727,7 @@ class App extends Component {
                   state.selectedImageNum = 0;
                   state.imageList = newImageList;
               }, function() {
-                  if(that.refs.tagDaubRoute.refs.selectedDaubImage) that.refs.tagDaubRoute.refs.selectedDaubImage.initSelectedImage();
+                  if(that.refs.tagDaubRoute.refs.selectedDaubImage) that.refs.tagDaubRoute.refs.selectedDaubImage.getWrappedInstance().initSelectedImage();
               })
             })
             setTimeout(() => {
@@ -742,9 +735,9 @@ class App extends Component {
             }, 300)
       } else if(this.state.currentBrowserMode === 'find') {
           const xhr = new XMLHttpRequest();
-          xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.props.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
+          xhr.open('POST', `${that.props.defaultURL}getdirwithtag?usrname=${this.props.userName}&taskname=${this.props.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
           const data = JSON.stringify({
-              tag: this.state.currentTagString
+              tag: this.props.currentTag
           })
           xhr.send(data);
           xhr.onload = function() {
@@ -769,7 +762,7 @@ class App extends Component {
           }
       } else if(this.state.currentBrowserMode === 'findLabel') {
           const xhr = new XMLHttpRequest();
-          xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.props.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
+          xhr.open('POST', `${that.props.defaultURL}getdirwithtag?usrname=${this.props.userName}&taskname=${this.props.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
           const data = JSON.stringify({
               tag: ""
           })
@@ -797,7 +790,7 @@ class App extends Component {
       } else {
           const mode = this.getFindMode(this.state.currentBrowserMode);
           const newImageList = [];
-          fetch(`${this.state.defaultURL}${this.getFindMethod(mode)}?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start}&num=${this.state.num}`)
+          fetch(`${this.props.defaultURL}${this.getFindMethod(mode)}?usrname=${this.props.userName}&taskname=${this.props.taskName}&start=${this.state.start}&num=${this.state.num}`)
             .then((response) => response.json())
             .then((result) => {
               result.map((image) => {
@@ -828,7 +821,7 @@ class App extends Component {
             if(this.state.currentBrowserMode === 'normal') {
                 try {
                     const xhr = new XMLHttpRequest();
-                    xhr.open('GET', `${that.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}&video=${this.state.video}`);
+                    xhr.open('GET', `${that.props.defaultURL}getdir?usrname=${this.props.userName}&taskname=${this.props.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}&video=${this.state.video}`);
                     const newImageList = [];
                     xhr.onload = function() {
                         console.log('getNextList success');
@@ -859,9 +852,9 @@ class App extends Component {
             } else if(this.state.currentBrowserMode === 'find') {
                 try {
                     const xhr = new XMLHttpRequest();
-                    xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
+                    xhr.open('POST', `${that.props.defaultURL}getdirwithtag?usrname=${this.props.userName}&taskname=${this.props.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
                     const data = JSON.stringify({
-                        tag: this.state.currentTagString
+                        tag: this.props.currentTag
                     })
                     xhr.send(data);
                     const newImageList = [];
@@ -889,7 +882,7 @@ class App extends Component {
             } else if(this.state.currentBrowserMode === 'findLabel') {
                 try {
                     const xhr = new XMLHttpRequest();
-                    xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
+                    xhr.open('POST', `${that.props.defaultURL}getdirwithtag?usrname=${this.props.userName}&taskname=${this.props.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
                     const data = JSON.stringify({
                         tag: ""
                     })
@@ -920,7 +913,7 @@ class App extends Component {
                 try {
                     const mode = this.getFindMode(this.state.currentBrowserMode);
                     const newImageList = [];
-                    fetch(`${this.state.defaultURL}${this.getFindMethod(mode)}?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start}&num=${this.state.num}`)
+                    fetch(`${this.props.defaultURL}${this.getFindMethod(mode)}?usrname=${this.props.userName}&taskname=${this.props.taskName}&start=${this.state.start}&num=${this.state.num}`)
                       .then((response) => response.json())
                       .then((result) => {
                         result.map((image) => {
@@ -953,7 +946,7 @@ class App extends Component {
             if(this.state.currentBrowserMode === 'normal') {
                 try {
                     const xhr = new XMLHttpRequest();
-                    xhr.open('GET', `${that.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}&video=${this.state.video}`);
+                    xhr.open('GET', `${that.props.defaultURL}getdir?usrname=${this.props.userName}&taskname=${this.props.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}&video=${this.state.video}`);
                     const newImageList = [];
                     xhr.onload = function() {
                         console.log('getNextList success');
@@ -984,9 +977,9 @@ class App extends Component {
             } else if(this.state.currentBrowserMode === 'find') {
                 try {
                     const xhr = new XMLHttpRequest();
-                    xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
+                    xhr.open('POST', `${that.props.defaultURL}getdirwithtag?usrname=${this.props.userName}&taskname=${this.props.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
                     const data = JSON.stringify({
-                        tag: this.state.currentTagString
+                        tag: this.props.currentTag
                     })
                     xhr.send(data);
                     const newImageList = [];
@@ -1014,7 +1007,7 @@ class App extends Component {
             } else if(this.state.currentBrowserMode === 'findLabel') {
                 try {
                     const xhr = new XMLHttpRequest();
-                    xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
+                    xhr.open('POST', `${that.props.defaultURL}getdirwithtag?usrname=${this.props.userName}&taskname=${this.props.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
                     const data = JSON.stringify({
                         tag: ""
                     })
@@ -1045,7 +1038,7 @@ class App extends Component {
                 try {
                     const mode = this.getFindMode(this.state.currentBrowserMode);
                     const newImageList = [];
-                    fetch(`${this.state.defaultURL}${this.getFindMethod(mode)}?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start}&num=${this.state.num}`)
+                    fetch(`${this.props.defaultURL}${this.getFindMethod(mode)}?usrname=${this.props.userName}&taskname=${this.props.taskName}&start=${this.state.start}&num=${this.state.num}`)
                       .then((response) => response.json())
                       .then((result) => {
                         result.map((image) => {
@@ -1078,7 +1071,7 @@ class App extends Component {
           if(this.state.currentBrowserMode === 'normal') {
               try {
                   const xhr = new XMLHttpRequest();
-                  xhr.open('GET', `${that.state.defaultURL}getdir?usrname=${this.state.userName}&taskname=${this.props.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}&video=${this.state.video}`);
+                  xhr.open('GET', `${that.props.defaultURL}getdir?usrname=${this.props.userName}&taskname=${this.props.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}&video=${this.state.video}`);
                   const newImageList = [];
                   xhr.onload = function() {
                       console.log('getNextList success');
@@ -1109,9 +1102,9 @@ class App extends Component {
           } else if(this.state.currentBrowserMode === 'find') {
               try {
                   const xhr = new XMLHttpRequest();
-                  xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.props.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
+                  xhr.open('POST', `${that.props.defaultURL}getdirwithtag?usrname=${this.props.userName}&taskname=${this.props.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
                   const data = JSON.stringify({
-                      tag: this.state.currentTagString
+                      tag: this.props.currentTag
                   })
                   xhr.send(data);
                   const newImageList = [];
@@ -1139,7 +1132,7 @@ class App extends Component {
           } else if(this.state.currentBrowserMode === 'findLabel') {
               try {
                   const xhr = new XMLHttpRequest();
-                  xhr.open('POST', `${that.state.defaultURL}getdirwithtag?usrname=${this.state.userName}&taskname=${this.props.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
+                  xhr.open('POST', `${that.props.defaultURL}getdirwithtag?usrname=${this.props.userName}&taskname=${this.props.taskName}&start=${(this.state.start - this.state.num) > 0 ? (this.state.start - this.state.num) : 1}&num=${this.state.num}`);
                   const data = JSON.stringify({
                       tag: ""
                   })
@@ -1170,7 +1163,7 @@ class App extends Component {
               try {
                   const mode = this.getFindMode(this.state.currentBrowserMode);
                   const newImageList = [];
-                  fetch(`${this.state.defaultURL}${this.getFindMethod(mode)}?usrname=${this.state.userName}&taskname=${this.state.taskName}&start=${this.state.start}&num=${this.state.num}`)
+                  fetch(`${this.props.defaultURL}${this.getFindMethod(mode)}?usrname=${this.props.userName}&taskname=${this.props.taskName}&start=${this.state.start}&num=${this.state.num}`)
                     .then((response) => response.json())
                     .then((result) => {
                       result.map((image) => {
@@ -1194,42 +1187,32 @@ class App extends Component {
     }
 
     deleteImage = () => {
-        const that = this;
         const result = window.confirm("确定删除这张图片吗?");
         if(result) {
-            if(this.state.selectedImageNum !== 0) {
-                //delete image from server
-                const deleteRequest = new XMLHttpRequest();
-                deleteRequest.open('GET', `${that.state.defaultURL}delfile?usrname=${this.state.userName}&taskname=${this.state.taskName}&filename=${this.state.imageList[this.state.selectedImageNum].name}`);
-                deleteRequest.send();
-                //delete image from imageList
-                this.setState((state) => {
-                    state.imageList.splice(state.selectedImageNum, 1);
-                    state.selectedImageNum = state.selectedImageNum - 1;
+            const { imageList, selectedImageNum } = this.state;
+            const { defaultURL, userName, taskName } = this.props;
+            fetch(`${defaultURL}delfile?usrname=${userName}&taskname=${taskName}&filename=${imageList[selectedImageNum].name}`)
+                .then(() => {
+                    if(selectedImageNum === 0) {
+                        this.setState((preState) => ({
+                            imageList: preState.imageList.filter((image, index) => index !== 0),
+                            selectedImageNum: 0
+                        }))
+                    } else {
+                        this.setState((preState) => ({
+                            imageList: preState.imageList.filter((image, index) => index !== selectedImageNum),
+                            selectedImageNum: preState.selectedImageNum - 1
+                        }))
+                    }
                 })
-            } else {
-                //select the first one
-                if(this.state.imageList.length > 0) {
-                    //delete image from server
-                    const deleteRequest = new XMLHttpRequest();
-                    deleteRequest.open('GET', `${that.state.defaultURL}delfile?usrname=${this.state.userName}&taskname=${this.state.taskName}&filename=${this.state.imageList[this.state.selectedImageNum].name}`);
-                    deleteRequest.send();
-                    //delete image from imageList
-                    this.setState((state) => {
-                        state.imageList.splice(state.selectedImageNum, 1);
-                        state.selectedImageNum = 0;
-                    })
-                }
+            if(this.refs.tagRoute.refs.selectedImage) {
+                this.refs.tagRoute.refs.selectedImage.getFileCount();
+                this.refs.tagRoute.refs.selectedImage.getTagedFileCount();
             }
-            if(that.refs.tagRoute.refs.selectedImage) {
-                that.refs.tagRoute.refs.selectedImage.getFileCount();
-                that.refs.tagRoute.refs.selectedImage.getTagedFileCount();
+            if(this.refs.tagObjectRoute.refs.selectedObjectImage) {
+                this.refs.tagObjectRoute.refs.selectedObjectImage.getFileCount();
+                this.refs.tagObjectRoute.refs.selectedObjectImage.getTagedFileCount();
             }
-            if(that.refs.tagObjectRoute.refs.selectedObjectImage) {
-                that.refs.tagObjectRoute.refs.selectedObjectImage.getFileCount();
-                that.refs.tagObjectRoute.refs.selectedObjectImage.getTagedFileCount();
-            }
-
         }
     }
 
@@ -1434,11 +1417,11 @@ class App extends Component {
       const canvas = document.getElementById('selectedCanvas');
       const ctx = canvas.getContext('2d');
       const objects = this.props.objects;
-      const url = canvas.toDataURL();
-      fetch(`${this.state.defaultURL}savelabel?usrname=${this.state.userName}&taskname=${this.props.taskName}&filename=${this.state.imageList[index].name}`, {
+      const img = canvas.toDataURL();
+      fetch(`${this.props.defaultURL}savelabel?usrname=${this.props.userName}&taskname=${this.props.taskName}&filename=${this.state.imageList[index].name}`, {
         method: 'POST',
         body: JSON.stringify({
-          url,
+          img,
           objects
         })
       }).then(() => {
@@ -1452,10 +1435,10 @@ class App extends Component {
     }
 
     getDaubData = (index) => {
-      fetch(`${this.state.defaultURL}loadlabel?usrname=${this.state.userName}&taskname=${this.props.taskName}&filename=${this.state.imageList[index].name}`)
+      fetch(`${this.props.defaultURL}loadlabel?usrname=${this.props.userName}&taskname=${this.props.taskName}&filename=${this.state.imageList[index].name}`)
         .then((response) => response.json())
         .then((result) => {
-          if(result.url && result.objects) {
+          if(result.img && result.objects) {
             this.props.dispatch(setObjects(result.objects));
             const canvas = document.getElementById('selectedCanvas');
             const image = document.getElementById('selectedImage');
@@ -1467,7 +1450,7 @@ class App extends Component {
               canvas.height = image.height;
               ctx.drawImage(newImage, 0, 0, image.width, image.height);
             }
-            newImage.src = result.url;
+            newImage.src = result.img;
           } else {
             this.props.dispatch(setObjects([]));
           }
@@ -1480,7 +1463,7 @@ class App extends Component {
         try {
             const tagListRequest = new XMLHttpRequest();
             tagListRequest.open('GET',
-            encodeURI(`${that.state.defaultURL}loadlabel?usrname=${this.state.userName}&taskname=${this.state.taskName}&filename=${this.state.imageList[index].name}`));
+            encodeURI(`${that.props.defaultURL}loadlabel?usrname=${this.props.userName}&taskname=${this.props.taskName}&filename=${this.state.imageList[index].name}`));
             tagListRequest.send();
             tagListRequest.onload = function() {
                 const jsonResponse = JSON.parse(tagListRequest.response);
@@ -1507,7 +1490,7 @@ class App extends Component {
                 })
                 const that = this;
                 const saveTagListRequest = new XMLHttpRequest();
-                saveTagListRequest.open('POST', `${that.state.defaultURL}savelabel?usrname=${this.state.userName}&taskname=${this.state.taskName}&filename=${this.state.imageList[index].name}`);
+                saveTagListRequest.open('POST', `${that.props.defaultURL}savelabel?usrname=${this.props.userName}&taskname=${this.props.taskName}&filename=${this.state.imageList[index].name}`);
                 const result = `{
                     "length": ${this.state.tagList.length},
                     "objects": [
@@ -1537,7 +1520,7 @@ class App extends Component {
             })
             const that = this;
             const request = new XMLHttpRequest();
-            request.open('POST', `${that.state.defaultURL}savelabel?usrname=${this.state.userName}&taskname=${this.state.taskName}&filename=${this.state.imageList[index].name}`);
+            request.open('POST', `${that.props.defaultURL}savelabel?usrname=${this.props.userName}&taskname=${this.props.taskName}&filename=${this.state.imageList[index].name}`);
             const result = JSON.stringify({
                 length: 1,
                 objects: [
@@ -1546,7 +1529,7 @@ class App extends Component {
                         y_start: 0.0,
                         x_end: 1.0,
                         y_end: 1.0,
-                        tag: this.state.tagList[0] ? this.state.tagList[0].tag : [document.getElementById('mySelect').value],
+                        tag: this.state.tagList[0] ? this.state.tagList[0].tag : [this.props.currentTag],
                         info: this.state.tagList[0]? this.state.tagList[0].info : ''
                     }
                 ]
@@ -1581,7 +1564,7 @@ class App extends Component {
             //if delete the last box, tagList will be empty, and don't post the save request.
             if(that.state.tagList.length === 0) {
                 const deleteLabel = new XMLHttpRequest();
-                deleteLabel.open('GET', `${that.state.defaultURL}dellabel?usrname=${this.state.userName}&taskname=${this.state.taskName}&filename=${that.state.imageList[that.state.selectedImageNum].name}`);
+                deleteLabel.open('GET', `${that.props.defaultURL}dellabel?usrname=${this.props.userName}&taskname=${this.props.taskName}&filename=${that.state.imageList[that.state.selectedImageNum].name}`);
                 deleteLabel.send();
                 deleteLabel.onload = function() {
                     console.log('delete last box success');
@@ -1600,15 +1583,6 @@ class App extends Component {
             state.shouldPostObjectTagList = true;
             state.tagList[index].info = value;
         })
-    }
-
-    changeTagString = () => {
-        this.setState({currentTagString: $('#mySelect').val()});
-    }
-
-    changeObjectTagString = () => {
-        this.setState({currentTagString: document.getElementById('mySelect').value});
-        document.getElementById('mySelect').blur();
     }
 
     handleNumChange = (e) => {
@@ -1646,9 +1620,9 @@ class App extends Component {
         });
     }
 
-    changeUserAndTask = (userName, taskName) => {
+    changeUserAndTask = (userName, taskName, taskType) => {
         const that = this;
-        this.props.dispatch(changeTaskName(taskName));
+        this.props.dispatch(changeTask({name: taskName, type: taskType}));
         this.setState({userName: userName, taskName: taskName}, function() {
             that.getImageList();
         });
@@ -1676,7 +1650,7 @@ class App extends Component {
     editTagString = (oldTagString, newTagString) => {
         try {
             const request = new XMLHttpRequest();
-            request.open('POST', `${this.state.defaultURL}changetag?usrname=${this.state.userName}&taskname=${this.state.taskName}`);
+            request.open('POST', `${this.props.defaultURL}changetag?usrname=${this.props.userName}&taskname=${this.props.taskName}`);
             const data = JSON.stringify({
                 oldtag: oldTagString,
                 newtag: newTagString
@@ -1691,12 +1665,12 @@ class App extends Component {
     }
 
     addNewTagToBox = (index) => {
-        const newTag = document.getElementById('mySelect').value;
+        const newTag = this.props.currentTag;
         if(this.state.tagList[index].tag.indexOf(newTag) < 0) {
-            const listName = document.getElementById('mySelectForListName').value;
+            const listName = this.props.currentList;
             let flag = true;
             this.state.tagList[index].tag.map((tag, index2) => {
-                if(this.refs.tagRoute.refs.tagView.state.tagStringListAll[listName].indexOf(tag) >= 0) {
+                if(this.props.tagStringListAll[listName].indexOf(tag) >= 0) {
                     this.setState((state) => {
                         state.tagList[index].tag[index2] = newTag;
                         state.shouldPostTagList = true;
@@ -1714,12 +1688,12 @@ class App extends Component {
     }
 
     addNewTagToBoxForObject = (index) => {
-        const newTag = document.getElementById('mySelect').value;
+        const newTag = this.props.currentTag;
         if(this.state.tagList[index].tag.indexOf(newTag) < 0) {
-            const listName = document.getElementById('mySelectForListName').value;
+            const listName = this.props.currentList;
             let flag = true;
             this.state.tagList[index].tag.map((tag, index2) => {
-                if(this.refs.tagObjectRoute.refs.tagObjectView.state.tagStringListAll[listName].indexOf(tag) >= 0) {
+                if(this.props.tagStringListAll[listName].indexOf(tag) >= 0) {
                     this.setState((state) => {
                         state.tagList[index].tag[index2] = newTag;
                         state.shouldPostObjectTagList = true;
@@ -1774,35 +1748,8 @@ class App extends Component {
       this.props.dispatch(autoTagImages(start, num, pretrainmodel));
     }
 
-    getTagRGB = (tagNum) => {
-      const color = this.state.tagStringList[tagNum - 1].color.split(',');
-      const R = color[0].slice(4, color[0].length);
-      const G = color[1].slice(0, color[1].length);
-      const B = color[2].slice(0, color[2].length - 1);
-      return [parseInt(R, 10),parseInt(G, 10),parseInt(B, 10),255];
-    }
-
-    getTagNum = (r,g,b) => {
-      for(let i=0; i<this.state.tagStringList.length; i++) {
-        const color = this.state.tagStringList[i].color.split(',');
-        const theR = color[0].slice(4, color[0].length);
-        const theG = color[1].slice(0, color[1].length);
-        const theB = color[2].slice(0, color[2].length - 1);
-        if(parseInt(r, 10) === parseInt(theR, 10) && parseInt(g, 10) === parseInt(theG, 10) && parseInt(b, 10) === parseInt(theB, 10)) {
-          return (i + 1);
-        }
-      }
-      return 0;
-    }
-
-    changeTagStringList = (tagStringList) => {
-      this.setState({
-        tagStringList
-      })
-    }
-
     autoDeleteSameFiles = () => {
-      fetch(`${this.state.defaultURL}delsamefile?usrname=${this.state.userName}&taskname=${this.state.taskName}`)
+      fetch(`${this.props.defaultURL}delsamefile?usrname=${this.props.userName}&taskname=${this.props.taskName}`)
         .then((response) => response.text())
         .then((result) => {
           this.getImageList();
@@ -1856,7 +1803,7 @@ class App extends Component {
           if(type === 'mp4' || type === 'MP4' || type === 'avi' || type === 'AVI' || type === 'MTS' || type === 'mts' || type === 'mov' || type === 'MOV' || type === 'wmv' || type === 'WMV' || type === 'mpg' || type === 'MPG' || type === 'ts' || type === 'TS') {
             const formData = new FormData();
             formData.append('file', file);
-            fetch(`${this.state.defaultURL}uploadvideo2image?usrname=${this.state.userName}&taskname=${this.props.taskName}&filename=${file.name}&interval=${interval}`, {
+            fetch(`${this.props.defaultURL}uploadvideo2image?usrname=${this.props.userName}&taskname=${this.props.taskName}&filename=${file.name}&interval=${interval}`, {
               method: 'POST',
               body: formData
             }).then((response) => response.text())
@@ -1887,7 +1834,7 @@ class App extends Component {
           delete theBox.reason
         }
       }
-      theBox.reviewer = this.state.userName;
+      theBox.reviewer = this.props.userName;
       this.setState({
         tagList: this.state.tagList.map((box, theIndex) => {
           if(theIndex === index) {
@@ -1949,12 +1896,12 @@ class App extends Component {
                     this.state.login ?
                     <TaskPage onInitStartAndNum={this.initStartAndNum}
                               onLogout={this.logout}
-                              defaultURL={this.state.defaultURL}
-                              username={this.state.userName}
+                              defaultURL={this.props.defaultURL}
+                              username={this.props.userName}
                               userGroup={this.state.userGroup}
-                              password={this.state.password}
+                              password={this.props.password}
                               onChangeUserAndTask={this.changeUserAndTask}/>
-                    : <Login onLogin={this.login} defaultURL={this.state.defaultURL}/>
+                    : <Login onLogin={this.login} defaultURL={this.props.defaultURL}/>
                 )}/>
                 <Route ref="tagRoute" exact path="/tag" render={() => (
                     this.state.login ?
@@ -1972,7 +1919,7 @@ class App extends Component {
                                onPreviousImage={this.previousImage}
                                num={this.state.num}
                                info={this.state.info}
-                               currentTagString={this.state.currentTagString}
+                               currentTag={this.props.currentTag}
                                onAddTag={this.addTag}
                                selectedImage={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].url : ''}
                                selectedImageName={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].name : 'No Image'}
@@ -1982,10 +1929,10 @@ class App extends Component {
                                onUploadImgeFiles={this.uploadImageFiles}
                                onShowNewImage={this.showNewImage}
                                boxList={this.state.tagList}
-                               defaultURL={this.state.defaultURL}
-                               userName={this.state.userName}
-                               userLevel={this.state.userLevel}
-                               taskName={this.state.taskName}/>
+                               defaultURL={this.props.defaultURL}
+                               userName={this.props.userName}
+                               userLevel={this.props.userLevel}
+                               taskName={this.props.taskName}/>
                             <SelectBar onClickItem={this.clickItem}
                                        selectedImageNum={this.state.selectedImageNum}
                                        imageList={this.state.imageList}/>
@@ -2013,8 +1960,7 @@ class App extends Component {
                                start={this.state.start}
                                num={this.state.num}
                                info={this.state.info}
-                               currentTagString={this.state.currentTagString}
-                               onChangeTagString={this.changeTagString}
+                               currentTag={this.props.currentTag}
                                onChangeBrowserMode={this.changeBrowserMode}
                                onGetImageList={this.getImageList}
                                onNextImageList={this.nextImageList}
@@ -2022,10 +1968,10 @@ class App extends Component {
                                boxList={this.state.tagList}
                                onDeleteBox={this.deleteBox}
                                onChangeBoxInfo={this.changeBoxInfo}
-                               defaultURL={this.state.defaultURL}
-                               userName={this.state.userName}
-                               userLevel={this.state.userLevel}
-                               taskName={this.state.taskName}
+                               defaultURL={this.props.defaultURL}
+                               userName={this.props.userName}
+                               userLevel={this.props.userLevel}
+                               taskName={this.props.taskName}
                                onAutoTagImages={this.autoTagImages} />
                         </div>
                     </div> : null
@@ -2043,7 +1989,7 @@ class App extends Component {
                                onPreviousImage={this.previousImageForObject}
                                num={this.state.num}
                                info={this.state.info}
-                               currentTagString={this.state.currentTagString}
+                               currentTag={this.props.currentTag}
                                onAddTag={this.addTag}
                                selectedImage={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].url : ''}
                                selectedImageName={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].name : 'No Image'}
@@ -2053,10 +1999,10 @@ class App extends Component {
                                onUploadImgeFiles={this.uploadImageFiles}
                                onShowNewImage={this.showNewImage}
                                boxList={this.state.tagList}
-                               defaultURL={this.state.defaultURL}
-                               userName={this.state.userName}
-                               userLevel={this.state.userLevel}
-                               taskName={this.state.taskName}/>
+                               defaultURL={this.props.defaultURL}
+                               userName={this.props.userName}
+                               userLevel={this.props.userLevel}
+                               taskName={this.props.taskName}/>
                             <SelectBar onClickItem={this.clickObjectItem} selectedImageNum={this.state.selectedImageNum} imageList={this.state.imageList}/>
                         </div>
                         <div className="flex-box flex-column" style={{width: '20%', backgroundColor: '#F0F0F0'}}>
@@ -2069,8 +2015,7 @@ class App extends Component {
                                start={this.state.start}
                                num={this.state.num}
                                info={this.state.info}
-                               currentTagString={this.state.currentTagString}
-                               onChangeTagString={this.changeObjectTagString}
+                               currentTag={this.props.currentTag}
                                onChangeBrowserMode={this.changeBrowserMode}
                                onGetImageList={this.getImageList}
                                onNextImageList={this.nextImageListForObject}
@@ -2078,10 +2023,10 @@ class App extends Component {
                                boxList={this.state.tagList}
                                onDeleteBox={this.deleteBox}
                                onChangeBoxInfo={this.changeBoxInfo}
-                               defaultURL={this.state.defaultURL}
-                               userName={this.state.userName}
-                               userLevel={this.state.userLevel}
-                               taskName={this.state.taskName}
+                               defaultURL={this.props.defaultURL}
+                               userName={this.props.userName}
+                               userLevel={this.props.userLevel}
+                               taskName={this.props.taskName}
                                onAutoTagImages={this.autoTagImages}/>
                         </div>
                     </div> : null
@@ -2096,7 +2041,7 @@ class App extends Component {
                         onPreviousImage={this.previousImage}
                         num={this.state.num}
                         info={this.state.info}
-                        currentTagString={this.state.currentTagString}
+                        currentTag={this.props.currentTag}
                         onAddTag={this.addTag}
                         selectedImage={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].url : ''}
                         selectedImageName={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].name : 'No Image'}
@@ -2106,8 +2051,8 @@ class App extends Component {
                         onUploadImgeFiles={this.uploadImageFiles}
                         onShowNewImage={this.showNewImage}
                         boxList={this.state.tagList}
-                        userName={this.state.userName}
-                        userLevel={this.state.userLevel}
+                        userName={this.props.userName}
+                        userLevel={this.props.userLevel}
                         taskName={this.props.taskName}
                         onClickItem={this.clickItem}
                         selectedImageNum={this.state.selectedImageNum}
@@ -2127,8 +2072,7 @@ class App extends Component {
                         start={this.state.start}
                         num={this.state.num}
                         info={this.state.info}
-                        currentTagString={this.state.currentTagString}
-                        onChangeTagString={this.changeTagString}
+                        currentTag={this.props.currentTag}
                         onChangeBrowserMode={this.changeBrowserMode}
                         onGetImageList={this.getImageList}
                         onNextImageList={this.nextImageList}
@@ -2136,7 +2080,7 @@ class App extends Component {
                         boxList={this.state.tagList}
                         onDeleteBox={this.deleteBox}
                         onChangeBoxInfo={this.changeBoxInfo}
-                        defaultURL={this.state.defaultURL}
+                        defaultURL={this.props.defaultURL}
                         onAutoTagImages={this.autoTagImages} />
                 )} />
                 <Route exact path="/segment" render={() => (
@@ -2170,7 +2114,7 @@ class App extends Component {
                                onPreviousImage={this.previousImageForDaub}
                                num={this.state.num}
                                info={this.state.info}
-                               currentTagString={this.state.currentTagString}
+                               currentTag={this.props.currentTag}
                                onAddTag={this.addTag}
                                selectedImageNum={this.state.selectedImageNum}
                                selectedImage={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].url : ''}
@@ -2181,9 +2125,9 @@ class App extends Component {
                                onUploadImgeFiles={this.uploadImageFiles}
                                onShowNewImage={this.showNewImage}
                                boxList={this.state.tagList}
-                               defaultURL={this.state.defaultURL}
-                               userName={this.state.userName}
-                               userLevel={this.state.userLevel}
+                               defaultURL={this.props.defaultURL}
+                               userName={this.props.userName}
+                               userLevel={this.props.userLevel}
                                taskName={this.props.taskName}/>
                             <SelectDaubBar onClickItem={this.clickDaubItem}
                                        selectedImageNum={this.state.selectedImageNum}
@@ -2196,8 +2140,6 @@ class App extends Component {
                                changeEraseMode={this.changeEraseMode}
                                lineWidth={this.state.lineWidth}
                                changeLineWidth={this.changeLineWidth}
-                               tagStringList={this.state.tagStringList}
-                               setTagStringList={this.setTagStringList}
                                setColorList={this.setColorList}
                                onHandleNumChange={this.handleNumChange}
                                getImageListByTag={this.getImageListByTag}
@@ -2208,15 +2150,14 @@ class App extends Component {
                                start={this.state.start}
                                num={this.state.num}
                                info={this.state.info}
-                               currentTagString={this.state.currentTagString}
-                               onChangeTagStringList={this.changeTagStringList}
+                               currentTag={this.props.currentTag}
                                onChangeBrowserMode={this.changeBrowserMode}
                                onGetImageList={this.getImageList}
                                onNextImageList={this.nextImageListForDaub}
                                onPreviousImageList={this.previousImageListForDaub}
-                               defaultURL={this.state.defaultURL}
-                               userName={this.state.userName}
-                               userLevel={this.state.userLevel}
+                               defaultURL={this.props.defaultURL}
+                               userName={this.props.userName}
+                               userLevel={this.props.userLevel}
                                taskName={this.props.taskName}
                                onAutoTagImages={this.autoTagImages} />
                         </div>
@@ -2235,7 +2176,7 @@ class App extends Component {
                                onPreviousImage={this.previousImage}
                                num={this.state.num}
                                info={this.state.info}
-                               currentTagString={this.state.currentTagString}
+                               currentTag={this.props.currentTag}
                                onAddTag={this.addTag}
                                selectedImage={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].url : ''}
                                selectedImageName={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].name : 'No Image'}
@@ -2245,10 +2186,10 @@ class App extends Component {
                                onUploadImgeFiles={this.uploadImageFiles}
                                onShowNewImage={this.showNewImage}
                                boxList={this.state.tagList}
-                               defaultURL={this.state.defaultURL}
-                               userName={this.state.userName}
-                               userLevel={this.state.userLevel}
-                               taskName={this.state.taskName}/>
+                               defaultURL={this.props.defaultURL}
+                               userName={this.props.userName}
+                               userLevel={this.props.userLevel}
+                               taskName={this.props.taskName}/>
                             <SelectPointBar onClickItem={this.clickPointItem}
                                        selectedImageNum={this.state.selectedImageNum}
                                        imageList={this.state.imageList}/>
@@ -2267,8 +2208,6 @@ class App extends Component {
                                start={this.state.start}
                                num={this.state.num}
                                info={this.state.info}
-                               currentTagString={this.state.currentTagString}
-                               onChangeTagString={this.changeTagString}
                                onChangeBrowserMode={this.changeBrowserMode}
                                onGetImageList={this.getImageList}
                                onNextImageList={this.nextImageList}
@@ -2276,10 +2215,10 @@ class App extends Component {
                                boxList={this.state.tagList}
                                onDeleteBox={this.deleteBox}
                                onChangeBoxInfo={this.changeBoxInfo}
-                               defaultURL={this.state.defaultURL}
-                               userName={this.state.userName}
-                               userLevel={this.state.userLevel}
-                               taskName={this.state.taskName}
+                               defaultURL={this.props.defaultURL}
+                               userName={this.props.userName}
+                               userLevel={this.props.userLevel}
+                               taskName={this.props.taskName}
                                onAutoTagImages={this.autoTagImages} />
                         </div>
                     </div> : null
@@ -2294,7 +2233,7 @@ class App extends Component {
                     onPreviousImage={this.previousImage}
                     num={this.state.num}
                     info={this.state.info}
-                    currentTagString={this.state.currentTagString}
+                    currentTag={this.props.currentTag}
                     onAddTag={this.addTag}
                     selectedImage={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].url : ''}
                     selectedImageName={this.state.imageList[this.state.selectedImageNum] ? this.state.imageList[this.state.selectedImageNum].name : 'No Image'}
@@ -2304,8 +2243,8 @@ class App extends Component {
                     onUploadImgeFiles={this.uploadImageFiles}
                     onShowNewImage={this.showNewImage}
                     boxList={this.state.tagList}
-                    userName={this.state.userName}
-                    userLevel={this.state.userLevel}
+                    userName={this.props.userName}
+                    userLevel={this.props.userLevel}
                     taskName={this.props.taskName}
                     onClickItem={this.clickItem}
                     selectedImageNum={this.state.selectedImageNum}
@@ -2325,8 +2264,7 @@ class App extends Component {
                     start={this.state.start}
                     num={this.state.num}
                     info={this.state.info}
-                    currentTagString={this.state.currentTagString}
-                    onChangeTagString={this.changeTagString}
+                    currentTag={this.props.currentTag}
                     onChangeBrowserMode={this.changeBrowserMode}
                     onGetImageList={this.getImageList}
                     onNextImageList={this.nextImageList}
@@ -2334,7 +2272,7 @@ class App extends Component {
                     boxList={this.state.tagList}
                     onDeleteBox={this.deleteBox}
                     onChangeBoxInfo={this.changeBoxInfo}
-                    defaultURL={this.state.defaultURL}
+                    defaultURL={this.props.defaultURL}
                     onAutoTagImages={this.autoTagImages} />
                 )} />
             </div>
@@ -2343,9 +2281,16 @@ class App extends Component {
 }
 
 const mapStateToProps = ({ appReducer, daubReducer }) => ({
+  defaultURL: appReducer.defaultURL,
+  userName: appReducer.userName,
   taskName: appReducer.taskName,
+  userLevel: appReducer.userLevel,
+  password: appReducer.password,
   showImageMode: appReducer.showImageMode,
-  objects: daubReducer.objects
+  objects: daubReducer.objects,
+  currentTag: appReducer.tagSelector.currentTag,
+  currentList: appReducer.tagSelector.currentList,
+  tagStringListAll: appReducer.tagSelector.tagStringListAll
 })
 
 export default withRouter(connect(mapStateToProps)(App));

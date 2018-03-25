@@ -30,7 +30,7 @@ class RightMenu extends Component {
         }}
          anchor="right"
          open={this.props.open}
-         onRequestClose={this.props.closeView}
+         onClose={this.props.closeView}
        >
          <List>
            <ListItem button onClick={this.openHelper}>

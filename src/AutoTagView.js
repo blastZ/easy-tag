@@ -68,7 +68,7 @@ class AutoTagView extends Component {
     return (
       <Dialog classes={{
         paper: classes.paper
-      }} open={this.props.open} onRequestClose={this.props.closeView}>
+      }} open={this.props.open} onClose={this.props.closeView}>
         <DialogTitle>{"自动标注"}</DialogTitle>
         <DialogContent>
           <FormControl className={classes.formControl}>

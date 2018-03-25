@@ -368,3 +368,18 @@ a:hover {
     width: 400px !important;
   }
 }
+
+#option-box:hover {
+    cursor: move;
+}
+
+#paint-box:hover {
+    cursor: move;
+}
+
+.drag-circle {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: white;
+}

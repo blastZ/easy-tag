@@ -1,13 +1,12 @@
 import { ADD_NEW_IMAGE, CLICK_SELECT_BAR_ITEM,
          ADD_NEW_SEGMENT_ANNOTATOR, GET_IMAGE_LIST,
-         GET_IMAGE_ANNOTATION, GET_SEGMENT_ANNOTATOR_LABELS,
-         SET_SEGMENT_ANNOTATOR_LABELS, CHANGE_USER_NAME,
-         CHANGE_TASK_NAME, CHANGE_USER_LEVEL,
+         GET_IMAGE_ANNOTATION, SET_SEGMENT_ANNOTATOR_LABELS, CHANGE_USER_NAME,
+         CHANGE_TASK, CHANGE_USER_LEVEL, GET_SEGMENT_ANNOTATOR_LABELS,
          INIT_APP_REDUCER_STATE, GET_FILE_COUNT,
          GET_TAGGED_FILE_COUNT, DELETE_IMAGE,
          SHOULD_UPDATE_IMAGE, CHANGE_START_VALUE,
          CHANGE_NUM_VALUE, GET_HELPER_DOC, CHANGE_PASSWORD,
-         GET_MANAGER_DATA, GET_TRAIN_STATE_LOG } from '../actions/app_action';
+         GET_MANAGER_DATA, GET_TRAIN_STATE_LOG, INIT_TAG_SELECTOR } from '../actions/app_action';
 import { DEFAULT_URL } from '../utils/global_config';
 
 const initState = {
@@ -15,6 +14,7 @@ const initState = {
     userName: '',
     password: '',
     taskName: '',
+    taskType: -1,
     start: 1,
     num: 10,
     fileCount: 0,
@@ -24,22 +24,29 @@ const initState = {
     selectedImageNum: 0,
     segmentAnnotatorList: [], // {labels: [{name: 'bacground', color: [255, 255, 255]}], annotation: "string"}
     imageAnnotation: null,
-    segmentAnnotatorLabels: [],
+    segmentAnnotatorLabels: [{name: 'bacground', color: [255, 255, 255]}],
     updateImage: false,
     navList: [],
     managerData: '',
     trainStateLog: '', //app_middleware:172
     regionSize: 40,
-    showImageMode: 'LABELED'
+    showImageMode: 'LABELED',
+    tagSelector: {
+      listNameList: [], // 'tagname','tagname2'
+      tagStringList: [], // '1','2','3'
+      tagStringListAll: {}, // {tagname: ['1','2','3'], tagname2: ['4','5','6']}
+      currentList: '',
+      currentTag: '',
+      annotatorLabels: [{name: 'bacground', color: [255, 255, 255]}]
+    }
 }
 
 function appReducer(state=initState, action) {
-    const { userName, taskName, newImage,
-            index, segmentAnnotator, imageList,
-            imageAnnotation, segmentAnnotatorLabels, newLabels,
-            userLevel, fileCount, taggedFileCount,
-            start, num, navList, password, trainStateLog,
-            regionSize } = action;
+    const { userName, task, taskName, newImage, index, segmentAnnotator,
+            imageList, imageAnnotation, segmentAnnotatorLabels, newLabels,
+            userLevel, fileCount, taggedFileCount, start, num, navList,
+            password, trainStateLog, regionSize, tagSelector } = action;
+
     switch (action.type) {
         case ADD_NEW_IMAGE: {
             return {
@@ -96,10 +103,11 @@ function appReducer(state=initState, action) {
                 userName
             }
         }
-        case CHANGE_TASK_NAME: {
+        case CHANGE_TASK: {
             return {
                 ...state,
-                taskName
+                taskName: task.name,
+                taskType: task.type
             }
         }
         case CHANGE_USER_LEVEL: {
@@ -199,6 +207,15 @@ function appReducer(state=initState, action) {
           return {
             ...state,
             trainStateLog
+          }
+        }
+        case INIT_TAG_SELECTOR: {
+          return {
+            ...state,
+            tagSelector: {
+              ...state.tagSelector,
+              ...tagSelector
+            }
           }
         }
         default: return state;

@@ -63,7 +63,7 @@ class StatisticsView extends Component {
     return (
       <Dialog classes={{
         paper: classes.paper
-      }} onRequestClose={closeView} open={true}>
+      }} onClose={closeView} open={true}>
         <DialogTitle>标注统计</DialogTitle>
         <DialogContent>
           <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>

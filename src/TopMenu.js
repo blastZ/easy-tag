@@ -47,11 +47,13 @@ class TopMenu extends Component {
 
   checkBoxList = (boxList) => {
     let flag = true;
-    boxList.map((box) => {
-      if(box.checked && box.checked === 'YES') {
-        flag = false;
-      }
-    })
+    if(boxList) {
+      boxList.map((box) => {
+        if(box.checked && box.checked === 'YES') {
+          flag = false;
+        }
+      })
+    }
     return flag;
   }
 
@@ -86,7 +88,7 @@ class TopMenu extends Component {
     const { classes } = this.props;
     return (
       <div style={{position: 'absolute', top: '0px', right: '11px', zIndex: '100', color: 'white'}}>
-        <Dialog onRequestClose={this.closeSearchView} open={this.state.showSearchView}>
+        <Dialog onClose={this.closeSearchView} open={this.state.showSearchView}>
           <DialogTitle>查找图片</DialogTitle>
           <DialogContent>
             <div>
@@ -111,7 +113,8 @@ class TopMenu extends Component {
         <MenuIcon className="et-hoverable" onMouseEnter={this.showMenu} style={{fontSize: '50px'}} />
         {this.state.showMenu &&
           <div onMouseLeave={this.closeMenu} style={{position: 'absolute', top: '40px', right: '10px', width: '153px'}}>
-            {this.props.userLevel > 0 && this.checkBoxList(this.props.boxList) && <div onClick={this.deleteImage} className="w3-button w3-green" style={{width: '100%'}}>删除当前图片</div>}
+            {this.props.userLevel > 0 && this.checkBoxList(this.props.boxList) && 
+              <div onClick={this.deleteImage} className="w3-button w3-green" style={{width: '100%'}}>删除当前图片</div>}
             <div onClick={this.deleteSameImage} className="w3-button w3-green" style={{borderTop: '1px solid white', width: '100%'}}>删除重复图片</div>
             <div onClick={this.openSearchView} className="w3-button w3-green" style={{borderTop: '1px solid white', width: '100%'}}>查找图片</div>
           </div>}

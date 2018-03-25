@@ -32,7 +32,14 @@ class SelectedImage extends Component {
         onLeftEdge: false,
         onTopEdge: false,
         onRightEdge: false,
-        onBottomEdge: false
+        onBottomEdge: false,
+        optionBox: {
+          x: 0,
+          y: 0,
+          left: 40,
+          top: 170,
+        },
+        moveOptionBox: false
     }
 
     componentWillMount() {
@@ -44,6 +51,7 @@ class SelectedImage extends Component {
         document.removeEventListener('keyup', this.deleteImageListener);
         document.removeEventListener('keyup', this.nextPreviousImageListener);
         document.removeEventListener('mouseup', mouseupListener);
+        this.removeDragListener();
     }
 
     deleteImageListener = (e) => {
@@ -267,7 +275,7 @@ class SelectedImage extends Component {
         const relative_y_start = (y_start / img_natural_height).toFixed(3);
         const relative_x_end = (x_end / img_natural_width).toFixed(3);
         const relative_y_end = (y_end / img_natural_height).toFixed(3);
-        const tag = {x_start: relative_x_start, y_start: relative_y_start, x_end: relative_x_end, y_end: relative_y_end, tag: [this.props.currentTagString], info: this.props.info ? this.props.info : '', tagger: this.props.userName}
+        const tag = {x_start: relative_x_start, y_start: relative_y_start, x_end: relative_x_end, y_end: relative_y_end, tag: [this.props.currentTag], info: this.props.info ? this.props.info : '', tagger: this.props.userName}
         this.props.onAddTag(tag);
       }
       this.initDrawState();
@@ -299,6 +307,7 @@ class SelectedImage extends Component {
     }
 
     componentDidMount() {
+        this.addDragListener();
         this.props.changeBoxIndex(0);
         const that = this;
         const theImage = document.getElementById('selectedImage');
@@ -661,19 +670,91 @@ class SelectedImage extends Component {
       )
     }
 
+    dragMDListener = (e) => {
+      this.setState({
+        moveOptionBox: true,
+        optionBox: {
+          x: e.clientX,
+          y: e.clientY,
+          left: this.state.optionBox.left,
+          top: this.state.optionBox.top
+        }
+      })
+    }
+
+    dragMMListener = (e) => {
+      const { optionBox, moveOptionBox } = this.state;
+      if(moveOptionBox) {
+        const x = e.clientX;
+        const y = e.clientY;
+        const left = optionBox.left + x - optionBox.x;
+        const top = optionBox.top + y - optionBox.y;
+        this.setState({
+          optionBox: {
+            x,
+            y,
+            left,
+            top
+          }
+        })
+      }
+    }
+
+    dragMUListener = (e) => {
+      const { optionBox, moveOptionBox } = this.state;
+      if(moveOptionBox) {
+        const x = e.clientX - optionBox.x;
+        const y = e.clientY - optionBox.y;
+        const left = optionBox.left + x;
+        const top = optionBox.top + y;
+        this.setState({
+          moveOptionBox: false,
+          optionBox: {
+            x: 0,
+            y: 0,
+            left,
+            top
+          }
+        })
+      }
+    }
+
+    addDragListener = () => {
+      const optionBox = document.getElementById('option-box');
+      optionBox.addEventListener('mousedown', this.dragMDListener);
+      window.addEventListener('mousemove', this.dragMMListener);
+      window.addEventListener('mouseup', this.dragMUListener);
+    }
+
+    removeDragListener = () => {
+      const optionBox = document.getElementById('option-box');
+      optionBox.removeEventListener('mousedown', this.dragMDListener);
+      window.removeEventListener('mousemove', this.dragMMListener);
+      window.removeEventListener('mouseup', this.dragMUListener);
+    }
+
     render() {
-      const { drawing, moveRecX, moveRecY, moveRecWidth, moveRecHeight, moveBox } = this.state;
+      const { drawing, moveRecX, moveRecY, moveRecWidth, moveRecHeight, moveBox, optionBox } = this.state;
       const { classes } = this.props;
         return (
-            <div className="w3-center w3-padding-24 flex-box full-width" style={{position: 'relative', justifyContent: 'center', alignItems: 'center', backgroundColor: '#303030', flex: '1'}}>
-                <div style={{width: '35px', height: '55px', background: 'white', position: 'fixed', left: '40px', top: '170px', borderRadius: '5px', zIndex: 1000}}>
-                  <List>
-                    <ListItem onClick={this.shouldMoveBox} button style={{padding: '10px 8px', background: `${moveBox ? '#c1c1c1' : ''}`}}>
-                      <ListItemIcon>
-                        <img style={{width: '20px', height: '20px'}} src={require("./imgs/drag.svg")} />
-                      </ListItemIcon>
-                    </ListItem>
-                  </List>
+            <div className="w3-center w3-padding-24 flex-box full-width" style={{position: 'relative', justifyContent: 'center', alignItems: 'center', backgroundColor: '#303030', flex: '1', userSelect: 'none'}}>
+                <div style={{
+                  width: '55px', height: '35px', background: 'white',
+                  position: 'fixed', left: `${optionBox.left}px`, top: `${optionBox.top}px`,
+                  borderRadius: '3px', zIndex: 1000,
+                  display: 'flex', alignItems: 'center', userSelect: 'none'}}>
+                  <div id="option-box" style={{width: '14px', height: '35px', position: 'absolute', left: '-7px', background: 'white', borderRadius: '3px 0px 0px 3px'}}>
+                    <div style={{display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-around', alignItems: 'center', background: 'rgba(0,0,0,0.3)'}}>
+                      <div className="drag-circle"/>
+                      <div className="drag-circle"/>
+                      <div className="drag-circle"/>
+                    </div>
+                  </div>
+                  <div style={{width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                    <div onClick={this.shouldMoveBox} style={{display: 'flex', alignItems: 'center', justifyContent: 'center', width: '25px', height: '25px', background: `${moveBox ? '#c1c1c1' : ''}`}}>
+                      <img style={{width: '20px', height: '20px'}} src={require("./imgs/drag.svg")} />
+                    </div>
+                  </div>
                 </div>
                 <ImgTopBar
                   userName={this.props.userName}

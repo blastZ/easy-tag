@@ -11,26 +11,23 @@ import IconButton from 'material-ui/IconButton';
 import DeleteIcon from 'material-ui-icons/Delete';
 import AddIcon from 'material-ui-icons/Add';
 import RemoveIcon from 'material-ui-icons/Close';
-
+import TagSelector from '../TagSelector';
 
 class TagDaubView extends Component {
     state = {
-        listNameList: [], // 'tagname','tagname2'
-        tagStringList: [], // '1','2','3'
-        tagStringListAll: {}, // {tagname: ['1','2','3'], tagname2: ['4','5','6']}
-        newTagString: '',
-        newListName: '',
-        showEditView: false,
-        showTagEditView: false,
-        showListNameEditView: false,
-        showAddNewTagStringView: false,
-        showAddNewListNameView: false,
         showFindModeView: false,
         autoTagNum: 1,
         autoTagStart: 1,
         showPremodelSelect: false,
         pretrainmodelList: [],
-        currentColor: ''
+        currentColor: '',
+        movePaintBox: false,
+        paintBox: {
+          x: 0,
+          y: 0,
+          left: 20,
+          top: 100
+        }
     }
 
     shouldShowPremodelSelect = () => {
@@ -70,39 +67,14 @@ class TagDaubView extends Component {
         this.setState({showFindModeView: !this.state.showFindModeView});
     }
 
-    shouldShowEditView = () => {
-        this.setState({showEditView: !this.state.showEditView});
-    }
-
-    shouldShowListNameEditView = () => {
-        this.setState({
-          newListName: '',
-          showListNameEditView: !this.state.showListNameEditView
-        });
-    }
-
-    shouldShowTagEditView = () => {
-        this.setState({
-          newTagString: '',
-          showTagEditView: !this.state.showTagEditView
-        });
-    }
-
-    shouldShowAddNewTagStringView = () => {
-        this.setState({showAddNewTagStringView: !this.state.showAddNewTagStringView});
-    }
-
-    shouldShowAddNewListNameView = () => {
-        this.setState({showAddNewListNameView: !this.state.showAddNewListNameView});
-    }
-
     componentWillUnmount() {
+      this.removeDragListener();
         document.removeEventListener('keyup', this.pageUpAndDownListener);
     }
 
     componentDidMount() {
+      this.addDragListener();
         const that = this;
-        this.loadTagList();
         document.addEventListener('keyup', this.pageUpAndDownListener);
         fetch(`${this.props.defaultURL}getpretrainmodelall?usrname=${this.props.userName}&taskname=${this.props.taskName}`)
           .then((response) => (response.json()))
@@ -121,124 +93,6 @@ class TagDaubView extends Component {
         }
     }
 
-    addTagString = () => {
-        const tagString = document.getElementById('new-tag-string').value;
-        if(tagString.trim() !== '') {
-            document.getElementById('new-tag-string').value = '';
-            this.setState((state) => {
-                state.tagStringList = state.tagStringList.concat([tagString]);
-                state.tagStringListAll[document.getElementById('mySelectForListName-daub').value] = state.tagStringList;
-            }, () => {
-              this.saveTagList();
-              this.props.onChangeTagStringList(this.state.tagStringList);
-            })
-            this.shouldShowAddNewTagStringView();
-        } else {
-            window.alert('标签名不能为空');
-        }
-    }
-
-    addListName = () => {
-        const listName = document.getElementById('new-list-name').value;
-        if(listName.trim() !== '') {
-            document.getElementById('new-list-name').value = '';
-            this.setState((state) => {
-                state.listNameList = state.listNameList.concat([listName]);
-                state.tagStringListAll[listName] = ['None'];
-            }, () => this.saveTagList())
-            this.shouldShowAddNewListNameView();
-        } else {
-            window.alert('标签组名不能为空');
-        }
-    }
-
-    deleteCurrentTag = () => {
-        const result = window.confirm('确定删除当前标签吗?');
-        if(result) {
-            if(this.state.tagStringList.length === 1) {
-                window.alert('不能删除最后一个标签');
-            }else {
-                const index = this.state.tagStringList.indexOf(this.props.currentTagString);
-                this.setState((state) => {
-                    state.tagStringList.splice(index, 1);
-                }, () => {
-                    this.saveTagList();
-                    this.props.on
-                    ();
-                })
-            }
-        }
-    }
-
-    deleteCurrentListName = () => {
-        const result = window.confirm('确定删除当前标签组吗?');
-        if(result) {
-            if(this.state.listNameList.length === 1) {
-                window.alert('不能删除最后一个标签组');
-            }else {
-                const listName = document.getElementById('mySelectForListName-daub').value;
-                const index = this.state.listNameList.indexOf(listName);
-                this.setState((state) => {
-                    state.listNameList.splice(index, 1);
-                    delete state.tagStringListAll[listName];
-                }, () => {
-                    this.saveTagList();
-                    this.updateTagStringList();
-                })
-            }
-        }
-    }
-
-    updateTagStringList = () => {
-        const listName = document.getElementById('mySelectForListName-daub').value;
-        this.setState({tagStringList: this.state.tagStringListAll[listName]}, () => {this.props.onChangeTagString()});
-    }
-
-    saveTagList = () => {
-        const request = new XMLHttpRequest();
-        request.open('POST', `${this.props.defaultURL}savetag?usrname=${this.props.userName}&taskname=${this.props.taskName}`);
-        const data = JSON.stringify(this.state.tagStringList);
-        request.send(JSON.stringify({
-            listname: this.state.listNameList,
-            taglist: this.state.tagStringListAll
-        }));
-        request.onload = () => {
-            console.log('post tagStringList success');
-        }
-    }
-
-    loadTagList = () => {
-      fetch(`${this.props.defaultURL}loadtag?usrname=${this.props.userName}&taskname=${this.props.taskName}`)
-        .then((response) => response.json())
-        .then((data) => {
-          if(data.listname[0] === 'tagname' && data.taglist.tagname[0] === 'tag1' && data.taglist.tagname[1] === 'tag2' && data.taglist.tagname[2] === 'tag3') {
-            const listNameList = ['tagname'];
-            const tagStringListAll = {
-              tagname: ['tag1']
-            };
-            const tagStringList = tagStringListAll['tagname'];
-            this.setState({
-              tagStringList,
-              listNameList,
-              tagStringListAll
-            }, () => {
-              this.props.onChangeTagStringList(this.state.tagStringList);
-            })
-          } else {
-            const listNameList = data.listname;
-            const tagStringListAll = data.taglist;
-            const tagStringList = tagStringListAll[listNameList[0]];
-            this.setState({
-              tagStringList,
-              listNameList,
-              tagStringListAll
-            }, () => {
-              this.props.onChangeTagStringList(this.state.tagStringList);
-            })
-          }
-        })
-    }
-
     getRandomColor = () => {
       return [Math.floor(Math.random() * 256), Math.floor(Math.random() * 256), Math.floor(Math.random() * 256)];
     }
@@ -254,71 +108,6 @@ class TagDaubView extends Component {
         }
     }
 
-    handleNewTagString = (e) => {
-        this.setState({newTagString: e.target.value});
-    }
-
-    handleNewListName = (e) => {
-        this.setState({newListName: e.target.value});
-    }
-
-    editTagString = () => {
-        if(this.state.newTagString.trim() !== '') {
-            const oldTagString = document.getElementById('mySelect-daub').value;
-            const newTagString = this.state.newTagString;
-            this.setState((state) => {
-                const newTagStringList = state.tagStringList.reduce((newTagStringList, tagString) => {
-                    if(tagString === oldTagString) {
-                        return newTagStringList.concat([newTagString]);
-                    } else {
-                        return newTagStringList.concat([tagString]);
-                    }
-                }, []);
-                state.tagStringList = newTagStringList;
-                state.tagStringListAll[document.getElementById('mySelectForListName-daub').value] = newTagStringList;
-                state.newTagString = '';
-            }, () => {
-                this.saveTagList();
-                this.props.editTagString(oldTagString, newTagString);
-                this.props.onChangeTagString();
-                this.shouldShowTagEditView();
-            });
-        } else {
-            window.alert('新标签名不能为空');
-        }
-    }
-
-    editListName = () => {
-        const theNewListName = this.state.newListName;
-        if(this.state.newListName.trim() !== '') {
-            const oldListName = document.getElementById('mySelectForListName-daub').value;
-            const newListName = this.state.newListName;
-            this.setState((state) => {
-                const index = state.listNameList.indexOf(oldListName);
-                state.listNameList[index] = newListName;
-                state.tagStringListAll = {
-                    ...state.tagStringListAll,
-                    [newListName]: state.tagStringListAll[oldListName]
-                }
-                delete state.tagStringListAll[oldListName];
-                state.newListName = '';
-            }, () => {
-                document.getElementById('mySelectForListName-daub').value = theNewListName;
-                this.saveTagList();
-                this.shouldShowListNameEditView();
-            });
-        } else {
-            window.alert('新标签组名不能为空');
-        }
-    }
-
-    changeTagStringList = () => {
-        const listName = document.getElementById('mySelectForListName-daub').value;
-        this.setState({tagStringList: this.state.tagStringListAll[listName]}, () => {
-            this.props.onChangeTagStringList(this.state.tagStringList);
-        });
-    }
-
     autoTagImages = () => {
       const theValue = document.getElementById('auto-tag-image-premodel-select').value;
       this.props.onAutoTagImages(this.state.autoTagStart, this.state.autoTagNum, theValue);
@@ -327,7 +116,10 @@ class TagDaubView extends Component {
 
     createObject = () => {
       const color = this.getRandomColor();
-      this.props.dispatch(createObject(color, document.getElementById('mySelect-daub').value));
+      this.props.dispatch(createObject(color, this.props.currentTag));
+      setTimeout(() => {
+        this.props.dispatch(changeObjectIndex(this.props.objects.length - 1));
+      }, 0)
     }
 
     changeObjectIndex = (index) => () => {
@@ -353,13 +145,13 @@ class TagDaubView extends Component {
           }
         }
         ctx.putImageData(imageData, 0, 0);
+        this.props.dispatch(removeObject(index));
+        this.props.shouldSaveDaub(true);
       }
-      this.props.dispatch(removeObject(index));
-      this.props.shouldSaveDaub(true);
     }
 
     addTag = (index) => () => {
-      const tag = document.getElementById('mySelect-daub').value
+      const tag = this.props.currentTag;
       const result = this.props.objects[index].tagList.filter((theTag) => (theTag === tag));
       if(result.length > 0) {
         window.alert('标签已存在');
@@ -380,7 +172,72 @@ class TagDaubView extends Component {
       }
     }
 
+    dragMDListener = (e) => {
+      this.setState({
+        movePaintBox: true,
+        paintBox: {
+          x: e.clientX,
+          y: e.clientY,
+          left: this.state.paintBox.left,
+          top: this.state.paintBox.top
+        }
+      })
+    }
+
+    dragMMListener = (e) => {
+      const { paintBox, movePaintBox } = this.state;
+      if(movePaintBox) {
+        const x = e.clientX;
+        const y = e.clientY;
+        const left = paintBox.left + x - paintBox.x;
+        const top = paintBox.top + y - paintBox.y;
+        this.setState({
+          paintBox: {
+            x,
+            y,
+            left,
+            top
+          }
+        })
+      }
+    }
+
+    dragMUListener = (e) => {
+      const { paintBox, movePaintBox } = this.state;
+      if(movePaintBox) {
+        const x = e.clientX - paintBox.x;
+        const y = e.clientY - paintBox.y;
+        const left = paintBox.left + x;
+        const top = paintBox.top + y;
+        this.setState({
+          movePaintBox: false,
+          paintBox: {
+            x: 0,
+            y: 0,
+            left,
+            top
+          }
+        })
+      }
+    }
+
+    addDragListener = () => {
+      const paintBox = document.getElementById('paint-box');
+      paintBox.addEventListener('mousedown', this.dragMDListener);
+      window.addEventListener('mousemove', this.dragMMListener);
+      window.addEventListener('mouseup', this.dragMUListener);
+    }
+
+    removeDragListener = () => {
+      const paintBox = document.getElementById('paint-box');
+      paintBox.removeEventListener('mousedown', this.dragMDListener);
+      window.removeEventListener('mousemove', this.dragMMListener);
+      window.removeEventListener('mouseup', this.dragMUListener);
+    }
+
     render() {
+      const { paintBox } = this.state;
+      const { lineWidth, changeLineWidth, eraseMode, changeEraseMode } = this.props;
         return (
             <div className="flex-box flex-column" style={{justifyContent: 'center', height: '100%'}}>
                 {this.state.showPremodelSelect &&
@@ -403,108 +260,15 @@ class TagDaubView extends Component {
                     ? <button onClick={this.shouldShowFindModeView} className="w3-button w3-card w3-green">退出查找模式</button>
                     : <button onClick={this.shouldShowFindModeView} className="w3-button w3-card w3-green">查找当前标签</button>
                   : null}
-                <div className="flex-box margin-top-5">
-                    <select onChange={this.changeTagStringList} id="mySelectForListName-daub" className="w3-select" style={{width: '50%'}}>
-                    {this.state.listNameList.map((listName, index) => (
-                      <option key={listName + index}>{listName}</option>
-                    ))}
-                    </select>
-                    <div style={{backgroundColor: 'rgb(211, 204, 204)', width: '2px'}}></div>
-                    <select id="mySelect-daub" className="w3-select" style={{width: '50%'}}>
-                    {this.state.tagStringList.map((tagString, index) => (
-                      <option key={tagString + index}>
-                        {tagString}
-                      </option>
-                    ))}
-                    </select>
-                </div>
-                {
-                    this.props.userLevel !== 0 ?
-                        this.state.showEditView ?
-                            this.props.userLevel === 3 || this.props.userLevel === 2 ?
-                                this.state.showListNameEditView ?
-                                <div className="flex-box w3-card margin-top-5">
-                                    <input onChange={this.handleNewListName} value={this.state.newListName} placeholder="请输入新的标签组名" className="w3-input" type="text"/>
-                                    <button onClick={this.editListName} className="w3-button w3-green" style={{width: '26%'}}>确定</button>
-                                    <div style={{backgroundColor: 'rgb(211, 204, 204)', width: '2px'}}></div>
-                                    <button onClick={this.shouldShowListNameEditView} className="w3-button w3-green" style={{width: '26%'}}>取消</button>
-                                </div>
-                                : <button onClick={this.shouldShowListNameEditView} className="w3-card w3-button w3-green margin-top-5">修改当前标签组名</button>
-                            : null
-                        :null
-                    :null
-                }
-                {
-                    this.props.userLevel !== 0 ?
-                        this.state.showEditView ?
-                            this.props.userLevel === 3 || this.props.userLevel === 2 ?
-                                this.state.showTagEditView ?
-                                <div className="flex-box w3-card margin-top-5">
-                                    <input onChange={this.handleNewTagString} value={this.state.newTagString} placeholder="请输入新的标签名" className="w3-input" type="text"/>
-                                    <button onClick={this.editTagString} className="w3-button w3-green" style={{width: '26%'}}>确定</button>
-                                    <div style={{backgroundColor: 'rgb(211, 204, 204)', width: '2px'}}></div>
-                                    <button onClick={this.shouldShowTagEditView} className="w3-button w3-green" style={{width: '26%'}}>取消</button>
-                                </div>
-                                : <button onClick={this.shouldShowTagEditView} className="w3-card w3-button w3-green margin-top-5">修改当前标签名</button>
-                            : null
-                        :null
-                    :null
-                }
-                {
-                    this.props.userLevel !== 0 ?
-                        this.state.showEditView ?
-                            this.state.showAddNewListNameView ?
-                                <div className="w3-card margin-top-5 flex-box">
-                                    <input placeholder="请输入新的标签组名" id="new-list-name" className="w3-input" type="text"/>
-                                    <button className="w3-button w3-green" onClick={this.addListName} style={{width: '26%'}}>确定</button>
-                                    <div style={{backgroundColor: 'rgb(211, 204, 204)', width: '2px'}}></div>
-                                    <button className="w3-button w3-green" onClick={this.shouldShowAddNewListNameView} style={{width: '26%'}}>取消</button>
-                                </div>
-                                : <button onClick={this.shouldShowAddNewListNameView} className="w3-button w3-green w3-card margin-top-5">添加新标签组</button>
-                        : null
-                    :null
-                }
-                {
-                    this.props.userLevel !== 0 ?
-                        this.state.showEditView ?
-                            this.state.showAddNewTagStringView ?
-                                <div className="w3-card margin-top-5 flex-box">
-                                    <input placeholder="请输入新的标签名" id="new-tag-string" className="w3-input" type="text"/>
-                                    <button className="w3-button w3-green" onClick={this.addTagString} style={{width: '26%'}}>确定</button>
-                                    <div style={{backgroundColor: 'rgb(211, 204, 204)', width: '2px'}}></div>
-                                    <button className="w3-button w3-green" onClick={this.shouldShowAddNewTagStringView} style={{width: '26%'}}>取消</button>
-                                </div>
-                                : <button onClick={this.shouldShowAddNewTagStringView} className="w3-button w3-green w3-card margin-top-5">添加新标签</button>
-                        : null
-                    :null
-                }
-                {
-                    this.props.userLevel !== 0 ?
-                        this.state.showEditView ?
-                            <div className="flex-box flex-column">
-                                <button onClick={this.deleteCurrentListName} className="w3-card w3-button w3-green margin-top-5">删除当前标签组</button>
-                                <button onClick={this.deleteCurrentTag} className="w3-card w3-button w3-green margin-top-5">删除当前标签</button>
-                                <button onClick={this.shouldShowEditView} className="w3-button w3-green w3-card margin-top-5">退出编辑</button>
-                            </div>
-                        :null
-                    :null
-                }
-                {
-                    this.props.userLevel !== 0 ?
-                        this.state.showEditView ?
-                        null
-                        : <button onClick={this.shouldShowEditView} className="w3-button w3-green w3-card margin-top-5">编辑标签</button>
-                    :null
-                }
+                <TagSelector />
                 <button onClick={this.createObject} className="w3-button w3-green w3-card" style={{marginTop: '5px'}}>创建实例</button>
-                <div style={{position: 'fixed', left: '20px', top: '100px', background: 'white', display: 'flex', padding: '6px 10px', fontSize: '13px', borderRadius: '7px', alignItems: 'center'}}>
-                  <p style={{margin: '5px 0px'}}>画笔宽度:</p>
-                  <input value={this.props.lineWidth} onChange={this.props.changeLineWidth} type="number" style={{width: '60px', paddingLeft: '5px', marginLeft: '5px'}} />
-                  <div style={{display: 'flex', alignItems: 'center', marginLeft: '8px'}}>
-                    <p style={{margin: '5px 0px'}}>橡皮擦:</p>
-                    <input value={this.props.eraseMode} onChange={this.props.changeEraseMode} type="checkbox" style={{marginLeft: '5px'}} />
-                  </div>
-                </div>
+                <PaintSetting
+                  lineWidth={lineWidth}
+                  changeLineWidth={changeLineWidth}
+                  eraseMode={eraseMode}
+                  changeEraseMode={changeEraseMode}
+                  left={paintBox.left}
+                  top={paintBox.top} />
                 <List style={{overflowY: 'auto', flex: '1'}}>
                   {this.props.objects.map((object, index) => (
                     <ListItem key={object.color} button onClick={this.changeObjectIndex(index)} style={{background: `${this.props.objectIndex === index ? 'rgb(220,220,220)' : ''}`}}>
@@ -566,9 +330,28 @@ class TagDaubView extends Component {
     }
 }
 
-const mapStateToProps = ({ daubReducer }) => ({
+const PaintSetting = ({ left, top, lineWidth, changeLineWidth, eraseMode, changeEraseMode }) => (
+  <div style={{position: 'fixed', left: `${left}px`, top: `${top}px`, background: 'white', display: 'flex', padding: '6px 10px', fontSize: '13px', borderRadius: '4px', alignItems: 'center', userSelect: 'none'}}>
+    <div id="paint-box" style={{width: '15px', height: '100%', position: 'absolute', left: '-12px', background: 'white', borderRadius: '4px 0px 0px 4px'}}>
+      <div style={{display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-around', alignItems: 'center', background: 'rgba(0,0,0,0.3)'}}>
+        <div className="drag-circle"/>
+        <div className="drag-circle"/>
+        <div className="drag-circle"/>
+      </div>
+    </div>
+    <p style={{margin: '5px 0px'}}>画笔宽度:</p>
+    <input value={lineWidth} onChange={changeLineWidth} type="number" style={{width: '60px', paddingLeft: '5px', marginLeft: '5px'}} />
+    <div style={{display: 'flex', alignItems: 'center', marginLeft: '8px'}}>
+      <p style={{margin: '5px 0px'}}>橡皮擦:</p>
+      <input value={eraseMode} onChange={changeEraseMode} type="checkbox" style={{marginLeft: '5px'}} />
+    </div>
+  </div>
+)
+
+const mapStateToProps = ({ daubReducer, appReducer }) => ({
   objects: daubReducer.objects,
-  objectIndex: daubReducer.objectIndex
+  objectIndex: daubReducer.objectIndex,
+  currentTag: appReducer.tagSelector.currentTag
 })
 
 export default connect(mapStateToProps, null, null, { withRef: true })(TagDaubView);

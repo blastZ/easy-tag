@@ -44,7 +44,7 @@ class NewTaskView extends Component {
   render() {
     const { classes, closeView } = this.props;
     return (
-      <Dialog onRequestClose={closeView} open={true}>
+      <Dialog onClose={closeView} open={true}>
         <DialogTitle>新建任务</DialogTitle>
         <DialogContent>
           <div>

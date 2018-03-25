@@ -310,17 +310,17 @@ class SelectedDaubImage extends Component {
 
     render() {
         return (
-            <div className="w3-center w3-padding-24 flex-box full-width" style={{position: 'relative', justifyContent: 'center', alignItems: 'center', backgroundColor: '#303030', flex: '1'}}>
+            <div className="w3-center w3-padding-24 flex-box full-width" style={{position: 'relative', justifyContent: 'center', alignItems: 'center', backgroundColor: '#303030', flex: '1', userSelect: 'none'}}>
                 <div style={{position: 'absolute', top: '0', left: '10px'}}>
                     <p className="w3-text-white">{`标注进度: ${this.state.tagedFileCount}/${this.state.fileCount}`}</p>
                 </div>
                 <div style={{position: 'absolute', top: '0', left: '45%'}}>
                     <p className="w3-text-white">{`第 ${this.props.selectedImageNumInAll} 张 图片名称: ${this.props.selectedImageName}`}</p>
                 </div>
-                {/*<TopMenu
+                <TopMenu
                   userLevel={this.props.userLevel}
                   deleteSameImage={this.props.deleteSameImage}
-                  deleteImage={this.props.onDeleteImage} />*/}
+                  deleteImage={this.props.onDeleteImage} />
                 <div id="selectedImagePanel" style={{position: 'relative', width: '1200px', height: '600px', overflow: 'hidden'}}>
                     <img draggable="false" id="selectedImage" src={this.props.selectedImage} alt={this.props.selectedImage} style={{position: 'absolute', userSelect: 'none'}}/>
                     <canvas draggable="false" id="selectedCanvas" style={{position: 'absolute'}} />

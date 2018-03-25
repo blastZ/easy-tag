@@ -7,11 +7,11 @@ export const UPLOAD_IMAGE_FILES = 'UPLOAD_IMAGE_FILES';
 export const GET_IMAGE_LIST = 'GET_IMAGE_LIST';
 export const SAVE_IMAGE_ANNOTATION = 'SAVE_IMAGE_ANNOTATION';
 export const GET_IMAGE_ANNOTATION = 'GET_IMAGE_ANNOTATION';
-export const SAVE_SEGMENT_ANNOTATOR_LABELS = 'SAVE_SEGMENT_ANNOTATOR_LABELS';
 export const GET_SEGMENT_ANNOTATOR_LABELS = 'GET_SEGMENT_ANNOTATOR_LABELS';
+export const SAVE_SEGMENT_ANNOTATOR_LABELS = 'SAVE_SEGMENT_ANNOTATOR_LABELS';
 export const SET_SEGMENT_ANNOTATOR_LABELS = 'SET_SEGMENT_ANNOTATOR_LABELS';
 export const CHANGE_USER_NAME = 'CHANGE_USER_NAME';
-export const CHANGE_TASK_NAME = 'CHANGE_TASK_NAME';
+export const CHANGE_TASK = 'CHANGE_TASK';
 export const CHANGE_USER_LEVEL = 'CHANGE_USER_LEVEL';
 export const CHANGE_PASSWORD = 'CHANGE_PASSWORD';
 export const INIT_APP_REDUCER_STATE = 'INIT_APP_REDUCER_STATE';
@@ -26,6 +26,7 @@ export const GET_HELPER_DOC = 'GET_HELPER_DOC';
 export const GET_MANAGER_DATA = 'GET_MANAGER_DATA';
 export const GET_TRAIN_STATE_LOG = 'GET_TRAIN_STATE_LOG';
 export const AUTO_TAG_IMAGES = 'AUTO_TAG_IMAGES';
+export const INIT_TAG_SELECTOR = 'INIT_TAG_SELECTOR';
 
 export function addNewImage(imageUrl, imageName) {
     return {
@@ -80,19 +81,6 @@ export function getImageAnnotation(index) {
     }
 }
 
-export function saveSegmentAnnotatorLabels(labels) {
-    return {
-        type: SAVE_SEGMENT_ANNOTATOR_LABELS,
-        labels
-    }
-}
-
-export function getSegmentAnnotatorLabels() {
-    return {
-        type: GET_SEGMENT_ANNOTATOR_LABELS,
-    }
-}
-
 export function setSegmentAnnotatorLabels(newLabels) {
     return {
         type: SET_SEGMENT_ANNOTATOR_LABELS,
@@ -105,9 +93,9 @@ export const changeUserName = (userName) => ({
     userName
 })
 
-export const changeTaskName = (taskName) => ({
-    type: CHANGE_TASK_NAME,
-    taskName
+export const changeTask = (task) => ({
+    type: CHANGE_TASK,
+    task
 })
 
 export const changeUserLevel = (userLevel) => ({
@@ -175,4 +163,18 @@ export const autoTagImages = (start, num, pretrainmodel) => ({
   start,
   num,
   pretrainmodel
+})
+
+export const initTagSelector = (tagSelector) => ({
+  type: INIT_TAG_SELECTOR,
+  tagSelector
+})
+
+export const getSegmentAnnotatorLabels = () => ({
+  type: GET_SEGMENT_ANNOTATOR_LABELS
+})
+
+export const saveSegmentAnnotatorLabels = (labels) => ({
+  type: SAVE_SEGMENT_ANNOTATOR_LABELS,
+  labels
 })

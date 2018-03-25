@@ -5,9 +5,9 @@ import SelectBar from './components/SelectBar';
 import TagView from './components/TagView';
 import { connect } from 'react-redux';
 import { addNewSegmentAnnotator, getImageList,
-         saveImageAnnotation, saveSegmentAnnotatorLabels,
-         getSegmentAnnotatorLabels, setSegmentAnnotatorLabels,
-         initAppReducerState, getFileCount, getTaggedFileCount} from '../actions/app_action';
+         saveImageAnnotation, setSegmentAnnotatorLabels,
+         initAppReducerState, getFileCount, getTaggedFileCount,
+         getSegmentAnnotatorLabels } from '../actions/app_action';
 
 export let segmentAnnotator = null;
 let count = 1;
@@ -49,7 +49,7 @@ class SegmentView extends Component {
     }
 
     saveSegmentAnnotator = (index) => {
-        this.props.saveImageAnnotation({index, annotation: segmentAnnotator.getAnnotation(), regionSize: this.state.regionSize});
+      this.props.saveImageAnnotation({index, annotation: segmentAnnotator.getAnnotation(), regionSize: this.state.regionSize});
     }
 
     initImageCanvas = (imgURL) => {
@@ -111,15 +111,6 @@ class SegmentView extends Component {
             deleteButton.classList.add('legend-delete-button');
             legend.appendChild(deleteButton);
             attachDeleteEvent(annotator, deleteButton, i);
-            if(that.props.segmentAnnotatorLabels[i].deleted) {
-                deleteButton.style.display = 'none';
-            }
-          }
-          if(that.props.segmentAnnotatorLabels && !that.props.segmentAnnotatorLabels[i].deleted) {
-              legend.appendChild(document.createElement('br'));
-          }
-          if(that.props.segmentAnnotatorLabels[i].deleted) {
-              item.style.display = 'none';
           }
         }
         var currentIndex = Math.min(1, labels.length - 1);
@@ -132,7 +123,7 @@ class SegmentView extends Component {
             const newLabels = that.props.segmentAnnotatorLabels;
             newLabels[index].deleted = true;
             that.props.setSegmentAnnotatorLabels(newLabels);
-            that.props.saveSegmentAnnotatorLabels(newLabels);
+            //change the labels
           //annotator.removeLabel(index);
             initializeLegend(annotator);
         });
@@ -141,13 +132,13 @@ class SegmentView extends Component {
       // Add an item to the legend.
       function initializeLegendAdd(annotator) {
           const keyupFunction = function(event) {
-            if (event.keyCode === 13) {
+            {
               var newLabels = annotator.getLabels();
               // Drop colors except the first.
               for (var i = 1; i < newLabels.length; ++i) {
                 newLabels[i] = newLabels[i].name;
               }
-              newLabels.push(event.target.value);
+              newLabels.push(document.getElementById('add-label-input').value);
               annotator.setLabels(newLabels);
               const theLabels = annotator.getLabels();
               const oldLabels = that.props.segmentAnnotatorLabels;
@@ -157,7 +148,7 @@ class SegmentView extends Component {
                   }
               }
               that.props.setSegmentAnnotatorLabels(theLabels);
-              that.props.saveSegmentAnnotatorLabels(theLabels);
+              //change the labels
               initializeLegend(annotator);
               event.target.value = '';
               var index = newLabels.length - 1;
@@ -171,7 +162,8 @@ class SegmentView extends Component {
           newInput.id = 'add-label-input';
           newInput.classList.add('w3-input', 'margin-top-5');
           parent.appendChild(newInput);
-          newInput.addEventListener('keyup', keyupFunction);
+          const button = document.getElementById('add-item-button');
+          button.addEventListener('click', keyupFunction);
       }
       // Create a slide radio input.
       function createToggleButton(button, disableCallback, enableCallback) {
@@ -240,8 +232,7 @@ class SegmentView extends Component {
                     <SelectBar
                       onSetRegionSize={this.setRegionSize}
                       initImageCanvas={this.initImageCanvas}
-                      saveSegmentAnnotator={this.saveSegmentAnnotator}
-                      getSegmentAnnotatorLabels={this.getSegmentAnnotatorLabels}/>
+                      saveSegmentAnnotator={this.saveSegmentAnnotator}/>
                 </div>
                 <div className="flex-box flex-column" style={{width: '20%', backgroundColor: '#F0F0F0'}}>
                     <TagView
@@ -262,7 +253,8 @@ const mapStateToProps = ({ appReducer }) => ({
     imageAnnotation: appReducer.imageAnnotation,
     segmentAnnotatorLabels: appReducer.segmentAnnotatorLabels,
     imageList: appReducer.imageList,
-    regionSize: appReducer.regionSize
+    regionSize: appReducer.regionSize,
+    tagSelector: appReducer.tagSelector
 })
 
 const mapDispatchToProps = (dispatch) => ({
@@ -271,7 +263,6 @@ const mapDispatchToProps = (dispatch) => ({
     getFileCount: () => dispatch(getFileCount()),
     getTaggedFileCount: () => dispatch(getTaggedFileCount()),
     saveImageAnnotation: (index) => dispatch(saveImageAnnotation(index)),
-    saveSegmentAnnotatorLabels: (labels) => dispatch(saveSegmentAnnotatorLabels(labels)),
     getSegmentAnnotatorLabels: () => dispatch(getSegmentAnnotatorLabels()),
     setSegmentAnnotatorLabels: (newLabels) => dispatch(setSegmentAnnotatorLabels(newLabels)),
     initAppReducerState: () => dispatch(initAppReducerState())
