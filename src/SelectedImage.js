@@ -359,7 +359,7 @@ class SelectedImage extends Component {
         }
         document.addEventListener('mouseup', mouseupListener);
 
-        const theRefreshInterval = window.setInterval(this.refreshInterval, 3000);
+        const theRefreshInterval = window.setInterval(this.refreshInterval, 10000);
         this.setState({theRefreshInterval});
 
     }
