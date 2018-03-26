@@ -22,7 +22,7 @@ export let DEFAULT_URL = 'http://demo.codvision.com:16831/api/';
 export let DEFAULT_TAGED_NUM = 100;
 export let DEFAULT_TAGED_PROGRESS = 0.1;
 export let DEFAULT_TAG_SIZE = 10;
-export let VERSION = "1.1.0";
+export let VERSION = "1.1.1";
 
 export const setParams = (params, value) => {
   switch (params) {
