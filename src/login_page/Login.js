@@ -10,7 +10,7 @@ import SettingView from './SettingView';
 import { withStyles } from 'material-ui/styles';
 import Button from 'material-ui/Button';
 import TextField from 'material-ui/TextField';
-import { Color } from '../utils/global_config';
+import { VERSION, Color } from '../utils/global_config';
 import RightMenu from './RightMenu';
 import MenuIcon from 'material-ui-icons/Menu';
 
@@ -107,7 +107,7 @@ class Login extends Component {
                     <div>
                       <img style={{width: '60px', height: '60px'}} src={require("../imgs/logo.png")} className="logo-in-small"/>
                     </div>
-                    <h2 className="title-in-small">图像智能分析系统</h2>
+                    <h2 className="title-in-small">图像智能分析系统 v{VERSION}</h2>
                     <div style={{position: 'absolute', right: '20px'}}>
                       <IconButton onClick={this.shouldShowMenu} classes={{
                         root: classes.buttonRoot,
