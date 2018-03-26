@@ -2,9 +2,11 @@ import React, {Component} from 'react';
 import $ from 'jquery';
 import UploadImageButton from './UploadImageButton';
 import ImgTopBar from './ImgTopBar';
+import ImgBotBar from './ImgBotBar';
 import { DEFAULT_TAG_SIZE } from './utils/global_config';
 import List, { ListItem, ListItemIcon, ListItemText } from 'material-ui/List';
 import Divider from 'material-ui/Divider';
+import { DEFAULT_URL } from './utils/global_config';
 
 var mouseupListener;
 
@@ -33,6 +35,8 @@ class SelectedImage extends Component {
         onTopEdge: false,
         onRightEdge: false,
         onBottomEdge: false,
+        imgStatus: "test...",
+        theRefreshInterval: null,
         optionBox: {
           x: 0,
           y: 0,
@@ -51,6 +55,9 @@ class SelectedImage extends Component {
         document.removeEventListener('keyup', this.deleteImageListener);
         document.removeEventListener('keyup', this.nextPreviousImageListener);
         document.removeEventListener('mouseup', mouseupListener);
+
+        window.clearInterval(this.state.theRefreshInterval);
+
         this.removeDragListener();
     }
 
@@ -351,6 +358,14 @@ class SelectedImage extends Component {
           }
         }
         document.addEventListener('mouseup', mouseupListener);
+
+        const theRefreshInterval = window.setInterval(this.refreshInterval, 10000);
+        this.setState({theRefreshInterval});
+
+    }
+
+    refreshInterval = () => {
+      this.getImageStatus();
     }
 
     wheelListener = (e) => {
@@ -400,10 +415,22 @@ class SelectedImage extends Component {
         return (y_end - y_start);
     }
 
+    getImageStatus = () => {
+      const that = this;
+      const getImageStatus = new XMLHttpRequest();
+      getImageStatus.open('GET', `${DEFAULT_URL}getscrapystat?usrname=${this.props.userName}&taskname=${this.props.taskName}`);
+      getImageStatus.send();
+      getImageStatus.onload = function() {
+          console.log('getImageStatus success.');
+          const theImageStatus = getImageStatus.response;
+          that.setState({imgStatus: theImageStatus});
+      }
+  }
+
     getFileCount = () => {
         const that = this;
         const getFileCount = new XMLHttpRequest();
-        getFileCount.open('GET', `${this.props.defaultURL}filecount?usrname=${this.props.userName}&taskname=${this.props.taskName}`);
+        getFileCount.open('GET', `${DEFAULT_URL}filecount?usrname=${this.props.userName}&taskname=${this.props.taskName}`);
         getFileCount.send();
         getFileCount.onload = function() {
             console.log('getFileCount success.');
@@ -415,7 +442,7 @@ class SelectedImage extends Component {
     getTagedFileCount = () => {
         const that = this;
         const getTagedFileCount = new XMLHttpRequest();
-        getTagedFileCount.open('GET', `${this.props.defaultURL}labeledfilecount?usrname=${this.props.userName}&taskname=${this.props.taskName}`);
+        getTagedFileCount.open('GET', `${DEFAULT_URL}labeledfilecount?usrname=${this.props.userName}&taskname=${this.props.taskName}`);
         getTagedFileCount.send();
         getTagedFileCount.onload = function() {
             console.log('getTagedFileCount success.');
@@ -768,6 +795,8 @@ class SelectedImage extends Component {
                   userLevel={this.props.userLevel}
                   deleteSameImage={this.props.deleteSameImage}
                   onDeleteImage={this.props.onDeleteImage} />
+                <ImgBotBar
+                  taskstatus={this.state.imgStatus} />
                 <div
                   onMouseDown={moveBox ? null : this.handleMouseDown}
                   onMouseMove={moveBox ? this.handleBoxMouseMove : this.handleMouseMove}
@@ -795,7 +824,7 @@ class SelectedImage extends Component {
                 {this.props.userLevel !== 0 ?
                     <UploadImageButton
                       bindVideoFileEvent={this.props.bindVideoFileEvent}
-                      defaultURL={this.props.defaultURL}
+                      defaultURL={DEFAULT_URL}
                       userName={this.props.userName}
                       taskName={this.props.taskName}
                       getImageList={this.props.getImageList}

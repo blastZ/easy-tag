@@ -12,6 +12,7 @@ import DeleteIcon from 'material-ui-icons/Delete';
 import AddIcon from 'material-ui-icons/Add';
 import RemoveIcon from 'material-ui-icons/Close';
 import TagSelector from '../TagSelector';
+import { DEFAULT_URL } from '../utils/global_config';
 
 class TagDaubView extends Component {
     state = {
@@ -76,7 +77,7 @@ class TagDaubView extends Component {
       this.addDragListener();
         const that = this;
         document.addEventListener('keyup', this.pageUpAndDownListener);
-        fetch(`${this.props.defaultURL}getpretrainmodelall?usrname=${this.props.userName}&taskname=${this.props.taskName}`)
+        fetch(`${DEFAULT_URL}getpretrainmodelall?usrname=${this.props.userName}&taskname=${this.props.taskName}`)
           .then((response) => (response.json()))
           .then((result) => {
             this.setState({

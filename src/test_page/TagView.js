@@ -4,6 +4,7 @@ import { withRouter } from 'react-router-dom';
 import { autoTagImages } from '../actions/app_action';
 import Divider from 'material-ui/Divider';
 import ResultIcon from 'material-ui-icons/Fullscreen';
+import { DEFAULT_URL } from '../utils/global_config';
 
 class TagView extends Component {
     state = {
@@ -68,7 +69,7 @@ class TagView extends Component {
     componentDidMount() {
         const that = this;
         document.addEventListener('keyup', this.pageUpAndDownListener);
-        fetch(`${this.props.defaultURL}getpretrainmodelall?usrname=${this.props.userName}&taskname=${this.props.taskName}`)
+        fetch(`${DEFAULT_URL}getpretrainmodelall?usrname=${this.props.userName}&taskname=${this.props.taskName}`)
           .then((response) => (response.json()))
           .then((result) => {
             this.setState({

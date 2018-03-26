@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { initTagSelector, saveSegmentAnnotatorLabels } from './actions/app_action';
 import { segmentAnnotator } from './segment_page/SegmentView';
+import { DEFAULT_URL } from './utils/global_config';
 
 class TagSelector extends Component {
   state = {
@@ -41,7 +42,7 @@ class TagSelector extends Component {
   }
 
   loadTagList = () => {
-    fetch(`${this.props.defaultURL}loadtag?usrname=${this.props.userName}&taskname=${this.props.taskName}`)
+    fetch(`${DEFAULT_URL}loadtag?usrname=${this.props.userName}&taskname=${this.props.taskName}`)
       .then((response) => response.json())
       .then((data) => {
         if(data.listname[0] === 'tagname' && data.taglist.tagname[0] === 'tag1' && data.taglist.tagname[1] === 'tag2' && data.taglist.tagname[2] === 'tag3') {
@@ -73,7 +74,7 @@ class TagSelector extends Component {
   }
 
   saveTagList = () => {
-    fetch(`${this.props.defaultURL}savetag?usrname=${this.props.userName}&taskname=${this.props.taskName}`, {
+    fetch(`${DEFAULT_URL}savetag?usrname=${this.props.userName}&taskname=${this.props.taskName}`, {
       method: 'POST',
       body: JSON.stringify({
         listname: this.props.listNameList,
@@ -308,7 +309,7 @@ class TagSelector extends Component {
   }
 
   editTagString = (oldTagString, newTagString) => {
-    fetch(`${this.props.defaultURL}changetag?usrname=${this.props.userName}&taskname=${this.props.taskName}`, {
+    fetch(`${DEFAULT_URL}changetag?usrname=${this.props.userName}&taskname=${this.props.taskName}`, {
       method: 'POST',
       body: JSON.stringify({
         oldtag: oldTagString,

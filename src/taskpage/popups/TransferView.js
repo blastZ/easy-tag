@@ -9,6 +9,7 @@ import Button from 'material-ui/Button';
 import { MenuItem } from 'material-ui/Menu';
 import Checkbox from 'material-ui/Checkbox';
 import { connect } from 'react-redux';
+import { DEFAULT_URL } from '../../utils/global_config';
 
 const styles = {
   button: {
@@ -108,7 +109,7 @@ class TransferView extends Component {
   }
 
   getAllUser = (cb=null) => {
-    fetch(`${this.props.defaultURL}getuserlist`, {
+    fetch(`${DEFAULT_URL}getuserlist`, {
       method: 'POST',
       body: JSON.stringify({
         name: this.props.userName,
@@ -131,7 +132,7 @@ class TransferView extends Component {
   }
 
   getTaskList = (userName, type) => {
-    fetch(`${this.props.defaultURL}gettasklist?usrname=${userName}`)
+    fetch(`${DEFAULT_URL}gettasklist?usrname=${userName}`)
       .then((response) => response.text())
       .then((result) => {
         const arrayData = result.split(',');
@@ -152,7 +153,7 @@ class TransferView extends Component {
   }
 
   getMaxNum = (userName, taskName) => {
-    fetch(`${this.props.defaultURL}filecount?usrname=${userName}&taskname=${taskName}`)
+    fetch(`${DEFAULT_URL}filecount?usrname=${userName}&taskname=${taskName}`)
       .then((response) => response.json())
       .then((result) => {
         this.setState({
@@ -177,7 +178,7 @@ class TransferView extends Component {
       window.alert('任务类型不同不能复制标注数据');
     } else {
       this.props.closeView();
-      fetch(`${this.props.defaultURL}transfertaskdata?`, {
+      fetch(`${DEFAULT_URL}transfertaskdata?`, {
         method: 'POST',
         body: JSON.stringify({
           name: this.props.userName,

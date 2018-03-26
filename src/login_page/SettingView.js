@@ -29,12 +29,18 @@ class SettingView extends Component {
   }
 
   changeDefaultUrl = () => {
-    setParams('url', this.state.defaultURL);
+    setParams('url', this.state.defaultUrl);
     this.props.onClose();
   }
 
   render() {
     const { classes, ...other } = this.props;
+    // if(localStorage.getItem('DEFAULT_URL')) {
+    //   this.state.defaultUrl =  localStorage.getItem('DEFAULT_URL');
+    // }
+    // else{
+    //   this.state.defaultUrl =  'http://demo.codvision.com:16831/api/';
+    // }
     return (
       <Dialog classes={{paper: classes.paper}} onClose={this.handleRequestClose} {...other}>
        <DialogTitle>登录设置</DialogTitle>
