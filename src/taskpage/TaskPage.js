@@ -304,10 +304,10 @@ class TaskPage extends Component {
         if(localStorage.getItem('DEFAULT_TAGED_NUM')) {
           setParams('taged-num', localStorage.getItem('DEFAULT_TAGED_NUM'));
         }
-        if(localStorage.getItem('DEFAULT_URL')) {
+        if(localStorage.getItem('DEFAULT_TAGED_PROGRESS')) {
           setParams('taged-progress', localStorage.getItem('DEFAULT_TAGED_PROGRESS'));
         }
-        if(localStorage.getItem('DEFAULT_URL')) {
+        if(localStorage.getItem('DEFAULT_TAG_SIZE')) {
           setParams('DEFAULT_TAG_SIZE', localStorage.getItem('DEFAULT_TAG_SIZE'));
         }
         this.getTaskList();

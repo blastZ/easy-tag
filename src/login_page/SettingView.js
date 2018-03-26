@@ -35,6 +35,9 @@ class SettingView extends Component {
 
   render() {
     const { classes, ...other } = this.props;
+    if(localStorage.getItem('DEFAULT_URL')) {
+      this.state.defaultUrl =  localStorage.getItem('DEFAULT_URL');
+    }
     return (
       <Dialog classes={{paper: classes.paper}} onClose={this.handleRequestClose} {...other}>
        <DialogTitle>登录设置</DialogTitle>
