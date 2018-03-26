@@ -308,7 +308,7 @@ class TaskPage extends Component {
           setParams('taged-progress', localStorage.getItem('DEFAULT_TAGED_PROGRESS'));
         }
         if(localStorage.getItem('DEFAULT_TAG_SIZE')) {
-          setParams('DEFAULT_TAG_SIZE', localStorage.getItem('DEFAULT_TAG_SIZE'));
+          setParams('tag-size', localStorage.getItem('DEFAULT_TAG_SIZE'));
         }
         this.getTaskList();
         const theRefreshInterval = window.setInterval(this.refreshInterval, 60000);

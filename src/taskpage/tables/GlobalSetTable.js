@@ -64,7 +64,7 @@ class GlobalSetTable extends Component {
     this.setState({
       tagSize: value
     })
-    setParams('DEFAULT_TAG_SIZE', value);
+    setParams('tag-size', value);
   }
 
   render() {

@@ -41,7 +41,7 @@ export const setParams = (params, value) => {
       localStorage.setItem('DEFAULT_TAGED_PROGRESS', DEFAULT_TAGED_PROGRESS);
       break;
     }
-    case 'DEFAULT_TAG_SIZE': {
+    case 'tag-size': {
       DEFAULT_TAG_SIZE = value;
       localStorage.setItem('DEFAULT_TAG_SIZE', DEFAULT_TAG_SIZE);
       break;
