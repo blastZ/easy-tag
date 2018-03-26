@@ -35,7 +35,7 @@ class SelectedImage extends Component {
         onTopEdge: false,
         onRightEdge: false,
         onBottomEdge: false,
-        imgStatus: "test...",
+        imgStatus: "labeling...",
         theRefreshInterval: null,
         optionBox: {
           x: 0,
