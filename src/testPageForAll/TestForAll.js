@@ -3,6 +3,7 @@ import SelectedImage from './components/SelectedImage';
 import SelectBar from './components/SelectBar';
 import TagView from './components/TagView';
 import WaitingPage from '../WaitingPage';
+import { DEFAULT_URL } from '../utils/global_config';
 
 class TestForAll extends Component {
   state = {
@@ -45,7 +46,7 @@ class TestForAll extends Component {
             showWaitingPage: true,
             boxList: []
           })
-          fetch(`${this.props.defaultURL}${this.getURL()}?filename=${file.name}`, {
+          fetch(`${DEFAULT_URL}${this.getURL()}?filename=${file.name}`, {
             method: 'POST',
             body: formData
           }).then((res) => {
@@ -176,7 +177,7 @@ class TestForAll extends Component {
                  uploadImageFiles={this.uploadImageFiles}
                  onShowNewImage={this.showNewImage}
                  boxList={this.state.boxList}
-                 defaultURL={this.props.defaultURL}
+                 defaultURL={DEFAULT_URL}
                  userName={this.props.userName}
                  userLevel={this.props.userLevel}
                  taskName={this.props.taskName}/>

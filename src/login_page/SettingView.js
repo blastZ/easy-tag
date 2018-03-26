@@ -29,7 +29,7 @@ class SettingView extends Component {
   }
 
   changeDefaultUrl = () => {
-    setParams('url', this.state.defaultURL);
+    setParams('url', this.state.defaultUrl);
     this.props.onClose();
   }
 

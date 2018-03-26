@@ -13,6 +13,7 @@ import Select from 'material-ui/Select';
 import Input from 'material-ui/Input';
 import Button from 'material-ui/Button';
 import TextField from 'material-ui/TextField';
+import { DEFAULT_URL } from '../../utils/global_config';
 
 const styles = theme => ({
   root: {
@@ -468,12 +469,12 @@ class DistriTaskView extends Component {
           </Toolbar>
           <Divider style={{backgroundColor: '#f1f1f1'}} />
           {this.state.currentTable2 === 'labeler' && <LabelerTable
-            defaultURL={this.props.defaultURL}
+            defaultURL={DEFAULT_URL}
             userName={this.props.userName}
             taskName={this.props.taskName}
             classes={this.props.classes} />}
           {this.state.currentTable2 === 'reviewer' && <ReviewerTable
-            defaultURL={this.props.defaultURL}
+            defaultURL={DEFAULT_URL}
             userName={this.props.userName}
             taskName={this.props.taskName}
             classes={this.props.classes} />}

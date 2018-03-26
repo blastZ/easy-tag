@@ -10,6 +10,7 @@ import Button from 'material-ui/Button';
 import { MenuItem } from 'material-ui/Menu';
 import Checkbox from 'material-ui/Checkbox';
 import { connect } from 'react-redux';
+import { DEFAULT_URL } from '../../utils/global_config';
 
 const styles = {
   button: {
@@ -54,7 +55,7 @@ class TrainSettingView extends Component {
   }
 
   getTrainParams = () => {
-    fetch(`${this.props.defaultURL}gettrainparams?usrname=${this.props.userName}&taskname=${this.props.currentTaskName}`)
+    fetch(`${DEFAULT_URL}gettrainparams?usrname=${this.props.userName}&taskname=${this.props.currentTaskName}`)
       .then((response) => response.json())
       .then((result) => {
         if(Object.keys(result).length > 2) {
@@ -83,7 +84,7 @@ class TrainSettingView extends Component {
   }
 
   getDetstructureList = () => {
-    fetch(`${this.props.defaultURL}getdetstructure`)
+    fetch(`${DEFAULT_URL}getdetstructure`)
       .then((response) => response.json())
       .then((result) => {
         this.setState({
@@ -96,7 +97,7 @@ class TrainSettingView extends Component {
   }
 
   getClsstructureList = () => {
-    fetch(`${this.props.defaultURL}getclsstructure`)
+    fetch(`${DEFAULT_URL}getclsstructure`)
       .then((response) => response.json())
       .then((result) => {
         this.setState({
@@ -109,7 +110,7 @@ class TrainSettingView extends Component {
   }
 
   getDefaultTrainParams = (structure) => {
-    fetch(`${this.props.defaultURL}getdefaulttrainparams?usrname=${this.props.userName}&taskname=${this.props.currentTaskName}&structure=${structure}`)
+    fetch(`${DEFAULT_URL}getdefaulttrainparams?usrname=${this.props.userName}&taskname=${this.props.currentTaskName}&structure=${structure}`)
       .then((response) => response.json())
       .then((result) => {
         this.setState({
@@ -134,7 +135,7 @@ class TrainSettingView extends Component {
   }
 
   getOptimizerList = () => {
-    fetch(`${this.props.defaultURL}getoptmethod`)
+    fetch(`${DEFAULT_URL}getoptmethod`)
       .then((response) => response.json())
       .then((result) => {
         this.setState({optimizerList: result})
@@ -142,7 +143,7 @@ class TrainSettingView extends Component {
   }
 
   getPretrainmodelList = (structure) => {
-    fetch(`${this.props.defaultURL}getpretrainmodel?usrname=${this.props.userName}&taskname=${this.props.currentTaskName}&structure=${structure}`)
+    fetch(`${DEFAULT_URL}getpretrainmodel?usrname=${this.props.userName}&taskname=${this.props.currentTaskName}&structure=${structure}`)
       .then((response) => (response.json()))
       .then((result) => {
         this.setState({

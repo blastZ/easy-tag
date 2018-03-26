@@ -3,6 +3,7 @@ import SelectedImage from './SelectedImage';
 import SelectBar from './SelectBar';
 import TagView from './TagView';
 import WaitingPage from '../WaitingPage';
+import { DEFAULT_URL } from '../utils/global_config';
 
 class Test extends Component {
   state = {
@@ -22,7 +23,7 @@ class Test extends Component {
           const formData = new FormData();
           formData.append("file", file);
           const fileRequest = new XMLHttpRequest();
-          fileRequest.open('POST', `${that.props.defaultURL}uploadtestfile?usrname=${this.props.userName}&taskname=${this.props.taskName}&filename=${file.name}`);
+          fileRequest.open('POST', `${DEFAULT_URL}uploadtestfile?usrname=${this.props.userName}&taskname=${this.props.taskName}&filename=${file.name}`);
           fileRequest.send(formData);
           fileRequest.onload = function() {
               console.log('post image success.');
@@ -43,7 +44,7 @@ class Test extends Component {
     this.setState({
       showWaitingPage: true
     })
-    fetch(`${this.props.defaultURL}autolabeltestimage?usrname=${this.props.userName}&taskname=${this.props.taskName}&pretrainmodel=${pretrainmodel}`, {
+    fetch(`${DEFAULT_URL}autolabeltestimage?usrname=${this.props.userName}&taskname=${this.props.taskName}&pretrainmodel=${pretrainmodel}`, {
       method: 'POST',
       body: `{"imageList": [${this.state.imageList.slice(start - 1, num).map((image) => (JSON.stringify(image.name)))}]}`
     })
@@ -60,7 +61,7 @@ class Test extends Component {
 
   getBoxList = (index) => {
     let boxList = [];
-    fetch(`${encodeURI(`${this.props.defaultURL}loadtestlabel?usrname=${this.props.userName}&taskname=${this.props.taskName}&filename=${this.state.imageList[index].name}`)}`)
+    fetch(`${encodeURI(`${DEFAULT_URL}loadtestlabel?usrname=${this.props.userName}&taskname=${this.props.taskName}&filename=${this.state.imageList[index].name}`)}`)
       .then((response) => response.json())
       .then((result) => {
         if(result.length > 0) {
@@ -95,7 +96,7 @@ class Test extends Component {
       let boxList = [];
       const tagListRequest = new XMLHttpRequest();
       tagListRequest.open('GET',
-      encodeURI(`${that.props.defaultURL}loadlabel?usrname=${this.props.userName}&taskname=${this.props.taskName}&filename=${this.state.imageList[index].name}`));
+      encodeURI(`${DEFAULT_URL}loadlabel?usrname=${this.props.userName}&taskname=${this.props.taskName}&filename=${this.state.imageList[index].name}`));
       tagListRequest.send();
       tagListRequest.onload = function() {
         console.log(tagListRequest.response);
@@ -163,7 +164,7 @@ class Test extends Component {
                  uploadImageFiles={this.uploadImageFiles}
                  onShowNewImage={this.showNewImage}
                  boxList={this.state.boxList}
-                 defaultURL={this.props.defaultURL}
+                 defaultURL={DEFAULT_URL}
                  userName={this.props.userName}
                  userLevel={this.props.userLevel}
                  taskName={this.props.taskName}/>
@@ -186,7 +187,7 @@ class Test extends Component {
                  num={this.props.num}
                  info={this.props.info}
                  boxList={this.state.boxList}
-                 defaultURL={this.props.defaultURL}
+                 defaultURL={DEFAULT_URL}
                  userName={this.props.userName}
                  userLevel={this.props.userLevel}
                  taskName={this.props.taskName}

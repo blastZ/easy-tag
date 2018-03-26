@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import SearchButton from './SearchButton';
 import TagSelector from './TagSelector';
+import { DEFAULT_URL } from './utils/global_config';
 
 class TagObjectView extends Component {
     state = {
@@ -40,7 +41,7 @@ class TagObjectView extends Component {
 
     componentDidMount() {
         document.addEventListener('keyup', this.pageUpAndDownListener);
-        fetch(`${this.props.defaultURL}getpretrainmodelall?usrname=${this.props.userName}&taskname=${this.props.taskName}`)
+        fetch(`${DEFAULT_URL}getpretrainmodelall?usrname=${this.props.userName}&taskname=${this.props.taskName}`)
           .then((response) => (response.json()))
           .then((result) => {
             this.setState({

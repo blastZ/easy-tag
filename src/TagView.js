@@ -4,6 +4,7 @@ import AutoTagView from './AutoTagView';
 import SearchButton from './SearchButton';
 import SetReasonView from './tagPage/popups/SetReasonView';
 import TagSelector from './TagSelector';
+import { DEFAULT_URL } from './utils/global_config';
 
 class TagView extends Component {
     state = {
@@ -62,7 +63,7 @@ class TagView extends Component {
     }
 
     getReviewReason = () => {
-      fetch(`${this.props.defaultURL}loadreason?usrname=${this.props.userName}&taskname=${this.props.taskName}`)
+      fetch(`${DEFAULT_URL}loadreason?usrname=${this.props.userName}&taskname=${this.props.taskName}`)
         .then(response => response.json())
         .then((result) => {
           this.setState({
@@ -72,7 +73,7 @@ class TagView extends Component {
     }
 
     addNewReason = (reason) => {
-      fetch(`${this.props.defaultURL}savereason?usrname=${this.props.userName}&taskname=${this.props.taskName}`, {
+      fetch(`${DEFAULT_URL}savereason?usrname=${this.props.userName}&taskname=${this.props.taskName}`, {
         method: 'POST',
         body: JSON.stringify({
           reasonlist: this.state.reasonList.concat([reason])
@@ -87,7 +88,7 @@ class TagView extends Component {
     deleteReason = (index) => {
       const reasonList = this.state.reasonList;
       reasonList.splice(index, 1);
-      fetch(`${this.props.defaultURL}savereason?usrname=${this.props.userName}&taskname=${this.props.taskName}`, {
+      fetch(`${DEFAULT_URL}savereason?usrname=${this.props.userName}&taskname=${this.props.taskName}`, {
         method: 'POST',
         body: JSON.stringify({
           reasonlist: reasonList

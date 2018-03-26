@@ -5,6 +5,7 @@ import ImgTopBar from './ImgTopBar';
 import { DEFAULT_TAG_SIZE } from './utils/global_config';
 import List, { ListItem, ListItemIcon, ListItemText } from 'material-ui/List';
 import Divider from 'material-ui/Divider';
+import { DEFAULT_URL } from './utils/global_config';
 
 var mouseupListener;
 
@@ -403,7 +404,7 @@ class SelectedImage extends Component {
     getFileCount = () => {
         const that = this;
         const getFileCount = new XMLHttpRequest();
-        getFileCount.open('GET', `${this.props.defaultURL}filecount?usrname=${this.props.userName}&taskname=${this.props.taskName}`);
+        getFileCount.open('GET', `${DEFAULT_URL}filecount?usrname=${this.props.userName}&taskname=${this.props.taskName}`);
         getFileCount.send();
         getFileCount.onload = function() {
             console.log('getFileCount success.');
@@ -415,7 +416,7 @@ class SelectedImage extends Component {
     getTagedFileCount = () => {
         const that = this;
         const getTagedFileCount = new XMLHttpRequest();
-        getTagedFileCount.open('GET', `${this.props.defaultURL}labeledfilecount?usrname=${this.props.userName}&taskname=${this.props.taskName}`);
+        getTagedFileCount.open('GET', `${DEFAULT_URL}labeledfilecount?usrname=${this.props.userName}&taskname=${this.props.taskName}`);
         getTagedFileCount.send();
         getTagedFileCount.onload = function() {
             console.log('getTagedFileCount success.');
@@ -795,7 +796,7 @@ class SelectedImage extends Component {
                 {this.props.userLevel !== 0 ?
                     <UploadImageButton
                       bindVideoFileEvent={this.props.bindVideoFileEvent}
-                      defaultURL={this.props.defaultURL}
+                      defaultURL={DEFAULT_URL}
                       userName={this.props.userName}
                       taskName={this.props.taskName}
                       getImageList={this.props.getImageList}

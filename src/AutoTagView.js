@@ -7,6 +7,7 @@ import { withStyles } from 'material-ui/styles';
 import { InputLabel } from 'material-ui/Input';
 import Button from 'material-ui/Button';
 import { connect } from 'react-redux';
+import { DEFAULT_URL } from './utils/global_config';
 
 const styles = {
   paper: {
@@ -41,7 +42,7 @@ class AutoTagView extends Component {
   }
 
   componentWillMount() {
-    fetch(`${this.props.defaultURL}getpretrainmodelall?usrname=${this.props.userName}&taskname=${this.props.taskName}`)
+    fetch(`${DEFAULT_URL}getpretrainmodelall?usrname=${this.props.userName}&taskname=${this.props.taskName}`)
       .then((response) => (response.json()))
       .then((result) => {
         this.setState({
@@ -51,7 +52,7 @@ class AutoTagView extends Component {
   }
 
   inferLabel = () => {
-    fetch(`${this.props.defaultURL}inferlabel?usrname=${this.props.userName}&taskname=${this.props.taskName}&index=${this.props.index}`)
+    fetch(`${DEFAULT_URL}inferlabel?usrname=${this.props.userName}&taskname=${this.props.taskName}&index=${this.props.index}`)
       .then((response) => response.text())
       .then((result) => {
         this.props.inferLabel();

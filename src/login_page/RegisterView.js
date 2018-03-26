@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { DEFAULT_URL } from '../utils/global_config';
 
 class RegisterView extends Component {
     state = {
@@ -17,7 +18,7 @@ class RegisterView extends Component {
         const that = this;
         try {
             const request = new XMLHttpRequest();
-            request.open('GET', `${this.props.defaultURL}getgrouplist`);
+            request.open('GET', `${DEFAULT_URL}getgrouplist`);
             request.send();
             request.onload = function() {
                 console.log('get userGroupList success');
@@ -93,7 +94,7 @@ class RegisterView extends Component {
 
     register = () => {
         const verifyRequest = new XMLHttpRequest();
-        verifyRequest.open('POST', `${this.props.defaultURL}userreg`);
+        verifyRequest.open('POST', `${DEFAULT_URL}userreg`);
         const data = `{"name": "${this.state.username}", "email": "${this.state.email}", "passwd": "${this.state.password}", "active": 0, "level": 0, "group": "${document.getElementById('userGroup').value}"}`;
         verifyRequest.send(data);
         verifyRequest.onload = () => {

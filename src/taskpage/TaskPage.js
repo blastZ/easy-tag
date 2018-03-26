@@ -25,7 +25,7 @@ import { getTrainTaskList } from '../actions/task_action';
 import TrainSettingView from './popups/TrainSettingView';
 import LoadingStatisticsView from './popups/LoadingStatisticsView';
 import StatisticsView from './popups/StatisticsView';
-import { setParams } from '../utils/global_config';
+import { DEFAULT_URL, setParams } from '../utils/global_config';
 
 const styles = theme => ({
   refreshButton: {
@@ -122,7 +122,7 @@ class TaskPage extends Component {
     }
 
     outputTagData = () => {
-      fetch(`${this.props.defaultURL}getlabelzip?usrname=${this.state.currentUserName}&taskname=${this.state.currentTaskName}`, {
+      fetch(`${DEFAULT_URL}getlabelzip?usrname=${this.state.currentUserName}&taskname=${this.state.currentTaskName}`, {
         method: 'POST',
         body: this.getManagerData()
       })
@@ -136,7 +136,7 @@ class TaskPage extends Component {
         try {
             this.setState({loadingTrainObjectData: true});
             const request = new XMLHttpRequest();
-            request.open('POST', `${this.props.defaultURL}getmodel?usrname=${this.props.username}&taskname=${this.state.currentTaskName}&structure=${this.state.currentTaskStructure}`);
+            request.open('POST', `${DEFAULT_URL}getmodel?usrname=${this.props.username}&taskname=${this.state.currentTaskName}&structure=${this.state.currentTaskStructure}`);
             const data = this.getManagerData();
             request.send(data);
             request.onload = () => {
@@ -152,7 +152,7 @@ class TaskPage extends Component {
         try {
             this.setState({loadingTrainObjectData: true});
             const request = new XMLHttpRequest();
-            request.open('POST', `${this.props.defaultURL}getmodel?usrname=${this.state.currentTrainTaskUserName}&taskname=${this.state.currentTaskName}`);
+            request.open('POST', `${DEFAULT_URL}getmodel?usrname=${this.state.currentTrainTaskUserName}&taskname=${this.state.currentTaskName}`);
             const data = this.getManagerData();
             request.send(data);
             request.onload = () => {
@@ -180,7 +180,7 @@ class TaskPage extends Component {
         const newOwner = document.getElementById('workerOwnerSelect').value;
         try {
             const request = new XMLHttpRequest();
-            request.open('POST', `${this.props.defaultURL}modifyworkerowner?workername=${this.state.workerList[index].workerName}&ownername=${newOwner}`);
+            request.open('POST', `${DEFAULT_URL}modifyworkerowner?workername=${this.state.workerList[index].workerName}&ownername=${newOwner}`);
             const data = this.getManagerData();
             request.send(data);
             this.setState({showEditWorkerOwner: !this.state.showEditWorkerOwner}, () => {
@@ -194,7 +194,7 @@ class TaskPage extends Component {
     getWorkerOwnerList = (index) => {
         try {
             const request = new XMLHttpRequest();
-            request.open('POST', `${this.props.defaultURL}getmanagerusrlist`);
+            request.open('POST', `${DEFAULT_URL}getmanagerusrlist`);
             const data = this.getManagerData();
             request.send(data);
             request.onload = () => {
@@ -274,7 +274,7 @@ class TaskPage extends Component {
     }
 
     getTaskList = () => {
-      fetch(`${this.props.defaultURL}gettasklist?usrname=${this.props.username}`)
+      fetch(`${DEFAULT_URL}gettasklist?usrname=${this.props.username}`)
         .then((response) => response.text())
         .then((result) => {
           const arrayData = this.getArrayData(result);
@@ -286,7 +286,7 @@ class TaskPage extends Component {
         const that = this;
         const getWorkerList = new XMLHttpRequest();
         try {
-            getWorkerList.open('GET', `${this.props.defaultURL}getworkerlist?usrname=${this.props.username}`);
+            getWorkerList.open('GET', `${DEFAULT_URL}getworkerlist?usrname=${this.props.username}`);
             getWorkerList.send();
             getWorkerList.onload = function() {
                 const arrayData = that.getArrayData(getWorkerList.response);
@@ -336,7 +336,7 @@ class TaskPage extends Component {
         const that = this;
         try {
             const request = new XMLHttpRequest();
-            request.open('POST', `${this.props.defaultURL}getuserlist`);
+            request.open('POST', `${DEFAULT_URL}getuserlist`);
             const data = this.getManagerData();
             request.send(data);
             request.onload = function() {
@@ -351,7 +351,7 @@ class TaskPage extends Component {
         const that = this;
         try {
             const request = new XMLHttpRequest();
-            request.open('GET', `${this.props.defaultURL}getgrouplist`);
+            request.open('GET', `${DEFAULT_URL}getgrouplist`);
             request.send();
             request.onload = function() {
                 that.getFormatUserGroupList(request.response);
@@ -426,7 +426,7 @@ class TaskPage extends Component {
             window.alert('请输入正确的任务名');
         } else {
             const getNewTask = new XMLHttpRequest();
-            getNewTask.open('GET', `${this.props.defaultURL}addtask?usrname=${this.props.username}&taskname=${taskName}&type=${taskTypeCode}`);
+            getNewTask.open('GET', `${DEFAULT_URL}addtask?usrname=${this.props.username}&taskname=${taskName}&type=${taskTypeCode}`);
             getNewTask.send();
             getNewTask.onload = function() {
                 const arrayData = that.getArrayData(getNewTask.response);
@@ -453,11 +453,11 @@ class TaskPage extends Component {
     }
 
     getTagProgress = (taskName, showLabelStatistics=null) => {
-      fetch(`${this.props.defaultURL}filecount?usrname=${this.props.username}&taskname=${taskName}`)
+      fetch(`${DEFAULT_URL}filecount?usrname=${this.props.username}&taskname=${taskName}`)
         .then((response) => response.json())
         .then((result) => {
           const theFileCount = result;
-          fetch(`${this.props.defaultURL}labeledfilecount?usrname=${this.props.username}&taskname=${taskName}`)
+          fetch(`${DEFAULT_URL}labeledfilecount?usrname=${this.props.username}&taskname=${taskName}`)
             .then((response) => response.json())
             .then((result) => {
               const theTagedFileCount = result;
@@ -484,12 +484,12 @@ class TaskPage extends Component {
     getTagProgressForTrainTask = (task, showLabelStatisticsForTrainTask) => {
         const that = this;
         const getFileCount = new XMLHttpRequest();
-        getFileCount.open('GET', `${this.props.defaultURL}filecount?usrname=${task.userName}&taskname=${task.taskName}`);
+        getFileCount.open('GET', `${DEFAULT_URL}filecount?usrname=${task.userName}&taskname=${task.taskName}`);
         getFileCount.send();
         getFileCount.onload = function() {
             const theFileCount = getFileCount.response;
             const getTagedFileCount = new XMLHttpRequest();
-            getTagedFileCount.open('GET', `${that.props.defaultURL}labeledfilecount?usrname=${task.userName}&taskname=${task.taskName}`);
+            getTagedFileCount.open('GET', `${DEFAULT_URL}labeledfilecount?usrname=${task.userName}&taskname=${task.taskName}`);
             getTagedFileCount.send();
             getTagedFileCount.onload = function() {
                 const theTagedFileCount = getTagedFileCount.response;
@@ -535,7 +535,7 @@ class TaskPage extends Component {
         this.props.dispatch(getTrainStateLog(this.props.username, this.props.taskName, this.state.currentTaskStructure));
         try {
           const lookTrainState = new XMLHttpRequest();
-          lookTrainState.open('GET', `${this.props.defaultURL}taskinfo?usrname=${this.props.username}&taskname=${this.props.taskName}&structure=${this.state.currentTaskStructure}`);
+          lookTrainState.open('GET', `${DEFAULT_URL}taskinfo?usrname=${this.props.username}&taskname=${this.props.taskName}&structure=${this.state.currentTaskStructure}`);
           lookTrainState.send();
           lookTrainState.onload = function() {
             document.getElementById('train-state').src = lookTrainState.response;
@@ -553,7 +553,7 @@ class TaskPage extends Component {
         this.props.dispatch(getTrainStateLog(this.state.currentTrainTaskUserName, this.state.currentTaskName, this.state.currentTaskStructure));
         try {
           const lookTrainState = new XMLHttpRequest();
-          lookTrainState.open('GET', `${this.props.defaultURL}taskinfo?usrname=${this.state.currentTrainTaskUserName}&taskname=${this.state.currentTaskName}&structure=${this.state.currentTaskStructure}`);
+          lookTrainState.open('GET', `${DEFAULT_URL}taskinfo?usrname=${this.state.currentTrainTaskUserName}&taskname=${this.state.currentTaskName}&structure=${this.state.currentTaskStructure}`);
           lookTrainState.send();
           lookTrainState.onload = function() {
             document.getElementById('train-state').src = lookTrainState.response;
@@ -568,7 +568,7 @@ class TaskPage extends Component {
       this.props.dispatch(changeTask({name: this.state.taskList[index].taskName, type: this.state.taskList[index].taskType}));
       const that = this;
       const currentProgress = this.state.taskList[index].progress;
-      fetch(`${this.props.defaultURL}taskinfostructure?usrname=${this.props.username}&taskname=${this.state.taskList[index].taskName}`)
+      fetch(`${DEFAULT_URL}taskinfostructure?usrname=${this.props.username}&taskname=${this.state.taskList[index].taskName}`)
         .then((response) => response.json())
         .then((result) => {
           this.setState({
@@ -577,7 +577,7 @@ class TaskPage extends Component {
           })
           this.props.dispatch(getTrainStateLog(this.props.userName, this.state.taskList[index].taskName, result[0]));
           const lookTrainState = new XMLHttpRequest();
-          lookTrainState.open('GET', `${this.props.defaultURL}taskinfo?usrname=${this.props.username}&taskname=${this.state.taskList[index].taskName}&structure=${result[0]}`);
+          lookTrainState.open('GET', `${DEFAULT_URL}taskinfo?usrname=${this.props.username}&taskname=${this.state.taskList[index].taskName}&structure=${result[0]}`);
           lookTrainState.send();
           lookTrainState.onload = function() {
               that.setState({showImageView: true, currentProgress, currentTaskName: that.state.taskList[index].taskName}, function() {
@@ -593,7 +593,7 @@ class TaskPage extends Component {
         const currentProgress = task.progress;
         if(taskState === '2' || taskState === '3') {
             try {
-              fetch(`${this.props.defaultURL}taskinfostructure?usrname=${task.userName}&taskname=${task.taskName}`)
+              fetch(`${DEFAULT_URL}taskinfostructure?usrname=${task.userName}&taskname=${task.taskName}`)
                 .then((response) => response.json())
                 .then((result) => {
                   this.setState({
@@ -602,7 +602,7 @@ class TaskPage extends Component {
                   })
                   this.props.dispatch(getTrainStateLog(task.userName, task.taskName, result[0]));
                   const lookTrainState = new XMLHttpRequest();
-                  lookTrainState.open('GET', `${this.props.defaultURL}taskinfo?usrname=${task.userName}&taskname=${task.taskName}&structure=${result[0]}`);
+                  lookTrainState.open('GET', `${DEFAULT_URL}taskinfo?usrname=${task.userName}&taskname=${task.taskName}&structure=${result[0]}`);
                   lookTrainState.send();
                   lookTrainState.onload = function() {
                     that.setState({showImageViewForTrainTask: !that.state.showImageViewForTrainTask, currentProgress, currentTaskName: task.taskName, currentTrainTaskUserName: task.userName}, function() {
@@ -628,12 +628,12 @@ class TaskPage extends Component {
                 window.alert(`完成度不足${DEFAULT_TAGED_PROGRESS * 100}%`);
             } else {
               this.closeTrainSettingView();
-              fetch(`${this.props.defaultURL}savetrainparams?usrname=${this.props.username}&taskname=${this.state.currentTaskName}`, {
+              fetch(`${DEFAULT_URL}savetrainparams?usrname=${this.props.username}&taskname=${this.state.currentTaskName}`, {
                 method: 'POST',
                 body: JSON.stringify(trainParams)
               }).then((response) => response.text())
                 .then((result) => {
-                  fetch(`${this.props.defaultURL}starttask?usrname=${this.props.username}&taskname=${this.state.currentTaskName}`)
+                  fetch(`${DEFAULT_URL}starttask?usrname=${this.props.username}&taskname=${this.state.currentTaskName}`)
                     .then((response) => response.text())
                     .then((result) => {
                       const arrayData = this.getArrayData(result);
@@ -657,7 +657,7 @@ class TaskPage extends Component {
             if(result) {
                 try {
                     const startTask = new XMLHttpRequest();
-                    startTask.open('GET', `${this.props.defaultURL}stoptask?usrname=${this.props.username}&taskname=${this.state.taskList[index].taskName}`);
+                    startTask.open('GET', `${DEFAULT_URL}stoptask?usrname=${this.props.username}&taskname=${this.state.taskList[index].taskName}`);
                     startTask.send();
                     startTask.onload = function() {
                         const arrayData = that.getArrayData(startTask.response);
@@ -680,7 +680,7 @@ class TaskPage extends Component {
             if(result) {
                 try {
                     const request = new XMLHttpRequest();
-                    request.open('GET', `${this.props.defaultURL}stoptask?usrname=${task.userName}&taskname=${task.taskName}`);
+                    request.open('GET', `${DEFAULT_URL}stoptask?usrname=${task.userName}&taskname=${task.taskName}`);
                     request.send();
                     request.onload = () => {
                         that.refreshTaskPage();
@@ -700,7 +700,7 @@ class TaskPage extends Component {
             const that = this;
             try {
                 const deleteTask = new XMLHttpRequest();
-                deleteTask.open('GET', `${this.props.defaultURL}deltask?usrname=${this.props.username}&taskname=${this.state.taskList[index].taskName}`);
+                deleteTask.open('GET', `${DEFAULT_URL}deltask?usrname=${this.props.username}&taskname=${this.state.taskList[index].taskName}`);
                 deleteTask.send();
                 deleteTask.onload = function() {
                     const arrayData = that.getArrayData(deleteTask.response);
@@ -718,7 +718,7 @@ class TaskPage extends Component {
             const that = this;
             try {
                 const deleteTask = new XMLHttpRequest();
-                deleteTask.open('GET', `${this.props.defaultURL}deltask?usrname=${task.userName}&taskname=${task.taskName}`);
+                deleteTask.open('GET', `${DEFAULT_URL}deltask?usrname=${task.userName}&taskname=${task.taskName}`);
                 deleteTask.send();
                 deleteTask.onload = function() {
                     that.refreshTaskPage();
@@ -808,7 +808,7 @@ class TaskPage extends Component {
             this.getDistrableUserList();
             const that = this;
             const getFileCount = new XMLHttpRequest();
-            getFileCount.open('GET', `${this.props.defaultURL}filecount?usrname=${this.props.username}&taskname=${this.state.currentTaskName}`);
+            getFileCount.open('GET', `${DEFAULT_URL}filecount?usrname=${this.props.username}&taskname=${this.state.currentTaskName}`);
             getFileCount.send();
             getFileCount.onload = function() {
                 that.setState({currentTaskFileCount: getFileCount.response});
@@ -837,7 +837,7 @@ class TaskPage extends Component {
             const that = this;
             try{
                 const request = new XMLHttpRequest();
-                request.open('GET', `${this.props.defaultURL}distributetask?usrname=${this.props.username}&taskname=${this.state.currentTaskName}&distusrname=${this.state.currentUserName}&start=${start}&num=${num}`);
+                request.open('GET', `${DEFAULT_URL}distributetask?usrname=${this.props.username}&taskname=${this.state.currentTaskName}&distusrname=${this.state.currentUserName}&start=${start}&num=${num}`);
                 request.send();
                 request.onload = function() {
                     that.getDistredUserList(that.state.currentTaskName);
@@ -858,7 +858,7 @@ class TaskPage extends Component {
         const that = this;
         try{
             const request = new XMLHttpRequest();
-            request.open('GET', `${this.props.defaultURL}undistributetask?usrname=${this.props.username}&taskname=${this.state.currentTaskName}&distusrname=${userName}&disttaskname=${distTaskName}`);
+            request.open('GET', `${DEFAULT_URL}undistributetask?usrname=${this.props.username}&taskname=${this.state.currentTaskName}&distusrname=${userName}&disttaskname=${distTaskName}`);
             request.send();
             request.onload = function() {
                 that.getDistredUserList(that.state.currentTaskName);
@@ -884,7 +884,7 @@ class TaskPage extends Component {
         const that = this;
         try{
             const request = new XMLHttpRequest();
-            request.open('GET', `${this.props.defaultURL}distreduserlist?usrname=${this.props.username}&taskname=${taskName}`);
+            request.open('GET', `${DEFAULT_URL}distreduserlist?usrname=${this.props.username}&taskname=${taskName}`);
             request.send();
             request.onload = function() {
                 const distredUserList = that.getFormatUserList(request.response);
@@ -899,7 +899,7 @@ class TaskPage extends Component {
         const that = this;
         try{
             const request = new XMLHttpRequest();
-            request.open('GET', `${this.props.defaultURL}distrableuserlist?usrname=${this.props.username}`);
+            request.open('GET', `${DEFAULT_URL}distrableuserlist?usrname=${this.props.username}`);
             request.send();
             request.onload = function() {
                 const distrableUserList = that.getFormatAbleUserList(request.response);
@@ -969,7 +969,7 @@ class TaskPage extends Component {
         if(result) {
             try{
                 const request = new XMLHttpRequest();
-                request.open('POST', `${this.props.defaultURL}delusr?usrname=${this.state.userManageList[index].userName}`);
+                request.open('POST', `${DEFAULT_URL}delusr?usrname=${this.state.userManageList[index].userName}`);
                 const data = this.getManagerData();
                 request.send(data);
                 request.onload = function() {
@@ -1038,7 +1038,7 @@ class TaskPage extends Component {
         if(result) {
             try{
                 const request = new XMLHttpRequest();
-                request.open('POST', `${this.props.defaultURL}delgroup?groupname=${this.state.userGroupList[index]}`);
+                request.open('POST', `${DEFAULT_URL}delgroup?groupname=${this.state.userGroupList[index]}`);
                 const data = this.getManagerData();
                 request.send(data);
                 request.onload = function() {
@@ -1057,7 +1057,7 @@ class TaskPage extends Component {
         if(rightGroupName !== -1) {
             try{
                 const request = new XMLHttpRequest();
-                request.open('POST', `${this.props.defaultURL}addgroup?groupname=${result}`);
+                request.open('POST', `${DEFAULT_URL}addgroup?groupname=${result}`);
                 const data = this.getManagerData();
                 request.send(data);
                 request.onload = function() {
@@ -1074,7 +1074,7 @@ class TaskPage extends Component {
     showLabelStatistics = (index) => {
       this.shouldShowLabelStatisticsLoading();
       this.getTagProgress(this.state.taskList[index].taskName, () => {
-        fetch(`${this.props.defaultURL}labelstatisticsfig?usrname=${this.props.userName}&taskname=${this.state.taskList[index].taskName}`)
+        fetch(`${DEFAULT_URL}labelstatisticsfig?usrname=${this.props.userName}&taskname=${this.state.taskList[index].taskName}`)
           .then((response) => response.text())
           .then((result) => {
             this.shouldShowLabelStatisticsLoading();
@@ -1096,7 +1096,7 @@ class TaskPage extends Component {
     showLabelStatisticsForTrainTask = (task) => {
         this.shouldShowLabelStatisticsLoading();
         this.getTagProgressForTrainTask(task, (task) => {
-          fetch(`${this.props.defaultURL}labelstatisticsfig?usrname=${task.userName}&taskname=${task.taskName}`)
+          fetch(`${DEFAULT_URL}labelstatisticsfig?usrname=${task.userName}&taskname=${task.taskName}`)
             .then((response) => response.text())
             .then((result) => {
               this.shouldShowLabelStatisticsLoading();
@@ -1187,7 +1187,7 @@ class TaskPage extends Component {
                   addNewTask={this.addNewTask}
                   closeView={this.closeInputView} />}
                 {this.state.showDistributeTaskView && <DistriTaskView
-                  defaultURL={this.props.defaultURL}
+                  defaultURL={DEFAULT_URL}
                   userName={this.props.userName}
                   distrTaskToUser={this.distrTaskToUser}
                   setCurrentUser={this.setCurrentUser}
@@ -1250,7 +1250,7 @@ class TaskPage extends Component {
                 {this.state.showLabelStatisticsView && <StatisticsView
                   userName={this.props.userName}
                   taskName={this.state.currentTaskName}
-                  defaultURL={this.props.defaultURL}
+                  defaultURL={DEFAULT_URL}
                   closeView={this.shouldShowLabelStatisticsView}
                   currentTagProgress={this.state.currentTagProgress}
                   statisticsUrl={this.state.statisticsUrl}

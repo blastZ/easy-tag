@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import { autoTagImages } from '../actions/app_action';
 import TagSelector from '../TagSelector';
+import { DEFAULT_URL } from '../utils/global_config';
 
 class TagPointView extends Component {
     state = {
@@ -53,7 +54,7 @@ class TagPointView extends Component {
     componentDidMount() {
         const that = this;
         document.addEventListener('keyup', this.pageUpAndDownListener);
-        fetch(`${this.props.defaultURL}getpretrainmodelall?usrname=${this.props.userName}&taskname=${this.props.taskName}`)
+        fetch(`${DEFAULT_URL}getpretrainmodelall?usrname=${this.props.userName}&taskname=${this.props.taskName}`)
           .then((response) => (response.json()))
           .then((result) => {
             this.setState({
