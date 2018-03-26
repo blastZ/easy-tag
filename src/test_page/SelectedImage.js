@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import $ from 'jquery';
 import UploadImageButton from './UploadImageButton';
-import ImgTopBar from '../ImgTopBar';
+//import ImgTopBar from '../ImgTopBar';
 
 var mouseupListener;
 

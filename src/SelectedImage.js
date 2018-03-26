@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import $ from 'jquery';
 import UploadImageButton from './UploadImageButton';
 import ImgTopBar from './ImgTopBar';
+import ImgBotBar from './ImgBotBar';
 import { DEFAULT_TAG_SIZE } from './utils/global_config';
 import List, { ListItem, ListItemIcon, ListItemText } from 'material-ui/List';
 import Divider from 'material-ui/Divider';
@@ -34,6 +35,8 @@ class SelectedImage extends Component {
         onTopEdge: false,
         onRightEdge: false,
         onBottomEdge: false,
+        imgStatus: "test...",
+        theRefreshInterval: null,
         optionBox: {
           x: 0,
           y: 0,
@@ -52,6 +55,9 @@ class SelectedImage extends Component {
         document.removeEventListener('keyup', this.deleteImageListener);
         document.removeEventListener('keyup', this.nextPreviousImageListener);
         document.removeEventListener('mouseup', mouseupListener);
+
+        window.clearInterval(this.state.theRefreshInterval);
+
         this.removeDragListener();
     }
 
@@ -352,6 +358,14 @@ class SelectedImage extends Component {
           }
         }
         document.addEventListener('mouseup', mouseupListener);
+
+        const theRefreshInterval = window.setInterval(this.refreshInterval, 3000);
+        this.setState({theRefreshInterval});
+
+    }
+
+    refreshInterval = () => {
+      this.getImageStatus();
     }
 
     wheelListener = (e) => {
@@ -400,6 +414,18 @@ class SelectedImage extends Component {
         const y_end = img_height * r_y_end;
         return (y_end - y_start);
     }
+
+    getImageStatus = () => {
+      const that = this;
+      const getImageStatus = new XMLHttpRequest();
+      getImageStatus.open('GET', `${DEFAULT_URL}getscrapystat?usrname=${this.props.userName}&taskname=${this.props.taskName}`);
+      getImageStatus.send();
+      getImageStatus.onload = function() {
+          console.log('getImageStatus success.');
+          const theImageStatus = getImageStatus.response;
+          that.setState({imgStatus: theImageStatus});
+      }
+  }
 
     getFileCount = () => {
         const that = this;
@@ -769,6 +795,8 @@ class SelectedImage extends Component {
                   userLevel={this.props.userLevel}
                   deleteSameImage={this.props.deleteSameImage}
                   onDeleteImage={this.props.onDeleteImage} />
+                <ImgBotBar
+                  taskstatus={this.state.imgStatus} />
                 <div
                   onMouseDown={moveBox ? null : this.handleMouseDown}
                   onMouseMove={moveBox ? this.handleBoxMouseMove : this.handleMouseMove}
