@@ -60,7 +60,7 @@ class OperationsTable extends Component {
     currentSearchKey: 'userName',
     mode: 'current',
     page: 0,
-    rowsPerPage: 5,
+    rowsPerPage: 10,
   }
 
   handleChangePage = (e, page) => {
@@ -106,7 +106,7 @@ class OperationsTable extends Component {
     this.setState({
       mode,
       page: 0,
-      rowsPerPage: 5
+      rowsPerPage: 10
     }, () => {
       this.getOperationsTaskList();
     })

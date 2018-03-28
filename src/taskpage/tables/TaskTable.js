@@ -55,7 +55,7 @@ class TaskTable extends Component {
     ],
     currentSearchKey: 'taskName',
     page: 0,
-    rowsPerPage: 5,
+    rowsPerPage: 10,
     showTransferView: false
   }
 

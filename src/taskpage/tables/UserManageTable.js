@@ -49,7 +49,7 @@ class UserManageTable extends Component {
     ],
     currentSearchKey: 'userName',
     page: 0,
-    rowsPerPage: 5,
+    rowsPerPage: 10,
   }
 
   handleChangePage = (e, page) => {

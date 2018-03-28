@@ -50,7 +50,7 @@ class WorkerTable extends Component {
     ],
     currentSearchKey: 'workerName',
     page: 0,
-    rowsPerPage: 5,
+    rowsPerPage: 10,
   }
 
   handleChangePage = (e, page) => {

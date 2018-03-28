@@ -43,7 +43,7 @@ class UserGroupTable extends Component {
   state = {
     keyword: '',
     page: 0,
-    rowsPerPage: 5,
+    rowsPerPage: 10,
   }
 
   handleChangePage = (e, page) => {

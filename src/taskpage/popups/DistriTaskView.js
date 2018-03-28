@@ -114,7 +114,7 @@ class LabelerTable extends Component {
   state = {
     labelerList: [],
     page: 0,
-    rowsPerPage: 5,
+    rowsPerPage: 10,
   }
 
   componentDidMount() {
@@ -202,7 +202,7 @@ class ReviewerTable extends Component {
   state = {
     reviewerList: [],
     page: 0,
-    rowsPerPage: 5,
+    rowsPerPage: 10,
   }
 
   componentDidMount() {
