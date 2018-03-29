@@ -284,9 +284,9 @@ class ReviewerTable extends Component {
 class DistriTaskView extends Component {
   state = {
     page1: 0,
-    rowsPerPage1: 5,
+    rowsPerPage1: 10,
     page2: 0,
-    rowsPerPage2: 5,
+    rowsPerPage2: 10,
     modeIndex: 0,
     currentTable: 'distred',
     currentTable2: 'labeler',
