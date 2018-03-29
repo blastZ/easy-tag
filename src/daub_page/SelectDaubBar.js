@@ -4,7 +4,7 @@ class SelectDaubBar extends Component {
 
     render() {
         return (
-            <ul style={{width:'100%', backgroundColor:'rgb(196, 245, 142)', paddingTop: '20px', paddingBottom: '20px'}} id="select-bar">
+            <ul style={{width:'100%', backgroundColor:'rgb(196, 245, 142)', paddingTop: '20px', paddingBottom: '20px', zIndex: '10'}} id="select-bar">
                 {this.props.imageList.map((image, index) => (
                     index !== this.props.selectedImageNum ?
                     <BarItem labeled={image.labeled} key={image.url.toString() + index.toString()} onClickItem={this.props.onClickItem} dataKey={image.url.toString()} imageURL={image.url}/> :
