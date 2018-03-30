@@ -2,6 +2,9 @@
 
 目前支持8种任务模式，物体检测，图片分类，语义分割，视频分类，缺陷检测，ReID，特征点检测，OCR识别
 
+https://www.processon.com/diagraming/5abd8e80e4b02cee4cfa0c3f
+https://www.processon.com/view/link/5abd8e80e4b02cee4cfa0c43
+
 其中物体检测，ReID, OCR识别使用的是一套界面
 语义分割和缺陷检测也可以使用一套界面
 图片分类是特殊的一类物体检测界面
