@@ -165,7 +165,7 @@ class App extends Component {
         }
     }
 
-    getImageList = (cb=null) => {
+    getImageList = () => {
         this.setState({selectedImageNum: 0, tagList: []});
         fetch(`${DEFAULT_URL}getdir?usrname=${this.props.userName}&taskname=${this.props.taskName}&start=${this.state.start}&num=${this.state.num}&video=${this.state.video}`)
           .then((response) => response.json())
@@ -179,14 +179,18 @@ class App extends Component {
             }, () => {
               this.getTagList(0)
             })
-            if(cb) {
-              cb();
-            }
+            //if(cb) {
+              //console.log("%s", cb);
+              
+              //cb();
+            //}
           })
     }
 
     nextImageList = () => {
         this.saveTagList(this.state.selectedImageNum);
+        console.log("nextImageList: %d ", this.state.selectedImageNum);
+        
         const that = this;
         let maxValue = 0;
         if(that.refs.tagRoute && that.refs.tagRoute.refs.selectedImage) {
@@ -297,6 +301,7 @@ class App extends Component {
 
     nextImageListForObject = () => {
         this.saveObjectTagList(this.state.selectedImageNum);
+        console.log("nextImageList: %d ", this.state.selectedImageNum);
         const that = this;
         let maxValue = 0;
         if(that.refs.tagObjectRoute && that.refs.tagObjectRoute.refs.selectedObjectImage) {
@@ -405,6 +410,7 @@ class App extends Component {
 
     nextImageListForDaub = () => {
       this.saveDaubData(this.state.selectedImageNum);
+      console.log("nextImageListForDaub: %d ", this.state.selectedImageNum);
       const that = this;
       let maxValue = 0;
       if(that.refs.tagDaubRoute && that.refs.tagDaubRoute.refs.selectedDaubImage) {
