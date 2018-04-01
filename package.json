@@ -7,6 +7,7 @@
     "jquery": "^3.2.1",
     "material-ui": "^1.0.0-beta.21",
     "material-ui-icons": "^1.0.0-beta.17",
+    "npm": "^5.8.0",
     "particles.js": "^2.0.0",
     "react": "^15.6.1",
     "react-dom": "^15.6.1",
