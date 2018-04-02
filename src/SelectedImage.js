@@ -804,7 +804,7 @@ class SelectedImage extends Component {
                   onContextMenu={(e) => {e.preventDefault()}}
                   onWheel={this.wheelListener}
                   id="selectedImagePanel"
-                  style={{position: 'relative', width: '1200px', height: '600px', overflow: 'hidden', zIndex:'0'}}>
+                  style={{position: 'absoulate', width: '1200px', height: '600px', overflow: 'hidden', zIndex:'0'}}>
                     <img draggable="false" id="selectedImage" src={this.props.selectedImage} alt={this.props.selectedImage}
                       onLoad={(e) => {this.initImage(e)}}
                       style={{
