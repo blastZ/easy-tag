@@ -7,7 +7,7 @@ const ImgTopBar = ({ tagedFileCount, fileCount, index, name, userLevel, deleteSa
         <p className="w3-text-white">{`标注进度: ${tagedFileCount}/${fileCount}`}</p>
     </div>
     <div style={{position: 'absolute', top: '0', left: '45%', zIndex: '10'}}>
-        <p className="w3-text-white">{`第 ${index} 张 图片名称: ${name}`}</p>
+        <p className="w3-text-white">{`第 ${index} 张图片名称: ${name}`}</p>
     </div>
     <TopMenu
       boxList={boxList}
