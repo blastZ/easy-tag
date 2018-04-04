@@ -303,8 +303,10 @@ class SelectedImage extends Component {
     initImage = (e) => {
       const theImage = e.target;
       const container = document.getElementById('selectedImagePanel');
-      container.width = 1200;
-      container.height = 600;
+      container.width = 1500;
+      container.height = 700;
+      //container.img_top=30;
+      
       if(theImage.height > 600) {
           theImage.height = 600;
       }
@@ -804,7 +806,7 @@ class SelectedImage extends Component {
                   onContextMenu={(e) => {e.preventDefault()}}
                   onWheel={this.wheelListener}
                   id="selectedImagePanel"
-                  style={{position: 'relative', width: '1200px', height: '600px', overflow: 'hidden', zIndex:'0'}}>
+                  style={{position: 'absoulate', width: '1200px', height: '600px', overflow: 'hidden', zIndex:'0'}}>
                     <img draggable="false" id="selectedImage" src={this.props.selectedImage} alt={this.props.selectedImage}
                       onLoad={(e) => {this.initImage(e)}}
                       style={{
