@@ -152,6 +152,7 @@ const appMiddleware = store => next => action => {
         })
       }
     } else if(action.type === GET_TRAIN_STATE_LOG) {
+        const state = store.getState().appReducer;
       const { userName, taskName, structure } = action;
       fetch(`${state.defaultURL}tasklog?usrname=${userName}&taskname=${taskName}&structure=${structure}`)
         .then((response) => (response.text()))
@@ -162,6 +163,7 @@ const appMiddleware = store => next => action => {
           })
         })
     } else if(action.type === AUTO_TAG_IMAGES) {
+        const state = store.getState().appReducer;
       const { start, num, pretrainmodel } = action;
       fetch(`${state.defaultURL}autolabelimage?usrname=${appState.userName}&taskname=${appState.taskName}&start=${start}&num=${num}&pretrainmodel=${pretrainmodel}`)
         .then((response) => (response.text()))
