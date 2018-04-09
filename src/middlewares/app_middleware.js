@@ -3,7 +3,7 @@ import { GET_TRAIN_STATE_LOG, AUTO_TAG_IMAGES, GET_SEGMENT_ANNOTATOR_LABELS, SAV
 
 const appMiddleware = store => next => action => {
     const appState = store.getState().appReducer;
-    const url = appState.defaultURL;
+    // const url = appState.defaultURL;
     if(action.type === 'UPLOAD_IMAGE_FILES') {
         const state = store.getState().appReducer;
         const { files } = action;
@@ -14,7 +14,7 @@ const appMiddleware = store => next => action => {
             const formData = new FormData();
             formData.append("file", file);
             const fileRequest = new XMLHttpRequest();
-            fileRequest.open('POST', `${url}uploadfile?usrname=${state.userName}&taskname=${state.taskName}&filename=${file.name}`);
+            fileRequest.open('POST', `${state.defaultURL}uploadfile?usrname=${state.userName}&taskname=${state.taskName}&filename=${file.name}`);
             fileRequest.send(formData);
             fileRequest.onload = function() {
                 store.dispatch({
@@ -153,7 +153,7 @@ const appMiddleware = store => next => action => {
       }
     } else if(action.type === GET_TRAIN_STATE_LOG) {
       const { userName, taskName, structure } = action;
-      fetch(`${url}tasklog?usrname=${userName}&taskname=${taskName}&structure=${structure}`)
+      fetch(`${state.defaultURL}tasklog?usrname=${userName}&taskname=${taskName}&structure=${structure}`)
         .then((response) => (response.text()))
         .then((result) => {
           next({
@@ -163,7 +163,7 @@ const appMiddleware = store => next => action => {
         })
     } else if(action.type === AUTO_TAG_IMAGES) {
       const { start, num, pretrainmodel } = action;
-      fetch(`${url}autolabelimage?usrname=${appState.userName}&taskname=${appState.taskName}&start=${start}&num=${num}&pretrainmodel=${pretrainmodel}`)
+      fetch(`${state.defaultURL}autolabelimage?usrname=${appState.userName}&taskname=${appState.taskName}&start=${start}&num=${num}&pretrainmodel=${pretrainmodel}`)
         .then((response) => (response.text()))
         .then((result) => {
           console.log(result);
